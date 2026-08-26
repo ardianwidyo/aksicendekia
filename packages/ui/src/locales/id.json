@@ -1,0 +1,45 @@
+{
+  "common": {
+    "appTitle": "AksiCendekia",
+    "appSubtitle": "Petualangan Belajar Kurikulum Merdeka",
+    "upgradeToPro": "Tingkatkan ke Pro",
+    "streakDays": "{count} Hari Beruntun",
+    "language": "Bahasa",
+    "selectGrade": "Pilih Jenjang Sekolah",
+    "catalogTitle": "Katalog Komponen UI AksiCendekia",
+    "catalogSubtitle": "Fondasi Visual & Sistem Komponen 4 Jenjang (TK, SD, SMP, SMA)"
+  },
+  "nav": {
+    "dashboard": "Beranda Belajar",
+    "achievements": "Pencapaian & Lencana",
+    "settings": "Pengaturan Akun",
+    "catalog": "Katalog Komponen Internal"
+  },
+  "components": {
+    "interactiveCard": "Kartu Belajar Interaktif",
+    "progressBar": "Indikator Kemajuan",
+    "achievementBadge": "Lencana Prestasi",
+    "primaryButton": "Tombol Utama 3D",
+    "ghostButton": "Tombol Sekunder (Ghost)",
+    "levelSelector": "Pemilih Jenjang Belajar",
+    "mascotBubble": "Gelembung Bicara Maskot"
+  },
+  "themes": {
+    "tk": {
+      "name": "TK / PAUD",
+      "subtitle": "Fase Fondasi (Pastel Lembut)"
+    },
+    "sd": {
+      "name": "Sekolah Dasar",
+      "subtitle": "Fase A - C (Warna Cerah Energetik)"
+    },
+    "smp": {
+      "name": "SMP / Sederajat",
+      "subtitle": "Fase D (Jewel Tone Elegan)"
+    },
+    "sma": {
+      "name": "SMA / SMK",
+      "subtitle": "Fase E - F (Dark Mode & Akses Neon)"
+    }
+  }
+}

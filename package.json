@@ -1,0 +1,14 @@
+{
+  "name": "aksicendekia-monorepo",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm --filter web dev",
+    "build": "pnpm --filter \"@aksicendekia/*\" build && pnpm --filter web build",
+    "build:tokens": "pnpm --filter @aksicendekia/design-tokens build",
+    "lint": "pnpm --filter \"*\" lint",
+    "test": "pnpm --filter \"*\" test"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  }
+}

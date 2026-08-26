@@ -1,0 +1,45 @@
+{
+  "common": {
+    "appTitle": "AksiCendekia",
+    "appSubtitle": "Merdeka Curriculum Gamified Learning",
+    "upgradeToPro": "Upgrade to Pro",
+    "streakDays": "{count} Day Streak",
+    "language": "Language",
+    "selectGrade": "Select School Grade Level",
+    "catalogTitle": "AksiCendekia Component Catalog",
+    "catalogSubtitle": "Visual Foundation & System Components for 4 Levels (TK, SD, SMP, SMA)"
+  },
+  "nav": {
+    "dashboard": "Learning Home",
+    "achievements": "Achievements & Badges",
+    "settings": "Account Settings",
+    "catalog": "Internal Component Catalog"
+  },
+  "components": {
+    "interactiveCard": "Interactive Learning Card",
+    "progressBar": "Progress Indicator",
+    "achievementBadge": "Achievement Badge",
+    "primaryButton": "Primary 3D Button",
+    "ghostButton": "Secondary Button (Ghost)",
+    "levelSelector": "Grade Level Selector",
+    "mascotBubble": "Mascot Speech Bubble"
+  },
+  "themes": {
+    "tk": {
+      "name": "Kindergarten",
+      "subtitle": "Foundation Phase (Soft Pastel)"
+    },
+    "sd": {
+      "name": "Elementary School",
+      "subtitle": "Phase A - C (Energetic Bright)"
+    },
+    "smp": {
+      "name": "Junior High School",
+      "subtitle": "Phase D (Elegant Jewel Tone)"
+    },
+    "sma": {
+      "name": "Senior High School",
+      "subtitle": "Phase E - F (Dark Mode & Neon Accent)"
+    }
+  }
+}
