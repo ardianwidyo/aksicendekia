@@ -1,50 +1,70 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!--
+Sync Impact Report:
+- Version change: 0.0.0 (Template Scaffold) → 1.0.0
+- Modified Principles: N/A (Initial Ratification)
+- Added Principles:
+  - I. Technology Stack & Core Foundations (Node.js/TypeScript, Fastify, PostgreSQL with Prisma ORM)
+  - II. Clean Architecture & Layer Separation (Controllers, Services, Repositories)
+  - III. Test-Driven Development & Quality Assurance (Vitest, TDD Red-Green-Refactor, 80%+ Test Coverage, Strict Type-Checking)
+  - IV. Security & Defensive Design (Zod Validation, JWT Auth, Rate Limiting)
+- Added Sections:
+  - Technical Stack & Infrastructure
+  - Development Workflow & Quality Gates
+- Removed Sections: None
+- Follow-up TODOs: None
+-->
+
+# Aksi Cendekia Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Technology Stack & Core Foundations
+The Aksi Cendekia backend MUST be built exclusively using **Node.js** with **TypeScript** configured in strict mode. **Fastify** SHALL be used as the primary HTTP framework for high performance and low latency. Data persistence MUST be managed via **PostgreSQL** using **Prisma ORM** as the type-safe schema and query interface. Direct raw database queries without Prisma context or unsafe dynamic SQL string concatenation are strictly forbidden.
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+### II. Clean Architecture & Layer Separation
+The codebase MUST strictly adhere to Clean Architecture principles, enforcing clear separation of concerns across distinct layers:
+- **Controllers**: Responsible strictly for HTTP request extraction, invoking input validation, formatting HTTP responses, and setting status codes. Controllers MUST NOT contain business logic or database access logic.
+- **Services**: Encapsulate pure business logic, domain rules, and application workflows. Services MUST be agnostic of HTTP frameworks (Fastify request/reply objects) and MUST NOT perform direct database operations.
+- **Repositories**: Encapsulate data access, persistence logic, and database operations using Prisma ORM. Repositories MUST expose domain entities or data transfer objects (DTOs) to Services.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+Cross-layer dependency violations (e.g., Controllers accessing Prisma directly or Services referencing HTTP-specific objects) are strictly prohibited.
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+### III. Test-Driven Development & Quality Assurance (NON-NEGOTIABLE)
+Test-Driven Development (TDD) is MANDATORY for all feature implementation, refactoring, and bug fixes.
+- The Red-Green-Refactor cycle MUST be strictly enforced: automated tests written using **Vitest** first → user/requirement alignment → test failure verified → code written to pass → refactor.
+- Minimum automated test coverage threshold is **80%** across lines, functions, branches, and statements. PRs or builds with test coverage under 80% MUST be automatically blocked.
+- TypeScript strict mode MUST be enabled (`"strict": true` in `tsconfig.json`). Explicit or implicit usage of `any` type is strictly forbidden (`@typescript-eslint/no-explicit-any`).
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### IV. Security & Defensive Design
+Every API endpoint exposed by Aksi Cendekia MUST enforce strict security controls at the entry point:
+- **Input Validation**: ALL incoming request payloads (params, query parameters, headers, body) MUST be validated and parsed using **Zod** schemas before execution reaches controllers or services.
+- **Authentication & Authorization**: Protected endpoints MUST enforce JSON Web Token (**JWT**) verification. Token signing and verification MUST use secure secrets/keys.
+- **Rate Limiting**: Rate limiting MUST be enabled globally and configured per endpoint using Fastify rate-limiting middleware to guard against brute-force attacks and abuse.
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+## Technical Stack & Infrastructure
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+- **Runtime & Language**: Node.js (LTS), TypeScript (Strict Mode enabled).
+- **HTTP Framework**: Fastify.
+- **Database & Persistence**: PostgreSQL with Prisma ORM.
+- **Schema Validation**: Zod.
+- **Security & Auth**: JWT (JSON Web Tokens) and Fastify Rate Limiting.
+- **Testing Suite**: Vitest with v8/c8 coverage runner.
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+## Development Workflow & Quality Gates
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+- **TDD Workflow**: Test first → Fail → Code → Pass → Refactor.
+- **Code Coverage Gate**: Minimum 80% coverage enforced on all test runs.
+- **Type Checking**: Zero TypeScript compiler (`tsc`) errors allowed in build and CI pipeline.
+- **Linting & Formatting**: Strict ESLint & Prettier execution preventing `any` types and unhandled promise rejections.
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+1. **Supremacy**: This Constitution supersedes all informal conventions, individual preferences, or ad-hoc architectural decisions.
+2. **Compliance**: All Pull Requests and commits MUST comply with these principles. Code reviews MUST verify adherence to TDD, Clean Architecture layer separation, 80%+ coverage, Zod validation, JWT auth, and rate limiting.
+3. **Amendments**: Amendments to this document require explicit team review, a documented rationale, and a version increment.
+4. **Versioning Policy**:
+   - **MAJOR**: Removal or incompatible restructuring of core principles or governance rules.
+   - **MINOR**: Addition of new tech stack requirements, expanded quality standards, or architecture principles.
+   - **PATCH**: Clarification of wording, typos, or minor formatting adjustments.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+**Version**: 1.0.0 | **Ratified**: 2026-08-26 | **Last Amended**: 2026-08-26
