@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MathQuest - SMA Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "background": "#f8f9ff",
+                      "on-primary-fixed": "#001a42",
+                      "primary-container": "#2170e4",
+                      "surface-container-low": "#eff4ff",
+                      "surface-dim": "#cbdbf5",
+                      "inverse-on-surface": "#eaf1ff",
+                      "on-tertiary": "#ffffff",
+                      "on-secondary": "#ffffff",
+                      "inverse-surface": "#213145",
+                      "surface-container-lowest": "#ffffff",
+                      "on-error-container": "#93000a",
+                      "on-secondary-fixed": "#2a1700",
+                      "on-primary": "#ffffff",
+                      "primary": "#0058be",
+                      "primary-fixed-dim": "#adc6ff",
+                      "secondary-fixed-dim": "#ffb95f",
+                      "tertiary": "#006947",
+                      "tertiary-fixed": "#6ffbbe",
+                      "inverse-primary": "#adc6ff",
+                      "on-error": "#ffffff",
+                      "surface-variant": "#d3e4fe",
+                      "tertiary-container": "#00855b",
+                      "surface-container-highest": "#d3e4fe",
+                      "primary-fixed": "#d8e2ff",
+                      "on-tertiary-fixed-variant": "#005236",
+                      "error-container": "#ffdad6",
+                      "on-surface-variant": "#424754",
+                      "on-primary-container": "#fefcff",
+                      "surface": "#f8f9ff",
+                      "secondary": "#855300",
+                      "surface-container": "#e5eeff",
+                      "error": "#ba1a1a",
+                      "surface-container-high": "#dce9ff",
+                      "on-secondary-fixed-variant": "#653e00",
+                      "on-tertiary-fixed": "#002113",
+                      "secondary-fixed": "#ffddb8",
+                      "outline": "#727785",
+                      "on-background": "#0b1c30",
+                      "on-secondary-container": "#684000",
+                      "on-tertiary-container": "#f5fff6",
+                      "surface-tint": "#005ac2",
+                      "on-primary-fixed-variant": "#004395",
+                      "tertiary-fixed-dim": "#4edea3",
+                      "surface-bright": "#f8f9ff",
+                      "on-surface": "#0b1c30",
+                      "secondary-container": "#fea619",
+                      "outline-variant": "#c2c6d6"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "sm": "12px",
+                      "md": "24px",
+                      "gutter": "20px",
+                      "lg": "48px",
+                      "xs": "4px",
+                      "xl": "64px",
+                      "container-max": "1200px",
+                      "base": "8px"
+              },
+              "fontFamily": {
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "title-md": [
+                              "Quicksand"
+                      ],
+                      "display-lg": [
+                              "Quicksand"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "headline-lg-mobile": [
+                              "Quicksand"
+                      ],
+                      "headline-lg": [
+                              "Quicksand"
+                      ],
+                      "label-sm": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "title-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "56px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "28px",
+                              {
+                                      "lineHeight": "36px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "fontWeight": "600"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+    </script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&amp;family=Quicksand:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3, h4, h5, h6, .font-title, .font-display { font-family: 'Quicksand', sans-serif; }
+        
+        /* Custom Scrollbar for sleek UI */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f8f9ff;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbdbf5;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #adc6ff;
+        }
+
+        /* Tactile interactive effects */
+        .tactile-card {
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        .tactile-card:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            border-bottom-width: 1px;
+        }
+
+        /* Slide-in Animation */
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-slide-in {
+            animation: slideIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+        }
+        .delay-100 { animation-delay: 100ms; }
+        .delay-200 { animation-delay: 200ms; }
+        .delay-300 { animation-delay: 300ms; }
+        
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            opacity: 0.5;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="bg-background/80 text-on-background min-h-screen flex flex-col md:flex-row antialiased relative">
+<canvas id="bg-canvas"></canvas>
+<!-- Desktop SideNav -->
+<nav class="hidden lg:flex flex-col fixed left-0 top-0 h-screen p-md z-40 bg-surface/90 backdrop-blur-md dark:bg-inverse-surface/90 h-full w-64 rounded-r-xl shadow-md border-r border-outline-variant/20">
+<div class="mb-xl px-sm pt-sm">
+<h1 class="font-display-lg text-display-lg text-primary truncate" title="MathQuest">MathQuest</h1>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-xs">Future Scientist Hub</p>
+</div>
+<div class="flex-1 flex flex-col gap-base">
+<a class="flex items-center gap-sm px-md py-sm font-title-md text-title-md text-on-surface-variant dark:text-outline-variant hover:bg-surface-variant dark:hover:bg-on-surface-variant rounded-xl hover:translate-x-1 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="child_care">child_care</span>
+<span class="text-body-md font-body-md">TK (Preschool)</span>
+</a>
+<a class="flex items-center gap-sm px-md py-sm font-title-md text-title-md text-on-surface-variant dark:text-outline-variant hover:bg-surface-variant dark:hover:bg-on-surface-variant rounded-xl hover:translate-x-1 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="school">school</span>
+<span class="text-body-md font-body-md">SD (Elementary)</span>
+</a>
+<a class="flex items-center gap-sm px-md py-sm font-title-md text-title-md text-on-surface-variant dark:text-outline-variant hover:bg-surface-variant dark:hover:bg-on-surface-variant rounded-xl hover:translate-x-1 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="menu_book">menu_book</span>
+<span class="text-body-md font-body-md">SMP (Junior High)</span>
+</a>
+<a class="flex items-center gap-sm px-md py-sm font-title-md text-title-md bg-primary-container dark:bg-primary text-on-primary-container dark:text-on-primary rounded-xl font-bold shadow-[0_4px_0_0_rgba(0,0,0,0.1)] translate-y-1 transition-transform duration-100" href="#">
+<span class="material-symbols-outlined" data-icon="functions" style="font-variation-settings: 'FILL' 1;">functions</span>
+<span class="text-body-md font-body-md">SMA (Senior High)</span>
+</a>
+</div>
+<div class="mt-auto">
+<div class="p-sm bg-surface-container-low/80 backdrop-blur-sm rounded-xl mb-md border border-outline-variant/30 flex items-center gap-sm">
+<img alt="Student Profile Avatar" class="w-10 h-10 rounded-full object-cover border-2 border-primary" data-alt="A small, stylized avatar image representing a highly intelligent high school student. Rendered in a crisp, modern flat design style suitable for an educational app. Bright lighting, clean edges." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA9YJQ1oUNBIzRdWOYWbLmyt5qAVZj9rE7s0dWt83R_RW_7w92Ng1gb6dmoqU2Ii5-vGojY5jpSCx7x143KnHDNTrR5tzxrXRiSQPQjOJiI4wRdo83kD2nzAnhUVnOcyhE-Zj7TPQPW0Lc1-aynXaSGyzFCVdK1WzqrtxEtq7RlSf2mK6jqp2a48ESJ0hAdnEFJrcCMxHS0_dITQTaPwCJIB1w5zA7CjWVPk36Lm3SAD6khJMyS5A0Qmg"/>
+<div>
+<p class="font-label-sm text-label-sm font-bold text-on-surface">MathQuest Explorer</p>
+<p class="font-label-sm text-label-sm text-outline">Level 12 • 450 XP</p>
+</div>
+</div>
+<button class="w-full bg-primary text-on-primary font-title-md text-body-md py-sm rounded-lg shadow-sm border-b-4 border-primary-fixed-variant tactile-card mb-md">
+                Upgrade to Pro
+            </button>
+<div class="flex flex-col gap-xs border-t border-outline-variant/20 pt-md">
+<a class="flex items-center gap-sm px-md py-xs font-label-sm text-label-sm text-on-surface-variant hover:bg-surface-variant rounded-xl transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px]" data-icon="emoji_events">emoji_events</span>
+                    Achievements
+                </a>
+<a class="flex items-center gap-sm px-md py-xs font-label-sm text-label-sm text-on-surface-variant hover:bg-surface-variant rounded-xl transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px]" data-icon="settings">settings</span>
+                    Settings
+                </a>
+</div>
+</div>
+</nav>
+<!-- Mobile TopNav (Appears on small screens) -->
+<header class="lg:hidden fixed top-0 w-full z-50 flex justify-between items-center px-gutter h-20 max-w-container-max mx-auto bg-surface-container-low/90 backdrop-blur-md dark:bg-surface-dim/90 shadow-sm shadow-sm dark:shadow-none docked full-width border-b border-outline-variant/20">
+<div class="font-display-lg text-[24px] font-bold text-primary dark:text-primary-fixed-dim">MathQuest</div>
+<div class="flex gap-sm">
+<button class="p-xs text-on-surface-variant dark:text-outline hover:text-primary-container dark:hover:text-primary-fixed transition-colors duration-200">
+<span class="material-symbols-outlined" data-icon="local_fire_department">local_fire_department</span>
+</button>
+<button class="p-xs text-on-surface-variant dark:text-outline hover:text-primary-container dark:hover:text-primary-fixed transition-colors duration-200">
+<span class="material-symbols-outlined" data-icon="monetization_on">monetization_on</span>
+</button>
+<button class="p-xs text-on-surface-variant dark:text-outline hover:text-primary-container dark:hover:text-primary-fixed transition-colors duration-200">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+</button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-1 lg:ml-64 p-gutter md:p-lg pt-[100px] lg:pt-lg max-w-container-max mx-auto w-full relative z-10">
+<!-- Header Section -->
+<div class="mb-lg flex flex-col md:flex-row justify-between items-start md:items-end gap-md">
+<div>
+<div class="inline-flex items-center gap-xs bg-tertiary-container/90 backdrop-blur-sm text-on-tertiary-container px-sm py-1 rounded-full font-label-sm text-label-sm mb-sm shadow-sm">
+<span class="material-symbols-outlined text-[14px]">science</span>
+                    Future Scientist Hub
+                </div>
+<h2 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-background mb-xs">Advanced Mathematics</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">Master complex calculus, visualize probability distributions, and prepare for top-tier university entrance exams.</p>
+</div>
+<div class="flex gap-sm w-full md:w-auto">
+<button class="flex-1 md:flex-none flex items-center justify-center gap-xs bg-surface-container/90 backdrop-blur-sm text-on-surface px-md py-sm rounded-lg font-title-md text-body-md border border-outline-variant hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined">analytics</span>
+                    My Stats
+                </button>
+<button class="flex-1 md:flex-none flex items-center justify-center gap-xs bg-primary text-on-primary px-md py-sm rounded-lg font-title-md text-body-md border-b-4 border-primary-fixed-variant shadow-sm tactile-card">
+<span class="material-symbols-outlined">play_arrow</span>
+                    Resume Module
+                </button>
+</div>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-md">
+<!-- Hero Card: Calculus Graphing Tool -->
+<div class="md:col-span-8 bg-surface-container-lowest/90 backdrop-blur-md border border-outline-variant/30 rounded-xl p-md shadow-sm relative overflow-hidden group">
+<div class="absolute top-0 right-0 w-64 h-64 bg-primary-container/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none"></div>
+<div class="flex justify-between items-start mb-md relative z-10">
+<div>
+<h3 class="font-title-md text-title-md text-on-surface flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary p-2 bg-primary-container/20 rounded-lg">show_chart</span>
+                            Calculus Graphing Engine
+                        </h3>
+<p class="font-body-md text-body-md text-outline mt-1">Visualize derivatives, integrals, and limits in real-time 3D space.</p>
+</div>
+<span class="bg-surface-variant/80 backdrop-blur-sm text-on-surface-variant font-label-sm text-label-sm px-2 py-1 rounded">Interactive</span>
+</div>
+<div class="h-64 w-full bg-on-background rounded-lg mb-md relative overflow-hidden flex items-center justify-center border border-outline-variant">
+<!-- Placeholder for advanced graphing tool UI -->
+<div class="absolute inset-0 bg-cover bg-center opacity-60 mix-blend-screen" data-alt="A highly detailed screenshot of a dark-mode 3D graphing calculator interface. Bright electric lime and deep cyan parametric curves interweave on a complex 3D grid. High contrast, modern educational UI, sharp technical aesthetic, glowing neon lines against a dark charcoal background." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAU0nPVZvc1RwyJJS-apwOEihXD4Xja0GUbhk3-9EhCnxmPcmAZaVG4Edm2k0DlQ6N1xH7Vl6Y2hbvTditWlSANS9xlH83Ue66rduajHvlAScdUFxAWTJP4Tgvdhz_QJO9RVRWDwUSd2A2xhQVeyvj4840TuYX9Lz27YL379WI_jf_b7bsnr-CWHsnBYC2sXMf2w6noOVwzicCk211LuEv6wh92bcPOXI0yLeK4VYFe2-HWyXbQHOgHEQ')"></div>
+<div class="z-10 bg-surface/90 backdrop-blur-md p-sm rounded-lg shadow-lg border border-outline-variant/50 max-w-sm text-center">
+<p class="font-label-sm text-label-sm text-on-surface font-mono">f(x,y) = sin(x) * cos(y) / (x² + y² + 1)</p>
+</div>
+<!-- Graph Controls Overlay -->
+<div class="absolute bottom-4 left-4 flex gap-xs">
+<button class="bg-surface/80 hover:bg-surface text-on-surface p-2 rounded shadow backdrop-blur transition-colors"><span class="material-symbols-outlined text-[18px]">zoom_in</span></button>
+<button class="bg-surface/80 hover:bg-surface text-on-surface p-2 rounded shadow backdrop-blur transition-colors"><span class="material-symbols-outlined text-[18px]">zoom_out</span></button>
+<button class="bg-surface/80 hover:bg-surface text-on-surface p-2 rounded shadow backdrop-blur transition-colors"><span class="material-symbols-outlined text-[18px]">3d_rotation</span></button>
+</div>
+</div>
+<div class="flex gap-sm">
+<button class="flex-1 bg-surface-container/80 backdrop-blur-sm text-on-surface font-title-md text-body-md py-sm rounded-lg hover:bg-surface-variant transition-colors">Load Preset</button>
+<button class="flex-1 bg-tertiary text-on-tertiary font-title-md text-body-md py-sm rounded-lg border-b-4 border-tertiary-fixed-dim shadow-sm tactile-card">Open Workspace</button>
+</div>
+</div>
+<!-- College Prep Module -->
+<div class="md:col-span-4 flex flex-col gap-md">
+<div class="bg-tertiary-container/95 backdrop-blur-md text-on-tertiary-container rounded-xl p-md shadow-sm flex-1 flex flex-col justify-between border-b-4 border-tertiary">
+<div>
+<div class="flex justify-between items-center mb-sm">
+<span class="material-symbols-outlined text-[32px]">school</span>
+<span class="font-label-sm text-label-sm bg-on-tertiary-container/10 px-2 py-1 rounded-full">Exam Prep</span>
+</div>
+<h3 class="font-title-md text-title-md mb-xs">SNBT Simulation</h3>
+<p class="font-body-md text-body-md opacity-90 mb-md">Quantitative Reasoning &amp; Mathematical Logic. 45 mins remaining.</p>
+</div>
+<div>
+<div class="w-full bg-on-tertiary-container/20 rounded-full h-2 mb-sm overflow-hidden">
+<div class="bg-tertiary-fixed h-2 rounded-full" style="width: 65%"></div>
+</div>
+<div class="flex justify-between font-label-sm text-label-sm mb-md">
+<span>65% Prepared</span>
+<span>Target: 850 pts</span>
+</div>
+<button class="w-full bg-on-tertiary-container text-tertiary-container font-title-md text-body-md py-sm rounded-lg hover:bg-white transition-colors tactile-card">
+                            Start Practice Test
+                        </button>
+</div>
+</div>
+<!-- Small Stat Card with Three.js -->
+<div class="bg-surface-container-lowest/90 backdrop-blur-md border border-outline-variant/30 rounded-xl p-md shadow-sm flex items-center gap-md relative overflow-hidden h-[120px]">
+<div class="absolute inset-0 z-0 opacity-40" id="three-container"></div>
+<div class="w-12 h-12 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center shrink-0 relative z-10">
+<span class="material-symbols-outlined">psychology</span>
+</div>
+<div class="relative z-10">
+<p class="font-label-sm text-label-sm text-outline">Problem Solving Accuracy</p>
+<p class="font-display-lg text-[28px] text-on-surface">88.4%</p>
+</div>
+<span class="material-symbols-outlined text-tertiary ml-auto relative z-10" title="Trending Up">trending_up</span>
+</div>
+</div>
+<!-- Complex Probability Matrix -->
+<div class="md:col-span-6 bg-surface-container-lowest/90 backdrop-blur-md border border-outline-variant/30 rounded-xl p-md shadow-sm">
+<div class="flex justify-between items-center mb-md">
+<h3 class="font-title-md text-title-md text-on-surface flex items-center gap-sm">
+<span class="material-symbols-outlined text-secondary p-2 bg-secondary-container/20 rounded-lg">casino</span>
+                        Probability Distributions
+                    </h3>
+<button class="text-primary hover:bg-primary-container/20 p-2 rounded-full transition-colors">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</div>
+<div class="grid grid-cols-2 gap-sm mb-md">
+<div class="p-sm bg-surface/80 backdrop-blur-sm rounded-lg border border-outline-variant/50 hover:border-primary cursor-pointer transition-colors">
+<p class="font-label-sm text-label-sm text-outline mb-1">Normal Distribution</p>
+<div class="h-16 w-full flex items-end justify-center pb-2 opacity-70">
+<!-- Simple pure CSS bell curve approximation -->
+<div class="w-full h-full relative overflow-hidden">
+<div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-[120%] h-[200%] border-t-2 border-primary rounded-[50%]"></div>
+</div>
+</div>
+</div>
+<div class="p-sm bg-primary-container/10 backdrop-blur-sm rounded-lg border border-primary cursor-pointer transition-colors">
+<p class="font-label-sm text-label-sm text-primary font-bold mb-1">Binomial (Active)</p>
+<div class="h-16 w-full flex items-end gap-1 px-2 pt-2">
+<div class="w-full bg-primary/40 h-[20%] rounded-t-sm"></div>
+<div class="w-full bg-primary/60 h-[50%] rounded-t-sm"></div>
+<div class="w-full bg-primary h-[90%] rounded-t-sm"></div>
+<div class="w-full bg-primary/60 h-[60%] rounded-t-sm"></div>
+<div class="w-full bg-primary/40 h-[30%] rounded-t-sm"></div>
+</div>
+</div>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-sm text-sm">
+                    Analyze discrete random variables. Calculate expected value E(X) and variance Var(X).
+                </p>
+<a class="text-primary font-title-md text-label-sm flex items-center gap-xs hover:underline" href="#">
+                    Run Simulation <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+</a>
+</div>
+<!-- Recent Modules List -->
+<div class="md:col-span-6 bg-surface-container-lowest/90 backdrop-blur-md border border-outline-variant/30 rounded-xl p-md shadow-sm overflow-hidden">
+<h3 class="font-title-md text-title-md text-on-surface mb-md">Recent Study Modules</h3>
+<div class="flex flex-col gap-sm">
+<!-- List Item 1 -->
+<div class="flex items-center gap-md p-sm bg-surface/80 backdrop-blur-sm rounded-lg border border-outline-variant/30 hover:shadow-md transition-shadow cursor-pointer group animate-slide-in delay-100">
+<div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center text-on-surface-variant group-hover:bg-primary-container group-hover:text-primary transition-colors">
+<span class="material-symbols-outlined">functions</span>
+</div>
+<div class="flex-1">
+<h4 class="font-title-md text-body-md text-on-surface">Integration by Parts</h4>
+<p class="font-label-sm text-label-sm text-outline">Calculus III • Completed 2 days ago</p>
+</div>
+<div class="text-right">
+<span class="font-label-sm text-label-sm text-tertiary bg-tertiary-container/20 px-2 py-1 rounded">Score: 92%</span>
+</div>
+</div>
+<!-- List Item 2 -->
+<div class="flex items-center gap-md p-sm bg-surface/80 backdrop-blur-sm rounded-lg border border-outline-variant/30 hover:shadow-md transition-shadow cursor-pointer group animate-slide-in delay-200">
+<div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center text-on-surface-variant group-hover:bg-primary-container group-hover:text-primary transition-colors">
+<span class="material-symbols-outlined">polyline</span>
+</div>
+<div class="flex-1">
+<h4 class="font-title-md text-body-md text-on-surface">Vector Geometry</h4>
+<p class="font-label-sm text-label-sm text-outline">Linear Algebra • In Progress (40%)</p>
+</div>
+<div class="w-16 bg-surface-container-high rounded-full h-1.5 ml-auto overflow-hidden">
+<div class="bg-primary h-1.5 rounded-full" style="width: 40%"></div>
+</div>
+</div>
+<!-- List Item 3 -->
+<div class="flex items-center gap-md p-sm bg-surface/80 backdrop-blur-sm rounded-lg border border-outline-variant/30 hover:shadow-md transition-shadow cursor-pointer group animate-slide-in delay-300">
+<div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center text-on-surface-variant group-hover:bg-primary-container group-hover:text-primary transition-colors">
+<span class="material-symbols-outlined">data_usage</span>
+</div>
+<div class="flex-1">
+<h4 class="font-title-md text-body-md text-on-surface">Hypothesis Testing</h4>
+<p class="font-label-sm text-label-sm text-outline">Advanced Stats • Not Started</p>
+</div>
+<span class="material-symbols-outlined text-outline group-hover:text-primary transition-colors ml-auto">play_circle</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom spacing for mobile nav if needed -->
+<div class="h-24 lg:h-8"></div>
+</main>
+<script>
+    // Three.js Animation for Stats Card
+    document.addEventListener("DOMContentLoaded", () => {
+        const container = document.getElementById('three-container');
+        if(container && typeof THREE !== 'undefined') {
+            const width = container.clientWidth || 300;
+            const height = container.clientHeight || 120;
+
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            renderer.setSize(width, height);
+            container.appendChild(renderer.domElement);
+
+            // Floating Geometric Objects
+            const geometries = [
+                new THREE.BoxGeometry(1, 1, 1),
+                new THREE.SphereGeometry(0.7, 32, 32),
+                new THREE.ConeGeometry(0.7, 1.2, 32)
+            ];
+
+            const material = new THREE.MeshPhongMaterial({ 
+                color: 0x3B82F6, 
+                shininess: 100,
+                transparent: true,
+                opacity: 0.8
+            });
+
+            const meshes = [];
+            for (let i = 0; i < 5; i++) {
+                const mesh = new THREE.Mesh(geometries[Math.floor(Math.random() * geometries.length)], material);
+                mesh.position.set(Math.random() * 10 - 5, Math.random() * 10 - 5, Math.random() * -10);
+                scene.add(mesh);
+                meshes.push({
+                    mesh,
+                    rotSpeed: Math.random() * 0.02,
+                    floatSpeed: Math.random() * 0.01
+                });
+            }
+
+            const light = new THREE.DirectionalLight(0xffffff, 1);
+            light.position.set(5, 5, 5);
+            scene.add(light);
+            scene.add(new THREE.AmbientLight(0x404040));
+
+            camera.position.z = 5;
+
+            function animate() {
+                requestAnimationFrame(animate);
+                meshes.forEach(m => {
+                    m.mesh.rotation.x += m.rotSpeed;
+                    m.mesh.rotation.y += m.rotSpeed;
+                    m.mesh.position.y += Math.sin(Date.now() * m.floatSpeed) * 0.01;
+                });
+                renderer.render(scene, camera);
+            }
+
+            window.addEventListener('resize', () => {
+                const w = container.clientWidth || 300;
+                const h = container.clientHeight || 120;
+                renderer.setSize(w, h);
+                camera.aspect = w / h;
+                camera.updateProjectionMatrix();
+            });
+
+            animate();
+        }
+    });
+</script>
+<script>
+    // Background Shader Setup
+    const canvas = document.getElementById('bg-canvas');
+    const gl = canvas.getContext('webgl');
+
+    if (gl) {
+        // Vertex Shader
+        const vsSource = `
+            attribute vec4 a_position;
+            varying vec2 v_texCoord;
+            void main() {
+                gl_Position = a_position;
+                v_texCoord = a_position.xy * 0.5 + 0.5;
+            }
+        `;
+
+        // Fragment Shader (from ANIMATION_113)
+        const fsSource = `
+            precision highp float;
+            varying vec2 v_texCoord;
+            uniform float u_time;
+            uniform vec2 u_resolution;
+
+            void main() {
+                vec2 uv = v_texCoord;
+                vec3 color1 = vec3(0.23, 0.51, 0.96); // Bright Azure
+                vec3 color2 = vec3(0.96, 0.62, 0.04); // Playful Amber
+                
+                // Very slow and elegant movement (scaled down u_time)
+                float t = u_time * 0.2; 
+                float noise = sin(uv.x * 3.0 + t) * cos(uv.y * 3.0 - t) * 0.5 + 0.5;
+                vec3 finalColor = mix(color1, color2, noise * 0.3);
+                
+                // Keep opacity low for professional background look
+                gl_FragColor = vec4(finalColor, 0.05); 
+            }
+        `;
+
+        function compileShader(gl, type, source) {
+            const shader = gl.createShader(type);
+            gl.shaderSource(shader, source);
+            gl.compileShader(shader);
+            return shader;
+        }
+
+        const vertexShader = compileShader(gl, gl.VERTEX_SHADER, vsSource);
+        const fragmentShader = compileShader(gl, gl.FRAGMENT_SHADER, fsSource);
+
+        const program = gl.createProgram();
+        gl.attachShader(program, vertexShader);
+        gl.attachShader(program, fragmentShader);
+        gl.linkProgram(program);
+        gl.useProgram(program);
+
+        const positionBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+            -1.0, -1.0,
+             1.0, -1.0,
+            -1.0,  1.0,
+            -1.0,  1.0,
+             1.0, -1.0,
+             1.0,  1.0,
+        ]), gl.STATIC_DRAW);
+
+        const positionLocation = gl.getAttribLocation(program, "a_position");
+        gl.enableVertexAttribArray(positionLocation);
+        gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
+
+        const timeLocation = gl.getUniformLocation(program, "u_time");
+        const resolutionLocation = gl.getUniformLocation(program, "u_resolution");
+
+        function resizeCanvasToDisplaySize(canvas) {
+            const displayWidth  = canvas.clientWidth;
+            const displayHeight = canvas.clientHeight;
+            if (canvas.width  !== displayWidth || canvas.height !== displayHeight) {
+                canvas.width  = displayWidth;
+                canvas.height = displayHeight;
+            }
+        }
+
+        function render(time) {
+            time *= 0.001; // Convert to seconds
+            resizeCanvasToDisplaySize(gl.canvas);
+            gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+
+            gl.uniform1f(timeLocation, time);
+            gl.uniform2f(resolutionLocation, gl.canvas.width, gl.canvas.height);
+
+            gl.drawArrays(gl.TRIANGLES, 0, 6);
+            requestAnimationFrame(render);
+        }
+        requestAnimationFrame(render);
+    }
+</script>
+</body></html>

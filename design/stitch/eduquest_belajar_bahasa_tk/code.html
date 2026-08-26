@@ -1,0 +1,361 @@
+<!DOCTYPE html><html lang="id"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>AksiCendekia - Belajar Bahasa Inggris (TK)</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@600;700&amp;family=Inter:wght@400;600&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-tertiary-fixed-variant": "#005236",
+                      "on-tertiary": "#ffffff",
+                      "on-secondary-container": "#684000",
+                      "on-background": "#0b1c30",
+                      "on-primary": "#ffffff",
+                      "surface": "#f8f9ff",
+                      "error": "#ba1a1a",
+                      "inverse-on-surface": "#eaf1ff",
+                      "secondary-container": "#fea619",
+                      "surface-tint": "#005ac2",
+                      "outline": "#727785",
+                      "tertiary-container": "#00855b",
+                      "on-error-container": "#93000a",
+                      "surface-container-highest": "#d3e4fe",
+                      "tertiary-fixed": "#6ffbbe",
+                      "inverse-surface": "#213145",
+                      "error-container": "#ffdad6",
+                      "secondary-fixed-dim": "#ffb95f",
+                      "tertiary-fixed-dim": "#4edea3",
+                      "on-surface": "#0b1c30",
+                      "background": "#f8f9ff",
+                      "on-tertiary-fixed": "#002113",
+                      "on-primary-container": "#fefcff",
+                      "outline-variant": "#c2c6d6",
+                      "surface-container": "#e5eeff",
+                      "surface-dim": "#cbdbf5",
+                      "on-error": "#ffffff",
+                      "on-secondary-fixed-variant": "#653e00",
+                      "inverse-primary": "#adc6ff",
+                      "surface-container-lowest": "#ffffff",
+                      "on-tertiary-container": "#f5fff6",
+                      "primary-container": "#2170e4",
+                      "surface-bright": "#f8f9ff",
+                      "on-secondary-fixed": "#2a1700",
+                      "primary-fixed": "#d8e2ff",
+                      "tertiary": "#006947",
+                      "surface-variant": "#d3e4fe",
+                      "surface-container-low": "#eff4ff",
+                      "surface-container-high": "#dce9ff",
+                      "on-secondary": "#ffffff",
+                      "on-primary-fixed": "#001a42",
+                      "secondary-fixed": "#ffddb8",
+                      "primary-fixed-dim": "#adc6ff",
+                      "primary": "#0058be",
+                      "on-primary-fixed-variant": "#004395",
+                      "secondary": "#855300",
+                      "on-surface-variant": "#424754"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "xs": "4px",
+                      "base": "8px",
+                      "lg": "48px",
+                      "xl": "64px",
+                      "sm": "12px",
+                      "md": "24px",
+                      "container-max": "1200px",
+                      "gutter": "20px"
+              },
+              "fontFamily": {
+                      "display-lg": [
+                              "Quicksand"
+                      ],
+                      "headline-lg": [
+                              "Quicksand"
+                      ],
+                      "title-md": [
+                              "Quicksand"
+                      ],
+                      "headline-lg-mobile": [
+                              "Quicksand"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "label-sm": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "56px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "title-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "28px",
+                              {
+                                      "lineHeight": "36px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "fontWeight": "600"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+    </script>
+<style>
+        /* Modern Tactile Squishy Effects */
+        .squishy-card {
+            transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.15s ease;
+        }
+        .squishy-card:active {
+            transform: translateY(4px) scale(0.98);
+            box-shadow: 0 0 0 0 rgba(0,0,0,0);
+        }
+        .thick-border-bottom {
+            border-bottom-width: 6px;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen overflow-x-hidden selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopNavBar (Web & Mobile Hybrid anchor) -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-gutter h-20 max-w-container-max mx-auto bg-background shadow-sm">
+<div class="flex items-center gap-md">
+<span class="font-display-lg text-display-lg font-bold text-primary dark:text-primary-fixed-dim">AksiCendekia</span>
+</div>
+<div class="hidden md:flex gap-md">
+<div class="flex flex-col items-center justify-center cursor-pointer text-primary border-b-4 border-primary pb-1">
+<span class="material-symbols-outlined mb-xs" style="font-variation-settings: 'FILL' 1;">child_care</span>
+<span class="font-label-sm text-label-sm">TK (Preschool)</span>
+</div>
+<div class="flex flex-col items-center justify-center cursor-pointer text-on-surface-variant hover:text-primary-container transition-colors duration-200 pb-1">
+<span class="material-symbols-outlined mb-xs">school</span>
+<span class="font-label-sm text-label-sm">SD (Elementary)</span>
+</div>
+<div class="flex flex-col items-center justify-center cursor-pointer text-on-surface-variant hover:text-primary-container transition-colors duration-200 pb-1">
+<span class="material-symbols-outlined mb-xs">menu_book</span>
+<span class="font-label-sm text-label-sm">SMP (Junior High)</span>
+</div>
+<div class="flex flex-col items-center justify-center cursor-pointer text-on-surface-variant hover:text-primary-container transition-colors duration-200 pb-1">
+<span class="material-symbols-outlined mb-xs">functions</span>
+<span class="font-label-sm text-label-sm">SMA (Senior High)</span>
+</div>
+</div>
+<div class="flex gap-sm">
+<button class="p-xs text-primary rounded-full hover:bg-surface-container-low transition-colors duration-200 squishy-card">
+<span class="material-symbols-outlined">local_fire_department</span>
+</button>
+<button class="p-xs text-primary rounded-full hover:bg-surface-container-low transition-colors duration-200 squishy-card">
+<span class="material-symbols-outlined">monetization_on</span>
+</button>
+<button class="p-xs text-primary rounded-full hover:bg-surface-container-low transition-colors duration-200 squishy-card">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</div>
+</header>
+<!-- SideNavBar (Desktop) -->
+<nav class="hidden lg:flex flex-col fixed left-0 top-0 h-screen p-md z-40 bg-surface shadow-md w-64 rounded-r-xl border-r-0 mt-20 pt-lg">
+<div class="mb-lg px-xs">
+<div class="flex items-center gap-sm mb-xs">
+<div class="w-12 h-12 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container font-bold text-lg">
+                      MQ
+                  </div>
+<div>
+<h3 class="font-title-md text-title-md text-on-surface">AksiCendekia Explorer</h3>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Level 12 • 450 XP</p>
+</div>
+</div>
+</div>
+<div class="flex-1 flex flex-col gap-xs">
+<a class="flex items-center gap-sm p-sm bg-primary-container text-on-primary-container rounded-xl font-bold shadow-[0_4px_0_0_rgba(0,0,0,0.1)] hover:translate-x-1 transition-all duration-200 squishy-card group" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">child_care</span>
+<span class="font-title-md text-title-md text-[18px]">TK (Preschool)</span>
+</a>
+<a class="flex items-center gap-sm p-sm text-on-surface-variant hover:bg-surface-variant rounded-xl hover:translate-x-1 transition-all duration-200 group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary">school</span>
+<span class="font-title-md text-title-md text-[18px] group-hover:text-primary">SD (Elementary)</span>
+</a>
+<a class="flex items-center gap-sm p-sm text-on-surface-variant hover:bg-surface-variant rounded-xl hover:translate-x-1 transition-all duration-200 group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary">menu_book</span>
+<span class="font-title-md text-title-md text-[18px] group-hover:text-primary">SMP (Junior High)</span>
+</a>
+<a class="flex items-center gap-sm p-sm text-on-surface-variant hover:bg-surface-variant rounded-xl hover:translate-x-1 transition-all duration-200 group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary">functions</span>
+<span class="font-title-md text-title-md text-[18px] group-hover:text-primary">SMA (Senior High)</span>
+</a>
+</div>
+<div class="mt-auto flex flex-col gap-xs border-t border-outline-variant pt-sm">
+<a class="flex items-center gap-sm p-sm text-on-surface-variant hover:bg-surface-variant rounded-xl hover:translate-x-1 transition-all duration-200 group" href="#">
+<span class="material-symbols-outlined">emoji_events</span>
+<span class="font-label-sm text-label-sm">Achievements</span>
+</a>
+<a class="flex items-center gap-sm p-sm text-on-surface-variant hover:bg-surface-variant rounded-xl hover:translate-x-1 transition-all duration-200 group" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-sm text-label-sm">Settings</span>
+</a>
+<button class="mt-sm w-full py-sm px-md bg-secondary-container text-on-secondary-container font-title-md text-title-md text-[16px] rounded-full thick-border-bottom border-on-secondary-fixed squishy-card shadow-[0_4px_8px_rgba(0,0,0,0.1)]">
+                Upgrade to Pro
+            </button>
+</div>
+</nav>
+<!-- Main Canvas -->
+<main class="pt-24 pb-20 lg:ml-64 px-4 md:px-gutter max-w-container-max mx-auto min-h-screen flex flex-col">
+<!-- Page Header -->
+<div class="mb-lg flex flex-col md:flex-row justify-between items-start md:items-end gap-sm">
+<div>
+<p class="font-label-sm text-label-sm text-tertiary font-bold tracking-wider uppercase mb-xs">Dunia Kata - TK</p>
+<h1 class="font-display-lg text-headline-lg-mobile md:text-display-lg text-on-background">Mari Belajar Bahasa Inggris!</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant mt-xs max-w-2xl">Ayo bermain sambil belajar mengenal warna dan hewan dalam bahasa Inggris yang menyenangkan.</p>
+</div>
+<!-- Progress Bar -->
+<div class="w-full md:w-64 bg-surface-container-high rounded-full h-4 overflow-hidden shadow-inner relative">
+<div class="absolute top-0 left-0 h-full bg-gradient-to-r from-primary to-tertiary-fixed rounded-full w-2/3" style="transition: width 1s ease-in-out;"></div>
+<div class="absolute inset-0 flex items-center justify-center">
+<span class="font-label-sm text-[10px] text-white font-bold drop-shadow-md">66% Selesai</span>
+</div>
+</div>
+</div>
+<!-- Bento Grid Layout for Activities -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-sm md:gap-md flex-1 mb-lg">
+<!-- Large Hero Card: Learning Colors -->
+<div class="md:col-span-8 bg-surface rounded-xl border border-outline-variant p-md shadow-[0_4px_8px_rgba(0,88,190,0.1)] relative overflow-hidden flex flex-col h-[400px]">
+<!-- Decorative background elements -->
+<div class="absolute -right-20 -top-20 w-64 h-64 bg-error-container rounded-full opacity-50 blur-3xl"></div>
+<div class="absolute -left-10 -bottom-10 w-48 h-48 bg-primary-fixed rounded-full opacity-50 blur-2xl"></div>
+<div class="relative z-10 flex flex-col h-full">
+<div class="flex justify-between items-center mb-md">
+<div class="flex items-center gap-sm">
+<div class="w-10 h-10 bg-error rounded-full flex items-center justify-center text-white shadow-md">
+<span class="material-symbols-outlined">palette</span>
+</div>
+<h2 class="font-title-md text-title-md text-on-surface">Learning Colors</h2>
+</div>
+<span class="bg-surface-variant text-on-surface-variant font-label-sm text-label-sm px-sm py-xs rounded-full">Unit 1</span>
+</div>
+<div class="flex-1 flex flex-col items-center justify-center text-center">
+<img class="w-48 h-48 object-contain mb-sm" data-alt="A highly detailed, vibrant digital illustration of cute, anthropomorphic paint splatters with friendly faces, in bright primary colors (red, blue, yellow). They are playfully jumping around an oversized, wooden painter's palette. The background is a clean, bright white studio setting with soft, bouncy lighting typical of high-end educational games. The overall style is 3D rendered, playful, energetic, and highly polished." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAp1KvofpAwBIuo4Q9VaQ1xszlkPjJdaRSi1z2Kl7oGIUA_dnupY6PlHEBLmYdd5bVpe2j9VMM4MbA8U5wlS5N_iYz55H5LcRAYH3mtk4GzA5Xbc1_17DIX4bxltE_k1ESGPXeXBnW23mO_6M40qP0I5LkYcsgVrJRkB1f66AJKQ30KBjlpowyf-aS0AaO_p7PNTN1N3orJhDDdR9Ic_UxGtg5uO6MepYWS_A1pXFvhmd4vZ8vhFR9hxQ">
+<h3 class="font-headline-lg text-headline-lg-mobile text-on-surface mb-xs">Warnai Dunia!</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Temukan warna merah, biru, dan kuning hari ini.</p>
+</div>
+<button class="mt-auto w-full py-md bg-primary text-on-primary font-title-md text-title-md rounded-xl thick-border-bottom border-on-primary-fixed-variant squishy-card shadow-[0_4px_12px_rgba(0,88,190,0.3)] hover:bg-surface-tint">
+                        Mulai Main (Play)
+                    </button>
+</div>
+</div>
+<!-- Side Card Stack -->
+<div class="md:col-span-4 flex flex-col gap-sm md:gap-md">
+<!-- Animal Names Card -->
+<div class="flex-1 bg-surface rounded-xl border border-outline-variant p-md shadow-[0_4px_8px_rgba(0,88,190,0.1)] relative overflow-hidden flex flex-col justify-between cursor-pointer squishy-card group hover:border-tertiary transition-colors">
+<div class="absolute -right-10 -bottom-10 w-32 h-32 bg-tertiary-fixed rounded-full opacity-30 blur-xl"></div>
+<div class="relative z-10">
+<div class="flex items-center gap-xs mb-sm">
+<span class="material-symbols-outlined text-tertiary">pets</span>
+<h2 class="font-title-md text-[18px] text-on-surface">Animal Names</h2>
+</div>
+<div class="flex justify-center mb-sm">
+<img class="w-32 h-32 object-cover rounded-lg shadow-sm transform group-hover:scale-105 transition-transform" data-alt="A stylized 3D render of a cute, fluffy golden retriever puppy sitting attentively next to a small orange kitten. The animals have exaggerated, friendly eyes and soft, tactile textures reminiscent of high-quality plush toys. They are sitting on a simple, flat pastel green surface against a clean, light-mode background. The lighting is soft, warm, and inviting, creating an educational and safe atmosphere." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCLISdduCenaqcypBr2nSw43cBWYpLkrIpM2VS9qNLlIT22GtxqrtHs809ChbEoZiJeVTGGpSXHERtfPaGzTey6S60VARiMO-dvULAUAvFYjCfVLqjUveQik59JrucI4p7TpCy4DCJbGWk50lSwveTveUt2-MGzzbitNT4cC_vtwmh6j-sw0y_SpvwqDSqsL55mHMSgniamfrndKady82UjNZw7k2WvzgOU8U-PGB4qIw-nwB0vR5eB1w">
+</div>
+<p class="font-body-md text-[14px] text-on-surface-variant text-center">Kenal nama hewan dalam bahasa Inggris.</p>
+</div>
+</div>
+<!-- Daily Challenge Mini Card -->
+<div class="bg-secondary-fixed rounded-xl border border-secondary-fixed-dim p-md shadow-sm relative overflow-hidden cursor-pointer squishy-card">
+<div class="flex items-center justify-between z-10 relative">
+<div>
+<p class="font-label-sm text-label-sm text-secondary uppercase tracking-widest font-bold">Tantangan Harian</p>
+<h3 class="font-title-md text-[18px] text-on-secondary-container mt-xs">Ucapkan 3 Kata</h3>
+</div>
+<div class="w-12 h-12 bg-white rounded-full flex items-center justify-center text-secondary-container shadow-sm border-2 border-secondary-fixed-dim">
+<span class="material-symbols-outlined text-[28px]">mic</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom Mascot Hint (Tablet/Desktop) -->
+<div class="hidden md:flex items-end gap-md absolute bottom-10 right-10">
+<div class="bg-surface p-sm rounded-2xl rounded-br-none shadow-md border border-outline-variant max-w-xs relative animate-bounce" style="animation-duration: 3s;">
+<p class="font-body-md text-[14px] text-on-surface">"Pilih kartu yang bersinar untuk mulai belajar, teman kecil!"</p>
+<div class="absolute bottom-0 right-0 transform translate-y-full translate-x-2 w-4 h-4 bg-surface border-b border-r border-outline-variant rotate-45"></div>
+</div>
+<img class="w-24 h-24 object-contain drop-shadow-xl" data-alt="A highly detailed, 3D rendered cute robot owl mascot designed for a children's educational app. The owl has a sleek white plastic body with soft glowing blue accents and large, expressive digital eyes displaying a friendly smile. It is hovering slightly above the ground using small anti-gravity thrusters. The lighting is bright and studio-quality, emphasizing the smooth, tactile materials of the character against a plain background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBg_AReDjICtmOZTcSaZ-JGd7zV05BLx9wAPXf1Nxkb5kavVQlKU29U9nUbKWAsgx33d_LOURoLXrpctIUuJJhcW0fzQT-tNiN-lhXhPhH-CoFPZhtyBG4lHlfa-P-V08QkiY_vg_fvAjAdy5iiGB-uGwOtJEzgRCpfUQtCtH-no5_tMdKkvHKofHpI_mXuwnUQQ2K02oLkEY6lp3po1wgM4e1cwj9uQOdyS5cvS2JYLjdQ22yIkVinNA">
+</div>
+</main>
+<!-- Bottom Navigation Bar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 w-full z-50 bg-surface border-t border-outline-variant flex justify-around items-center h-16 px-xs shadow-[0_-2px_10px_rgba(0,0,0,0.05)] pb-safe">
+<a class="flex flex-col items-center justify-center w-full h-full text-primary" href="#">
+<div class="bg-primary-container px-lg py-xs rounded-full mb-xs">
+<span class="material-symbols-outlined text-on-primary-container" style="font-variation-settings: 'FILL' 1;">child_care</span>
+</div>
+<span class="font-label-sm text-[10px] font-bold">TK</span>
+</a>
+<a class="flex flex-col items-center justify-center w-full h-full text-on-surface-variant hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined mb-xs">school</span>
+<span class="font-label-sm text-[10px]">SD</span>
+</a>
+<a class="flex flex-col items-center justify-center w-full h-full text-on-surface-variant hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined mb-xs">emoji_events</span>
+<span class="font-label-sm text-[10px]">Prestasi</span>
+</a>
+<a class="flex flex-col items-center justify-center w-full h-full text-on-surface-variant hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined mb-xs">account_circle</span>
+<span class="font-label-sm text-[10px]">Profil</span>
+</a>
+</nav>
+<!-- Padding for mobile bottom nav -->
+<div class="h-16 md:hidden"></div>
+
+
+</body></html>

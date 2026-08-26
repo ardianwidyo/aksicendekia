@@ -1,0 +1,382 @@
+<!DOCTYPE html><html lang="id"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>AksiCendekia - SD Science Explorer</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-fixed-variant": "#005236",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary-container": "#684000",
+                        "on-background": "#0b1c30",
+                        "on-primary": "#ffffff",
+                        "surface": "#f8f9ff",
+                        "error": "#ba1a1a",
+                        "inverse-on-surface": "#eaf1ff",
+                        "secondary-container": "#fea619",
+                        "surface-tint": "#005ac2",
+                        "outline": "#727785",
+                        "tertiary-container": "#00855b",
+                        "on-error-container": "#93000a",
+                        "surface-container-highest": "#d3e4fe",
+                        "tertiary-fixed": "#6ffbbe",
+                        "inverse-surface": "#213145",
+                        "error-container": "#ffdad6",
+                        "secondary-fixed-dim": "#ffb95f",
+                        "tertiary-fixed-dim": "#4edea3",
+                        "on-surface": "#0b1c30",
+                        "background": "#f8f9ff",
+                        "on-tertiary-fixed": "#002113",
+                        "on-primary-container": "#fefcff",
+                        "outline-variant": "#c2c6d6",
+                        "surface-container": "#e5eeff",
+                        "surface-dim": "#cbdbf5",
+                        "on-error": "#ffffff",
+                        "on-secondary-fixed-variant": "#653e00",
+                        "inverse-primary": "#adc6ff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-container": "#f5fff6",
+                        "primary-container": "#2170e4",
+                        "surface-bright": "#f8f9ff",
+                        "on-secondary-fixed": "#2a1700",
+                        "primary-fixed": "#d8e2ff",
+                        "tertiary": "#006947",
+                        "surface-variant": "#d3e4fe",
+                        "surface-container-low": "#eff4ff",
+                        "surface-container-high": "#dce9ff",
+                        "on-secondary": "#ffffff",
+                        "on-primary-fixed": "#001a42",
+                        "secondary-fixed": "#ffddb8",
+                        "primary-fixed-dim": "#adc6ff",
+                        "primary": "#0058be",
+                        "on-primary-fixed-variant": "#004395",
+                        "secondary": "#855300",
+                        "on-surface-variant": "#424754"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xs": "4px",
+                        "base": "8px",
+                        "lg": "48px",
+                        "xl": "64px",
+                        "sm": "12px",
+                        "md": "24px",
+                        "container-max": "1200px",
+                        "gutter": "20px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Quicksand"],
+                        "headline-lg": ["Quicksand"],
+                        "title-md": ["Quicksand"],
+                        "headline-lg-mobile": ["Quicksand"],
+                        "body-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
+                        "title-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "36px", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { background-color: #f8f9ff; }
+        .hero-banner {
+            background: linear-gradient(135deg, rgba(33,112,228,0.1) 0%, rgba(0,133,91,0.1) 100%);
+        }
+        .quest-node {
+            transition: all 0.2s ease;
+        }
+        .quest-node:hover {
+            transform: translateY(-4px) scale(1.05);
+        }
+    </style>
+</head>
+<body class="text-on-background font-body-md antialiased overflow-x-hidden">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 flex justify-between items-center px-gutter h-20 max-w-container-max mx-auto bg-background shadow-sm lg:pl-[280px]">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined lg:hidden cursor-pointer text-primary" data-icon="menu" style="font-variation-settings: 'FILL' 0;">menu</span>
+<div class="font-display-lg text-display-lg font-bold text-primary lg:hidden">AksiCendekia</div>
+<div class="hidden lg:block font-title-md text-title-md font-bold text-on-surface">Misi Sains: SD</div>
+</div>
+<div class="flex items-center gap-md">
+<div class="flex items-center gap-xs cursor-pointer hover:text-primary-container transition-colors duration-200">
+<span class="material-symbols-outlined text-secondary-container" data-icon="local_fire_department" data-weight="fill" style="font-variation-settings: 'FILL' 1;">local_fire_department</span>
+<span class="font-label-sm text-label-sm font-bold">12</span>
+</div>
+<div class="flex items-center gap-xs cursor-pointer hover:text-primary-container transition-colors duration-200">
+<span class="material-symbols-outlined text-secondary-container" data-icon="monetization_on" data-weight="fill" style="font-variation-settings: 'FILL' 1;">monetization_on</span>
+<span class="font-label-sm text-label-sm font-bold">450</span>
+</div>
+<div class="w-10 h-10 rounded-full bg-surface-variant flex items-center justify-center cursor-pointer hover:scale-95 transition-transform duration-150 border-2 border-primary">
+<img alt="Student Profile Avatar" class="w-full h-full object-cover rounded-full" data-alt="A stylized 3D avatar of a young student wearing an explorer's hat and a backpack, set against a bright solid blue background. The aesthetic is cheerful, educational, and modern tactile, with soft lighting and vibrant colors suitable for a kids learning app." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDh8fhDJJqPxI_OLEuXiQpf9jtDvf0gUv221-lnjfnsu2wIKPItpn9KINmYr6G38UFyRe_H_vMk8hZDkxqSYyv8X8gWp0XvpXeQsof9gt8RJsHsZgDc1jneLRncqL_Qyp84bKnJYBozikl95uXs2xMCZRdJ6-WsXktpAt80iC115EqkVjH3TFLjCCRc_goQ4mIw7D0r2I6LuWk6krMbwprLlBgcUSfup1ilvzgby9yt1IYMgzCu5s9gjQ">
+</div>
+</div>
+</nav>
+<!-- SideNavBar -->
+<aside class="hidden lg:flex flex-col fixed left-0 top-0 h-screen p-md z-40 w-64 rounded-r-xl bg-surface shadow-md border-r border-surface-container-low">
+<div class="mb-lg">
+<div class="font-display-lg text-display-lg text-primary mb-sm">AksiCendekia</div>
+<div class="flex items-center gap-sm p-sm bg-surface-container-low rounded-xl">
+<img alt="Student Profile Avatar" class="w-12 h-12 object-cover rounded-full border-2 border-primary" data-alt="A stylized 3D avatar of a young student wearing an explorer's hat and a backpack, set against a bright solid blue background. The aesthetic is cheerful, educational, and modern tactile, with soft lighting and vibrant colors suitable for a kids learning app." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDBeUshsx4MqZg3h2oLMlau8Puhhd0jJXiM5LN7dz32wJ00Z5YDtDxtVuzMpy93HjmRfsWnnsaHj2cYfAKwpY9JNOZWDtpiFPtRHxH2BLgfjEZGFYIBPgxA094eRXgfgtg2qzJFqMqzrADRykTiFLv_EqZWa-kjJg2nltxCV9yrKSQcbdVnQdfzXvLP3k7Ow_QjxAQD76wZWiKbPTU4r6EuLJ2N4UCq6CExon3o5B3HfIPdGdNX75D21g">
+<div>
+<div class="font-label-sm text-label-sm font-bold text-on-surface">AksiCendekia Explorer</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant">Level 12 • 450 XP</div>
+</div>
+</div>
+</div>
+<nav class="flex-1 flex flex-col gap-sm">
+<a class="flex items-center gap-sm p-sm text-on-surface-variant hover:bg-surface-variant rounded-xl transition-all duration-200 hover:translate-x-1" href="#">
+<span class="material-symbols-outlined" data-icon="child_care">child_care</span>
+<span class="font-title-md text-title-md text-base">TK (Preschool)</span>
+</a>
+<a class="flex items-center gap-sm p-sm bg-primary-container text-on-primary-container rounded-xl font-bold shadow-[0_4px_0_0_rgba(0,0,0,0.1)] translate-y-1 transition-transform duration-100" href="#">
+<span class="material-symbols-outlined" data-icon="school" data-weight="fill" style="font-variation-settings: 'FILL' 1;">school</span>
+<span class="font-title-md text-title-md text-base">SD (Elementary)</span>
+</a>
+<a class="flex items-center gap-sm p-sm text-on-surface-variant hover:bg-surface-variant rounded-xl transition-all duration-200 hover:translate-x-1" href="#">
+<span class="material-symbols-outlined" data-icon="menu_book">menu_book</span>
+<span class="font-title-md text-title-md text-base">SMP (Junior High)</span>
+</a>
+<a class="flex items-center gap-sm p-sm text-on-surface-variant hover:bg-surface-variant rounded-xl transition-all duration-200 hover:translate-x-1" href="#">
+<span class="material-symbols-outlined" data-icon="functions">functions</span>
+<span class="font-title-md text-title-md text-base">SMA (Senior High)</span>
+</a>
+</nav>
+<div class="mt-auto flex flex-col gap-sm border-t border-outline-variant pt-md">
+<a class="flex items-center gap-sm p-sm text-on-surface-variant hover:bg-surface-variant rounded-xl transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="emoji_events">emoji_events</span>
+<span class="font-label-sm text-label-sm">Achievements</span>
+</a>
+<a class="flex items-center gap-sm p-sm text-on-surface-variant hover:bg-surface-variant rounded-xl transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-label-sm text-label-sm">Settings</span>
+</a>
+<button class="mt-sm w-full py-sm bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-bold rounded-lg shadow-[0_4px_0_0_rgba(133,83,0,0.2)] hover:brightness-105 active:shadow-none active:translate-y-1 transition-all">
+                Upgrade to Pro
+            </button>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="pt-24 pb-md px-gutter lg:pl-[280px] max-w-container-max mx-auto min-h-screen">
+<!-- Hero Section -->
+<div class="hero-banner rounded-xl p-md md:p-lg mb-lg relative overflow-hidden flex flex-col md:flex-row items-center justify-between border border-primary-fixed-dim">
+<div class="z-10 w-full md:w-2/3 mb-md md:mb-0">
+<div class="inline-flex items-center gap-xs bg-tertiary-container text-on-tertiary-container px-sm py-xs rounded-full font-label-sm text-label-sm mb-sm">
+<span class="material-symbols-outlined text-[16px]" data-icon="explore">explore</span>
+                    Ekspedisi Alam Liar
+                </div>
+<h1 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface mb-sm">Halo Penjelajah Muda!</h1>
+<p class="font-body-md text-body-md text-on-surface-variant mb-md max-w-lg">
+                    Siap untuk petualangan hari ini? Hutan Pengetahuan menyimpan banyak rahasia tentang tumbuhan dan hewan. Kumpulkan lencana dan jadilah Ahli Biologi!
+                </p>
+<button class="bg-primary text-on-primary px-lg py-sm rounded-lg font-title-md text-base font-bold shadow-[0_4px_0_0_rgba(0,67,149,1)] hover:brightness-110 active:shadow-none active:translate-y-1 transition-all inline-flex items-center gap-xs">
+<span class="material-symbols-outlined" data-icon="play_arrow" data-weight="fill" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+                    Lanjutkan Misi
+                </button>
+</div>
+<div class="w-full md:w-1/3 relative flex justify-center">
+<div class="w-48 h-48 bg-primary-container rounded-full opacity-20 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 blur-2xl"></div>
+<img alt="Mascot" class="w-40 h-40 object-contain z-10 animate-bounce" data-alt="A 3D rendering of a cute, friendly explorer monkey mascot holding a magnifying glass. The monkey is wearing a safari hat and standing on a small patch of bright green grass with a cartoonish fern leaf. The style is modern tactile, vibrant, educational, and suitable for a kids' app, with a clean light background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCMPkdsmOtgq2zm3iIN5bsQpgrHnEmmHaRjl2A_ife-ecnoCx2Mya_fE7-Dbg0P6KCwQfBWHFxGC5HqSza_ID6DOYu1_7xEL4mjqz8UURaCGNTRK89r9eCxNZlBJqEzludWkTnnF5_zHQLKv70wBqPWVGXGbmV48zmLAn80KjAySiHOjd7MJBpA5Y_VNiSoKCV3SEJzGtHRhFk0KoMFx1tV2Ml8T6mkFeEwYPpS4jXqVRJqG-nPx4Kq5g" style="animation-duration: 3s;">
+</div>
+</div>
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-lg">
+<!-- Left Column: Quest Map & Challenge -->
+<div class="xl:col-span-2 flex flex-col gap-lg">
+<!-- Daily Challenge -->
+<section class="bg-surface rounded-xl p-md border border-surface-container-highest shadow-sm relative overflow-hidden">
+<div class="absolute top-0 right-0 w-32 h-32 bg-secondary-container opacity-10 rounded-bl-full -z-0"></div>
+<div class="flex items-center justify-between mb-md relative z-10">
+<div class="flex items-center gap-sm">
+<div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container">
+<span class="material-symbols-outlined" data-icon="star" data-weight="fill" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<h2 class="font-title-md text-title-md text-on-surface">Tantangan Harian</h2>
+</div>
+<span class="font-label-sm text-label-sm text-secondary font-bold bg-secondary-fixed px-sm py-xs rounded-full">Sisa waktu: 14j 20m</span>
+</div>
+<div class="bg-surface-bright border border-outline-variant rounded-lg p-md mb-sm shadow-[0_2px_0_0_rgba(194,198,214,0.5)]">
+<h3 class="font-body-lg text-body-lg font-bold text-on-surface mb-xs">Misteri Fotosintesis</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-md">
+                            Bantu Profesor Daun menemukan bahan utama yang dibutuhkan tanaman untuk membuat makanan mereka sendiri. 
+                        </p>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-sm">
+<button class="bg-surface border-2 border-outline-variant rounded-lg p-sm flex flex-col items-center justify-center gap-xs hover:border-primary hover:bg-primary-fixed transition-colors">
+<span class="material-symbols-outlined text-[32px] text-tertiary" data-icon="water_drop">water_drop</span>
+<span class="font-label-sm text-label-sm font-bold">Air</span>
+</button>
+<button class="bg-surface border-2 border-outline-variant rounded-lg p-sm flex flex-col items-center justify-center gap-xs hover:border-primary hover:bg-primary-fixed transition-colors">
+<span class="material-symbols-outlined text-[32px] text-secondary-container" data-icon="light_mode">light_mode</span>
+<span class="font-label-sm text-label-sm font-bold">Cahaya</span>
+</button>
+<button class="bg-surface border-2 border-outline-variant rounded-lg p-sm flex flex-col items-center justify-center gap-xs hover:border-primary hover:bg-primary-fixed transition-colors">
+<span class="material-symbols-outlined text-[32px] text-on-surface-variant" data-icon="air">air</span>
+<span class="font-label-sm text-label-sm font-bold">Oksigen</span>
+</button>
+<button class="bg-surface border-2 border-outline-variant rounded-lg p-sm flex flex-col items-center justify-center gap-xs hover:border-primary hover:bg-primary-fixed transition-colors">
+<span class="material-symbols-outlined text-[32px] text-error" data-icon="volcano">volcano</span>
+<span class="font-label-sm text-label-sm font-bold">Api</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Quest Map -->
+<section>
+<h2 class="font-title-md text-title-md text-on-surface mb-md">Peta Penjelajahan</h2>
+<div class="bg-surface-container-low rounded-xl p-md border border-surface-container-high h-[400px] relative overflow-hidden flex items-center justify-center shadow-inner">
+<!-- Abstract Path SVG Background -->
+<div class="absolute inset-0 opacity-20" style="background-image: url('data:image/svg+xml,%3Csvg width=\'100%25\' height=\'100%25\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cpath d=\'M 100 300 Q 250 100, 400 250 T 700 150\' fill=\'none\' stroke=\'%230058be\' stroke-width=\'4\' stroke-dasharray=\'10, 10\'/%3E%3C/svg%3E'); background-size: cover; background-position: center;"></div>
+<!-- Quest Nodes -->
+<div class="relative w-full h-full max-w-3xl mx-auto flex items-center">
+<!-- Node 1: Completed -->
+<div class="quest-node absolute left-[10%] top-[60%] flex flex-col items-center cursor-pointer group">
+<div class="w-16 h-16 rounded-full bg-tertiary text-on-tertiary flex items-center justify-center shadow-[0_6px_0_0_rgba(0,33,19,1)] border-4 border-surface z-10 mb-2 relative">
+<span class="material-symbols-outlined text-[32px]" data-icon="check" data-weight="fill" style="font-variation-settings: 'FILL' 1;">check</span>
+<div class="absolute -top-2 -right-2 bg-secondary-container text-on-secondary-container text-xs font-bold px-1 rounded-sm">+50</div>
+</div>
+<div class="bg-surface px-sm py-xs rounded-md shadow-sm border border-outline-variant font-label-sm text-label-sm font-bold text-center">
+                                    Bagian Tanaman
+                                </div>
+</div>
+<!-- Path Connector 1-2 -->
+<div class="absolute left-[15%] top-[50%] w-[20%] h-1 bg-tertiary rotate-[-20deg] origin-left z-0"></div>
+<!-- Node 2: Active -->
+<div class="quest-node absolute left-[35%] top-[40%] flex flex-col items-center cursor-pointer group">
+<div class="w-20 h-20 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-[0_6px_0_0_rgba(0,67,149,1)] border-4 border-surface z-10 mb-2 animate-pulse">
+<span class="material-symbols-outlined text-[40px]" data-icon="cruelty_free">cruelty_free</span>
+</div>
+<div class="bg-primary text-on-primary px-sm py-xs rounded-md shadow-sm font-label-sm text-label-sm font-bold text-center">
+                                    Habitat Hewan<br>(Saat Ini)
+                                </div>
+</div>
+<!-- Path Connector 2-3 -->
+<div class="absolute left-[40%] top-[40%] w-[30%] h-1 bg-outline-variant border-dashed border-t-2 border-outline rotate-[10deg] origin-left z-0"></div>
+<!-- Node 3: Locked -->
+<div class="quest-node absolute left-[65%] top-[50%] flex flex-col items-center opacity-70 cursor-not-allowed">
+<div class="w-16 h-16 rounded-full bg-surface-variant text-outline flex items-center justify-center shadow-[0_4px_0_0_rgba(194,198,214,1)] border-4 border-surface z-10 mb-2">
+<span class="material-symbols-outlined text-[32px]" data-icon="lock">lock</span>
+</div>
+<div class="bg-surface px-sm py-xs rounded-md shadow-sm border border-outline-variant font-label-sm text-label-sm font-bold text-center text-outline">
+                                    Rantai Makanan
+                                </div>
+</div>
+<!-- Boss Node -->
+<div class="quest-node absolute right-[10%] top-[30%] flex flex-col items-center opacity-50 cursor-not-allowed">
+<div class="w-24 h-24 rounded-full bg-error-container text-on-error-container flex items-center justify-center shadow-[0_6px_0_0_rgba(147,0,10,1)] border-4 border-surface z-10 mb-2">
+<span class="material-symbols-outlined text-[48px]" data-icon="skull">skull</span>
+</div>
+<div class="bg-surface px-sm py-xs rounded-md shadow-sm border border-outline-variant font-label-sm text-label-sm font-bold text-center text-outline">
+                                    Ujian Ekosistem
+                                </div>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- Right Column: Leaderboard & Stats -->
+<div class="flex flex-col gap-lg">
+<!-- Progress Card -->
+<div class="bg-surface rounded-xl p-md border border-surface-container-highest shadow-sm">
+<h3 class="font-title-md text-title-md text-on-surface mb-sm">Progres Petualang</h3>
+<div class="flex items-center gap-md mb-md">
+<div class="relative w-16 h-16">
+<svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+<path class="text-surface-variant stroke-current" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-width="4"></path>
+<path class="text-primary stroke-current" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-dasharray="75, 100" stroke-width="4"></path>
+</svg>
+<div class="absolute inset-0 flex items-center justify-center font-title-md text-base font-bold text-primary">75%</div>
+</div>
+<div>
+<div class="font-label-sm text-label-sm text-on-surface-variant">Level Ekosistem</div>
+<div class="font-body-md text-body-md font-bold text-on-surface">Ahli Pemula</div>
+</div>
+</div>
+<div class="space-y-sm">
+<div>
+<div class="flex justify-between font-label-sm text-label-sm mb-xs">
+<span class="text-on-surface-variant">Energi (XP)</span>
+<span class="font-bold text-secondary-container">450 / 600</span>
+</div>
+<div class="h-3 w-full bg-surface-variant rounded-full overflow-hidden">
+<div class="h-full bg-secondary-container rounded-full" style="width: 75%"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Leaderboard -->
+<div class="bg-surface rounded-xl p-md border border-surface-container-highest shadow-sm flex-1">
+<div class="flex items-center justify-between mb-md">
+<h3 class="font-title-md text-title-md text-on-surface">Papan Peringkat</h3>
+<span class="material-symbols-outlined text-outline cursor-pointer hover:text-primary" data-icon="more_horiz">more_horiz</span>
+</div>
+<div class="flex bg-surface-container-low rounded-lg p-xs mb-md">
+<button class="flex-1 py-xs rounded-md bg-surface shadow-sm font-label-sm text-label-sm font-bold text-primary text-center">Teman</button>
+<button class="flex-1 py-xs rounded-md font-label-sm text-label-sm text-on-surface-variant text-center hover:text-on-surface">Global</button>
+</div>
+<ul class="space-y-xs">
+<li class="flex items-center gap-sm p-sm rounded-lg bg-surface-container hover:bg-surface-container-high transition-colors">
+<div class="font-title-md text-base font-bold text-secondary w-6 text-center">1</div>
+<img alt="Rank 1 Avatar" class="w-10 h-10 rounded-full border-2 border-secondary" data-alt="A stylized 3D avatar of a young girl with glasses and a green headband, smiling, set against a bright yellow background. Educational kid app style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD3XKLsYhBuM5CFpFYW_fsBlZ2J_rI1HjufXJUt34ODA-25znXDWT0Gk6PX6peFHciWQDIAlO4lHvu3wGZdKevkby-Fgk5fjCtykLcePsWhK_t3iTP4rbHWMrJlh18Uon2gXR0yqRLXze1QBDOfoTsfnO-OujWVNmSRq7dm3YLhH2T79rkOK5gS6udiAu4cdAZRWtOE2Lw6gMGYk-gK5K96suIAVO8YgasLVYX7U_Bu7iXMdzOzdQJ8Qw">
+<div class="flex-1">
+<div class="font-label-sm text-label-sm font-bold text-on-surface">Budi S.</div>
+<div class="font-label-sm text-[10px] text-on-surface-variant">Level 14</div>
+</div>
+<div class="font-label-sm text-label-sm font-bold text-primary">520 XP</div>
+</li>
+<li class="flex items-center gap-sm p-sm rounded-lg bg-primary-container/20 border border-primary-fixed-dim">
+<div class="font-title-md text-base font-bold text-primary w-6 text-center">2</div>
+<img alt="Rank 2 Avatar (You)" class="w-10 h-10 rounded-full border-2 border-primary" data-alt="A stylized 3D avatar of a young student wearing an explorer's hat and a backpack, set against a bright solid blue background. The aesthetic is cheerful, educational, and modern tactile, with soft lighting and vibrant colors suitable for a kids learning app." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBDZw8-xDQkTZ4BMRMZnCY6-WQgrT_S3w7DCWvQ9IutWxccAN76EWiLe8-WGxr3AoWiZalM7uhsGgSmWQbJmYWU7YVqUm43PA5YV71_rOHWFLQV4dK_84Q9OlaPD9sBJwYU2T1wXaTEDtW2GrbVaZqWEoR-sHpfIcxcmU3eECKa6T9BJ2vlIqxEQhKTxrMu4EK1PBe51G4HPGdlauzQ9v0735HP7fa80T9N_bg2lnk1fET_ASkT9NBgFQ">
+<div class="flex-1">
+<div class="font-label-sm text-label-sm font-bold text-primary">Kamu</div>
+<div class="font-label-sm text-[10px] text-primary-fixed-dim">Level 12</div>
+</div>
+<div class="font-label-sm text-label-sm font-bold text-primary">450 XP</div>
+</li>
+<li class="flex items-center gap-sm p-sm rounded-lg hover:bg-surface-container transition-colors">
+<div class="font-title-md text-base font-bold text-on-surface-variant w-6 text-center">3</div>
+<img alt="Rank 3 Avatar" class="w-10 h-10 rounded-full border border-outline-variant" data-alt="A stylized 3D avatar of a boy with spiky hair wearing a red cap backwards, set against a light green background. Educational kid app style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCb8yziO3n8DVMV5x8LoeVcUvmmfXrr2uI7McaRTmmhtTNDPzWej_ST1Q7NU_2PYk41zoR1J9ODvZS7tH_88Ki6EObC1iohdcg1hhnSDSTlrU-Dxa8XDh2rvYjkD6vlFuAe4Cu-5cDE_Ry5fuMEBv3UEJxVNvTnFXh-m7KaeXCwtXUC0xMZ0RXKziN71fSfjeRwVkkmiwsvGuixY3U9hA8Kf497wk0ti5AlBo2q_GiRBr2B1i4Lw1FATA">
+<div class="flex-1">
+<div class="font-label-sm text-label-sm font-bold text-on-surface">Siti M.</div>
+<div class="font-label-sm text-[10px] text-on-surface-variant">Level 11</div>
+</div>
+<div class="font-label-sm text-label-sm font-bold text-on-surface-variant">410 XP</div>
+</li>
+<li class="flex items-center gap-sm p-sm rounded-lg hover:bg-surface-container transition-colors opacity-70">
+<div class="font-title-md text-base font-bold text-outline w-6 text-center">4</div>
+<div class="w-10 h-10 rounded-full bg-surface-variant border border-outline-variant flex items-center justify-center">
+<span class="material-symbols-outlined text-outline text-[20px]" data-icon="person">person</span>
+</div>
+<div class="flex-1">
+<div class="font-label-sm text-label-sm font-bold text-on-surface">Andi K.</div>
+<div class="font-label-sm text-[10px] text-on-surface-variant">Level 10</div>
+</div>
+<div class="font-label-sm text-label-sm font-bold text-on-surface-variant">380 XP</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</main>
+
+
+</body></html>
