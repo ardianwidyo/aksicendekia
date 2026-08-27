@@ -26,6 +26,11 @@ import { ClassService } from "./modules/class/class.service.js";
 import { registerClassRoutes } from "./modules/class/class.controller.js";
 import { argon2Service } from "./modules/auth/argon2.service.js";
 
+import { CurriculumRepository } from "./modules/curriculum/curriculum.repository.js";
+import { CsvImportService } from "./modules/curriculum/csv-import.service.js";
+import { CurriculumService } from "./modules/curriculum/curriculum.service.js";
+import { registerCurriculumRoutes } from "./modules/curriculum/curriculum.controller.js";
+
 declare module "fastify" {
   interface FastifyInstance {
     authenticate: (request: FastifyRequest, reply: FastifyReply) => Promise<void>;
@@ -80,17 +85,21 @@ export function buildApp(prisma: PrismaClient, jwtSecret: string = "secret-super
   const studentRepo = new StudentRepository(prisma);
   const parentRepo = new ParentRepository(prisma);
   const classRepo = new ClassRepository(prisma);
+  const curriculumRepo = new CurriculumRepository(prisma);
+  const csvImportService = new CsvImportService();
 
   const authService = new AuthService(authRepo, studentRepo, parentRepo, argon2Service, emailService);
   const studentService = new StudentService(studentRepo);
   const parentService = new ParentService(parentRepo, authRepo, studentRepo, argon2Service);
   const classService = new ClassService(classRepo, studentRepo);
+  const curriculumService = new CurriculumService(curriculumRepo, csvImportService);
 
   // Register routes
   registerAuthRoutes(app, authService);
   registerStudentRoutes(app, studentService, prisma);
   registerParentRoutes(app, parentService);
   registerClassRoutes(app, classService);
+  registerCurriculumRoutes(app, curriculumService);
 
   return app;
 }

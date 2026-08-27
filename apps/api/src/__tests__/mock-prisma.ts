@@ -9,6 +9,13 @@ export function createMockPrismaClient(): PrismaClient {
   const classes: Class[] = [];
   const classEnrollments: ClassEnrollment[] = [];
   const refreshTokens: RefreshToken[] = [];
+  const subjects: any[] = [];
+  const units: any[] = [];
+  const lessons: any[] = [];
+  const lessonPrerequisites: any[] = [];
+  const questionItems: any[] = [];
+  const questionHints: any[] = [];
+  const studentLessonProgress: any[] = [];
 
   const mockPrisma = {
     user: {
@@ -244,6 +251,263 @@ export function createMockPrismaClient(): PrismaClient {
         }
         return { count };
       },
+    },
+
+    subject: {
+      findUnique: async ({ where }: { where: { id?: string; code?: string } }) => {
+        if (where.id) return subjects.find((s) => s.id === where.id) || null;
+        if (where.code) return subjects.find((s) => s.code === where.code) || null;
+        return null;
+      },
+      findMany: async ({ where }: { where?: any }) => {
+        let res = [...subjects];
+        if (where?.educationStage) res = res.filter((s) => s.educationStage === where.educationStage);
+        if (where?.status) res = res.filter((s) => s.status === where.status);
+        return res;
+      },
+      create: async ({ data }: { data: any }) => {
+        const item = {
+          id: randomUUID(),
+          code: data.code,
+          name: data.name,
+          educationStage: data.educationStage,
+          phase: data.phase,
+          status: data.status || "DRAFT",
+          version: data.version || 1,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+        subjects.push(item);
+        return item;
+      },
+      update: async ({ where, data }: { where: { id: string }; data: any }) => {
+        const item = subjects.find((s) => s.id === where.id);
+        if (!item) throw new Error("Subject not found");
+        Object.assign(item, data, { updatedAt: new Date() });
+        return item;
+      },
+      delete: async ({ where }: { where: { id: string } }) => {
+        const idx = subjects.findIndex((s) => s.id === where.id);
+        if (idx === -1) throw new Error("Subject not found");
+        return subjects.splice(idx, 1)[0];
+      },
+    },
+
+    unit: {
+      findUnique: async ({ where }: { where: { id: string } }) => {
+        return units.find((u) => u.id === where.id) || null;
+      },
+      findMany: async ({ where }: { where?: any }) => {
+        let res = [...units];
+        if (where?.subjectId) res = res.filter((u) => u.subjectId === where.subjectId);
+        if (where?.status) res = res.filter((u) => u.status === where.status);
+        return res;
+      },
+      create: async ({ data }: { data: any }) => {
+        const item = {
+          id: randomUUID(),
+          subjectId: data.subject?.connect?.id || data.subjectId,
+          title: data.title,
+          description: data.description || null,
+          orderIndex: data.orderIndex,
+          status: data.status || "DRAFT",
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+        units.push(item);
+        return item;
+      },
+      update: async ({ where, data }: { where: { id: string }; data: any }) => {
+        const item = units.find((u) => u.id === where.id);
+        if (!item) throw new Error("Unit not found");
+        Object.assign(item, data, { updatedAt: new Date() });
+        return item;
+      },
+      delete: async ({ where }: { where: { id: string } }) => {
+        const idx = units.findIndex((u) => u.id === where.id);
+        if (idx === -1) throw new Error("Unit not found");
+        return units.splice(idx, 1)[0];
+      },
+    },
+
+    lesson: {
+      findUnique: async ({ where }: { where: { id: string } }) => {
+        const l = lessons.find((item) => item.id === where.id);
+        if (!l) return null;
+        const prereqs = lessonPrerequisites.filter((p) => p.lessonId === l.id);
+        const qItems = questionItems.filter((q) => q.lessonId === l.id);
+        return {
+          ...l,
+          prerequisites: prereqs.map((p) => ({ prerequisiteLessonId: p.prerequisiteLessonId })),
+          questionItems: qItems.map((q) => ({
+            ...q,
+            hints: questionHints.filter((h) => h.questionItemId === q.id),
+          })),
+        };
+      },
+      findMany: async ({ where }: { where?: any }) => {
+        let res = [...lessons];
+        if (where?.unitId) res = res.filter((l) => l.unitId === where.unitId);
+        if (where?.status) res = res.filter((l) => l.status === where.status);
+
+        return res.map((l) => ({
+          ...l,
+          prerequisites: lessonPrerequisites.filter((p) => p.lessonId === l.id).map((p) => ({ prerequisiteLessonId: p.prerequisiteLessonId })),
+        }));
+      },
+      create: async ({ data }: { data: any }) => {
+        const item = {
+          id: randomUUID(),
+          unitId: data.unit?.connect?.id || data.unitId,
+          title: data.title,
+          summary: data.summary,
+          learningObjective: data.learningObjective,
+          educationStage: data.educationStage,
+          phase: data.phase,
+          difficultyLevel: data.difficultyLevel,
+          estimatedDurationMinutes: data.estimatedDurationMinutes,
+          orderIndex: data.orderIndex,
+          status: data.status || "DRAFT",
+          version: data.version || 1,
+          parentVersionId: data.parentVersion?.connect?.id || data.parentVersionId || null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+        lessons.push(item);
+        return item;
+      },
+      update: async ({ where, data }: { where: { id: string }; data: any }) => {
+        const item = lessons.find((l) => l.id === where.id);
+        if (!item) throw new Error("Lesson not found");
+        Object.assign(item, data, { updatedAt: new Date() });
+        return item;
+      },
+      delete: async ({ where }: { where: { id: string } }) => {
+        const idx = lessons.findIndex((l) => l.id === where.id);
+        if (idx === -1) throw new Error("Lesson not found");
+        return lessons.splice(idx, 1)[0];
+      },
+    },
+
+    lessonPrerequisite: {
+      findMany: async ({ where }: { where?: any }) => {
+        let res = [...lessonPrerequisites];
+        if (where?.lessonId) res = res.filter((p) => p.lessonId === where.lessonId);
+        return res;
+      },
+      createMany: async ({ data }: { data: Array<{ lessonId: string; prerequisiteLessonId: string }> }) => {
+        for (const item of data) {
+          lessonPrerequisites.push(item);
+        }
+        return { count: data.length };
+      },
+      deleteMany: async ({ where }: { where: { lessonId: string } }) => {
+        let count = 0;
+        for (let i = lessonPrerequisites.length - 1; i >= 0; i--) {
+          if (lessonPrerequisites[i].lessonId === where.lessonId) {
+            lessonPrerequisites.splice(i, 1);
+            count++;
+          }
+        }
+        return { count };
+      },
+    },
+
+    questionItem: {
+      findUnique: async ({ where }: { where: { id: string } }) => {
+        const q = questionItems.find((item) => item.id === where.id);
+        if (!q) return null;
+        return {
+          ...q,
+          hints: questionHints.filter((h) => h.questionItemId === q.id),
+        };
+      },
+      findMany: async ({ where }: { where?: any }) => {
+        let res = [...questionItems];
+        if (where?.lessonId) res = res.filter((q) => q.lessonId === where.lessonId);
+        if (where?.status) res = res.filter((q) => q.status === where.status);
+        return res.map((q) => ({
+          ...q,
+          hints: questionHints.filter((h) => h.questionItemId === q.id),
+        }));
+      },
+      create: async ({ data }: { data: any }) => {
+        const item = {
+          id: randomUUID(),
+          lessonId: data.lesson?.connect?.id || data.lessonId,
+          questionType: data.questionType,
+          promptText: data.promptText,
+          contentPayload: data.contentPayload,
+          explanation: data.explanation,
+          orderIndex: data.orderIndex,
+          status: data.status || "DRAFT",
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+        questionItems.push(item);
+        return item;
+      },
+      update: async ({ where, data }: { where: { id: string }; data: any }) => {
+        const item = questionItems.find((q) => q.id === where.id);
+        if (!item) throw new Error("QuestionItem not found");
+        Object.assign(item, data, { updatedAt: new Date() });
+        return item;
+      },
+      delete: async ({ where }: { where: { id: string } }) => {
+        const idx = questionItems.findIndex((q) => q.id === where.id);
+        if (idx === -1) throw new Error("QuestionItem not found");
+        return questionItems.splice(idx, 1)[0];
+      },
+    },
+
+    questionHint: {
+      createMany: async ({ data }: { data: Array<{ questionItemId: string; stepOrder: number; hintText: string }> }) => {
+        for (const item of data) {
+          questionHints.push({ id: randomUUID(), ...item, createdAt: new Date() });
+        }
+        return { count: data.length };
+      },
+      deleteMany: async ({ where }: { where: { questionItemId: string } }) => {
+        let count = 0;
+        for (let i = questionHints.length - 1; i >= 0; i--) {
+          if (questionHints[i].questionItemId === where.questionItemId) {
+            questionHints.splice(i, 1);
+            count++;
+          }
+        }
+        return { count };
+      },
+    },
+
+    studentLessonProgress: {
+      findMany: async ({ where }: { where: { studentProfileId: string; isCompleted?: boolean } }) => {
+        return studentLessonProgress.filter((p) => p.studentProfileId === where.studentProfileId && (where.isCompleted === undefined || p.isCompleted === where.isCompleted));
+      },
+      upsert: async ({ where, create, update }: { where: any; create: any; update: any }) => {
+        let p = studentLessonProgress.find((item) => item.studentProfileId === where.studentProfileId_lessonId.studentProfileId && item.lessonId === where.studentProfileId_lessonId.lessonId);
+        if (p) {
+          Object.assign(p, update, { updatedAt: new Date() });
+        } else {
+          p = {
+            id: randomUUID(),
+            studentProfileId: create.studentProfileId,
+            lessonId: create.lessonId,
+            isCompleted: create.isCompleted || false,
+            completedAt: create.completedAt || null,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          };
+          studentLessonProgress.push(p);
+        }
+        return p;
+      },
+    },
+
+    $transaction: async (fn: any) => {
+      if (typeof fn === "function") {
+        return fn(mockPrisma);
+      }
+      return Promise.all(fn);
     },
   };
 
