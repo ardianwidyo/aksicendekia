@@ -1,3 +1,5 @@
+'use client';
+
 import * as React from 'react';
 import { GradeLevel, GRADE_LEVELS } from '@aksicendekia/design-tokens';
 import { Baby, Sparkles, Compass, Atom, Check } from 'lucide-react';

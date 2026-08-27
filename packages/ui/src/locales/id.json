@@ -1,45 +1,102 @@
 {
   "common": {
     "appTitle": "AksiCendekia",
-    "appSubtitle": "Petualangan Belajar Kurikulum Merdeka",
+    "appSubtitle": "Platform Belajar Bergamifikasi Kurikulum Merdeka",
     "upgradeToPro": "Tingkatkan ke Pro",
     "streakDays": "{count} Hari Beruntun",
     "language": "Bahasa",
     "selectGrade": "Pilih Jenjang Sekolah",
     "catalogTitle": "Katalog Komponen UI AksiCendekia",
-    "catalogSubtitle": "Fondasi Visual & Sistem Komponen 4 Jenjang (TK, SD, SMP, SMA)"
+    "catalogSubtitle": "Sistem Komponen & Token Visual 4 Jenjang (TK, SD, SMP, SMA)",
+    "search": "Cari...",
+    "filter": "Filter",
+    "reset": "Atur Ulang",
+    "apply": "Terapkan",
+    "actions": "Aksi",
+    "status": "Status",
+    "loading": "Memuat data...",
+    "emptyTitle": "Belum Ada Data",
+    "emptyDescription": "Tidak ada informasi yang tersedia untuk ditampilkan saat ini.",
+    "errorTitle": "Gagal Memuat Data",
+    "errorDescription": "Terjadi kesalahan saat mengambil informasi dari server.",
+    "retry": "Coba Lagi",
+    "close": "Tutup",
+    "save": "Simpan",
+    "cancel": "Batal",
+    "confirm": "Konfirmasi",
+    "delete": "Hapus",
+    "edit": "Ubah",
+    "view": "Lihat Detail",
+    "upload": "Unggah Berkas",
+    "dragDropHint": "Seret & lepas berkas di sini, atau klik untuk memilih",
+    "maxFileSize": "Ukuran maksimum berkas: 10MB (PDF, PNG, JPG, DOCX)",
+    "rowsPerPage": "Baris per halaman:",
+    "pageOf": "Halaman {page} dari {totalPages}",
+    "showingResults": "Menampilkan {from} - {to} dari {total} data",
+    "noResults": "Hasil tidak ditemukan"
+  },
+  "roles": {
+    "student": "Siswa",
+    "teacher": "Guru / Pendidik",
+    "parent": "Orang Tua / Wali",
+    "admin": "Admin CMS & Sekolah"
   },
   "nav": {
     "dashboard": "Beranda Belajar",
     "achievements": "Pencapaian & Lencana",
     "settings": "Pengaturan Akun",
+    "curriculum": "Kurikulum & Soal",
+    "analytics": "Laporan & Analitik",
+    "users": "Manajemen Pengguna",
     "catalog": "Katalog Komponen Internal"
+  },
+  "groups": {
+    "groupA": "Kelompok A: Komponen Gamifikasi (Bermain)",
+    "groupB": "Kelompok B: Primitif Form & Umpan Balik",
+    "groupC": "Kelompok C: Komponen Data (CMS & Dasbor)",
+    "universalStates": "Tiga State Universal (Skeleton, Empty, Error)",
+    "shells": "Arsitektur App Shell (Siswa & Profesional)"
   },
   "components": {
     "interactiveCard": "Kartu Belajar Interaktif",
-    "progressBar": "Indikator Kemajuan",
-    "achievementBadge": "Lencana Prestasi",
-    "primaryButton": "Tombol Utama 3D",
-    "ghostButton": "Tombol Sekunder (Ghost)",
-    "levelSelector": "Pemilih Jenjang Belajar",
-    "mascotBubble": "Gelembung Bicara Maskot"
+    "progressBar": "Indikator Kemajuan (Progress Bar)",
+    "achievementBadge": "Lencana Prestasi (Achievement Badge)",
+    "buttonPrimary": "Tombol Utama 3D (Button Primary)",
+    "ghostButton": "Tombol Sekunder (Ghost Button)",
+    "levelSelector": "Pemilih Jenjang Belajar (Level Selector)",
+    "mascotBubble": "Gelembung Bicara Maskot (Mascot Speech Bubble)",
+    "textInput": "Input Teks (Text Input)",
+    "passwordInput": "Input Kata Sandi (Password Input)",
+    "select": "Dropdown Pilihan (Select)",
+    "checkbox": "Kotak Centang (Checkbox)",
+    "radioGroup": "Grup Opsi (Radio Group)",
+    "formField": "Bidang Formulir (Form Field)",
+    "modal": "Jendela Dialog (Modal / Dialog)",
+    "toast": "Notifikasi Ringkas (Toast)",
+    "alert": "Pesan Peringatan (Alert)",
+    "dataTable": "Tabel Data (Data Table)",
+    "tabs": "Bilah Tab (Tabs)",
+    "dropdownMenu": "Menu Opsi (Dropdown Menu)",
+    "statCard": "Kartu Statistik (Stat Card)",
+    "chartWrapper": "Pembungkus Grafik (Chart Wrapper)",
+    "fileDropzone": "Area Unggah Berkas (File Dropzone)"
   },
   "themes": {
     "tk": {
       "name": "TK / PAUD",
-      "subtitle": "Fase Fondasi (Pastel Lembut)"
+      "subtitle": "Fase Fondasi (Paud & TK)"
     },
     "sd": {
-      "name": "Sekolah Dasar",
-      "subtitle": "Fase A - C (Warna Cerah Energetik)"
+      "name": "Sekolah Dasar (SD)",
+      "subtitle": "Fase A - C (Kelas 1 - 6)"
     },
     "smp": {
       "name": "SMP / Sederajat",
-      "subtitle": "Fase D (Jewel Tone Elegan)"
+      "subtitle": "Fase D (Kelas 7 - 9)"
     },
     "sma": {
-      "name": "SMA / SMK",
-      "subtitle": "Fase E - F (Dark Mode & Akses Neon)"
+      "name": "SMA / SMK / MA",
+      "subtitle": "Fase E - F (Kelas 10 - 12)"
     }
   }
 }

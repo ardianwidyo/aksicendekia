@@ -1,3 +1,5 @@
+'use client';
+
 import * as React from 'react';
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -71,3 +73,14 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 );
 
 Button.displayName = 'Button';
+
+export const ButtonPrimary = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  (props, ref) => <Button ref={ref} variant="primary" {...props} />
+);
+ButtonPrimary.displayName = 'ButtonPrimary';
+
+export const GhostButton = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  (props, ref) => <Button ref={ref} variant="ghost" {...props} />
+);
+GhostButton.displayName = 'GhostButton';
+

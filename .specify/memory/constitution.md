@@ -93,4 +93,4 @@ Antarmuka WAJIB memenuhi WCAG 2.1 level AA. Target sentuh minimum 44x44px. Selur
    - **MINOR**: Addition of new tech stack requirements, expanded quality standards, or architecture principles.
    - **PATCH**: Clarification of wording, typos, or minor formatting adjustments.
 
-**Version**: 1.1.0 | **Ratified**: 2026-08-26 | **Last Amended**: 2026-08-26
+**Version**: 1.1.0 | **Ratified**: 2026-08-26 | **Last Amended**: 2026-08-27

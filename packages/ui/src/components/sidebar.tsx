@@ -1,3 +1,5 @@
+'use client';
+
 import * as React from 'react';
 import { useI18n } from '../providers/i18n-provider';
 import { useTheme } from '../providers/theme-provider';
