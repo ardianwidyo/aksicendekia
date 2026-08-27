@@ -435,7 +435,7 @@ export default function LeaderboardPage() {
             <Button
               onClick={handleTogglePrivacy}
               disabled={updatingPrivacy || privacy?.isPrivacyLocked}
-              variant={privacy?.isHiddenFromLeaderboard ? 'default' : 'outline'}
+              variant={privacy?.isHiddenFromLeaderboard ? 'secondary' : 'outline'}
               className={`min-h-[44px] min-w-[100px] font-bold text-xs ${
                 privacy?.isPrivacyLocked
                   ? 'opacity-50 cursor-not-allowed bg-slate-700 text-slate-400 border-slate-600'

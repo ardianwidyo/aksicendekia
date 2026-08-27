@@ -55,6 +55,14 @@ model User {
   powerupTransactions    PowerupTransaction[]
   studentDailyChallenges StudentDailyChallenge[]
   studentPrivacySetting  StudentPrivacySetting?
+  parentalControlSettingAsStudent ParentalControlSetting?   @relation("StudentParentalSettings")
+  parentalControlSettingsAsParent ParentalControlSetting[]  @relation("ParentConfiguredSettings")
+  taughtAssignments              LessonAssignment[]
+  studentAssignmentProgresses    StudentAssignmentProgress[]
+  userWeeklyReports              WeeklyReportSummary[]      @relation("UserWeeklyReports")
+  studentWeeklyReports           WeeklyReportSummary[]      @relation("StudentWeeklyReports")
+  accessorLogs                   StudentDataAccessLog[]     @relation("LogAccessorUser")
+  targetStudentLogs              StudentDataAccessLog[]     @relation("LogTargetStudent")
 
   @@map("users")
 }
@@ -116,6 +124,7 @@ model Class {
 
   teacher     User              @relation("TaughtClasses", fields: [teacherId], references: [id], onDelete: Cascade)
   enrollments ClassEnrollment[]
+  assignments LessonAssignment[]
 
   @@map("classes")
 }
@@ -239,6 +248,7 @@ model Lesson {
   isRequiredBy    LessonPrerequisite[]    @relation("PrerequisiteLesson")
   studentProgress StudentLessonProgress[]
   learningSessions LearningSession[]
+  assignments      LessonAssignment[]
 
   @@map("lessons")
 }
@@ -587,4 +597,135 @@ model StudentPrivacySetting {
 
   @@map("student_privacy_settings")
 }
+
+// ==========================================
+// Parent & Teacher Dashboards Models & Enums
+// ==========================================
+
+enum AssignmentStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  SUBMITTED
+  OVERDUE
+}
+
+enum RiskLevel {
+  ON_TRACK
+  BEHIND
+}
+
+enum RiskReason {
+  LOW_ACCURACY
+  LOW_ACTIVITY
+  OVERDUE_ASSIGNMENT
+}
+
+enum AccessType {
+  READ_PARENT_DASHBOARD
+  READ_CHILD_SUMMARY
+  READ_CHILD_ACTIVITIES
+  UPDATE_PARENTAL_CONTROLS
+  READ_TEACHER_DASHBOARD
+  READ_CLASS_STUDENTS
+  READ_ITEM_ANALYSIS
+  CREATE_ASSIGNMENT
+  READ_ASSIGNMENT_PROGRESS
+  EXPORT_CLASS_CSV
+  READ_WEEKLY_REPORT
+}
+
+model ParentalControlSetting {
+  id                    String   @id @default(uuid())
+  studentUserId         String   @unique @map("student_user_id")
+  parentUserId          String   @map("parent_user_id")
+  dailyTimeLimitMinutes Int?     @map("daily_time_limit_minutes")
+  isPrivacyLocked       Boolean  @default(false) @map("is_privacy_locked")
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  studentUser User @relation("StudentParentalSettings", fields: [studentUserId], references: [id], onDelete: Cascade)
+  parentUser  User @relation("ParentConfiguredSettings", fields: [parentUserId], references: [id], onDelete: Cascade)
+
+  @@index([parentUserId])
+  @@map("parental_control_settings")
+}
+
+model LessonAssignment {
+  id            String   @id @default(uuid())
+  classId       String   @map("class_id")
+  teacherUserId String   @map("teacher_user_id")
+  lessonId      String   @map("lesson_id")
+  title         String
+  description   String?  @db.Text
+  dueDate       DateTime @map("due_date")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  class             Class                       @relation(fields: [classId], references: [id], onDelete: Cascade)
+  teacherUser       User                        @relation(fields: [teacherUserId], references: [id], onDelete: Cascade)
+  lesson            Lesson                      @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  studentProgresses StudentAssignmentProgress[]
+
+  @@index([classId, dueDate])
+  @@index([teacherUserId])
+  @@map("lesson_assignments")
+}
+
+model StudentAssignmentProgress {
+  id            String           @id @default(uuid())
+  assignmentId  String           @map("assignment_id")
+  studentUserId String           @map("student_user_id")
+  status        AssignmentStatus @default(NOT_STARTED)
+  score         Int?             @default(0)
+  accuracy      Float?           @default(0.0)
+  completedAt   DateTime?        @map("completed_at")
+  createdAt     DateTime         @default(now()) @map("created_at")
+  updatedAt     DateTime         @updatedAt @map("updated_at")
+
+  assignment  LessonAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  studentUser User             @relation(fields: [studentUserId], references: [id], onDelete: Cascade)
+
+  @@unique([assignmentId, studentUserId])
+  @@index([studentUserId, status])
+  @@map("student_assignment_progresses")
+}
+
+model WeeklyReportSummary {
+  id            String   @id @default(uuid())
+  targetUserId  String   @map("target_user_id")
+  targetRole    Role     @map("target_role")
+  studentUserId String?  @map("student_user_id")
+  classId       String?  @map("class_id")
+  weekStartDate DateTime @db.Date @map("week_start_date")
+  weekEndDate   DateTime @db.Date @map("week_end_date")
+  reportDataJson Json    @map("report_data_json")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  targetUser  User  @relation("UserWeeklyReports", fields: [targetUserId], references: [id], onDelete: Cascade)
+  studentUser User? @relation("StudentWeeklyReports", fields: [studentUserId], references: [id], onDelete: SetNull)
+
+  @@index([targetUserId, weekStartDate])
+  @@index([studentUserId])
+  @@map("weekly_report_summaries")
+}
+
+model StudentDataAccessLog {
+  id              String     @id @default(uuid())
+  accessorUserId  String     @map("accessor_user_id")
+  accessorRole    Role       @map("accessor_role")
+  targetStudentId String     @map("target_student_id")
+  accessType      AccessType @map("access_type")
+  endpoint        String
+  ipAddress       String     @map("ip_address")
+  userAgent       String     @map("user_agent")
+  createdAt       DateTime   @default(now()) @map("created_at")
+
+  accessorUser  User @relation("LogAccessorUser", fields: [accessorUserId], references: [id], onDelete: Cascade)
+  targetStudent User @relation("LogTargetStudent", fields: [targetStudentId], references: [id], onDelete: Cascade)
+
+  @@index([targetStudentId, createdAt])
+  @@index([accessorUserId, createdAt])
+  @@map("student_data_access_logs")
+}
+
 

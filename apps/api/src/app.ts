@@ -48,6 +48,11 @@ import { LeaderboardRepository } from "./modules/leaderboard/leaderboard.reposit
 import { LeaderboardService } from "./modules/leaderboard/leaderboard.service.js";
 import { registerLeaderboardRoutes } from "./modules/leaderboard/leaderboard.controller.js";
 
+import { ParentDashboardService } from "./modules/parent/parent-dashboard.service.js";
+import { TeacherDashboardService } from "./modules/class/teacher-dashboard.service.js";
+import { registerTeacherRoutes } from "./modules/class/teacher.controller.js";
+import { WeeklyReportsService } from "./modules/weekly-reports/weekly-reports.service.js";
+
 declare module "fastify" {
   interface FastifyInstance {
     authenticate: (request: FastifyRequest, reply: FastifyReply) => Promise<void>;
@@ -112,6 +117,9 @@ export function buildApp(prisma: PrismaClient, jwtSecret: string = "secret-super
   const authService = new AuthService(authRepo, studentRepo, parentRepo, argon2Service, emailService);
   const studentService = new StudentService(studentRepo);
   const parentService = new ParentService(parentRepo, authRepo, studentRepo, argon2Service);
+  const parentDashboardService = new ParentDashboardService(prisma);
+  const teacherDashboardService = new TeacherDashboardService(prisma);
+  const weeklyReportsService = new WeeklyReportsService(prisma);
   const classService = new ClassService(classRepo, studentRepo);
   const curriculumService = new CurriculumService(curriculumRepo, csvImportService);
   const sessionService = new SessionService(sessionRepo, prisma);
@@ -123,13 +131,20 @@ export function buildApp(prisma: PrismaClient, jwtSecret: string = "secret-super
   // Register routes
   registerAuthRoutes(app, authService);
   registerStudentRoutes(app, studentService, prisma);
-  registerParentRoutes(app, parentService);
+  registerParentRoutes(app, parentService, parentDashboardService, prisma);
   registerClassRoutes(app, classService);
+  registerTeacherRoutes(app, teacherDashboardService, prisma);
   registerCurriculumRoutes(app, curriculumService);
   registerSessionRoutes(app, sessionService);
   registerProgressRoutes(app, progressService);
   registerDailyChallengeRoutes(app, dailyChallengeService);
   registerLeaderboardRoutes(app, leaderboardService);
+
+  // Weekly Report Generation Route
+  app.post("/api/v1/reports/weekly/generate", { preHandler: [app.authenticate] }, async (_req, reply) => {
+    const result = await weeklyReportsService.generateWeeklySummaries();
+    return reply.send({ message: "Data laporan ringkasan mingguan berhasil dibuat", data: result });
+  });
 
   return app;
 }

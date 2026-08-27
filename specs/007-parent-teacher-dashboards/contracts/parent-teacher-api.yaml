@@ -1,0 +1,282 @@
+openapi: 3.0.3
+info:
+  title: Parent and Teacher Dashboards API Spec - AksiCendekia
+  version: 1.0.0
+  description: API endpoints for Parent Dashboard, Teacher Dashboard, Class Assignments, Item Accuracy Analysis, CSV Export, Weekly Report Data, and Parental Controls.
+paths:
+  /api/v1/parent/children:
+    get:
+      summary: Get linked children for authenticated parent
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of linked children
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ChildSummary'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden (Not a Parent)
+
+  /api/v1/parent/children/{studentId}/summary:
+    get:
+      summary: Get detailed progress summary for a specific child
+      parameters:
+        - name: studentId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Detailed child summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChildSummary'
+        '403':
+          description: Forbidden (ParentChildLink not ACTIVE)
+
+  /api/v1/parent/children/{studentId}/controls:
+    put:
+      summary: Update parental control settings (Daily Time Limit & Privacy Lock)
+      parameters:
+        - name: studentId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateParentalControlInput'
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Settings updated successfully
+        '403':
+          description: Forbidden (ParentChildLink not ACTIVE)
+
+  /api/v1/teacher/classes:
+    get:
+      summary: Get classes owned by authenticated teacher
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of teacher classes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TeacherClass'
+
+  /api/v1/teacher/classes/{classId}/students:
+    get:
+      summary: Get list of students in class with progress and behind markers
+      parameters:
+        - name: classId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Class student progress list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ClassStudentProgress'
+        '403':
+          description: Forbidden (Teacher does not own class)
+
+  /api/v1/teacher/classes/{classId}/item-analysis:
+    get:
+      summary: Get item accuracy analysis for questions answered by class students
+      parameters:
+        - name: classId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: lessonId
+          in: query
+          required: false
+          schema:
+            type: string
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Item accuracy analysis list sorted by error rate descending
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ItemAccuracyAnalysis'
+
+  /api/v1/teacher/classes/{classId}/export-csv:
+    get:
+      summary: Export class progress data to sanitized CSV
+      parameters:
+        - name: classId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: CSV file download
+          content:
+            text/csv:
+              schema:
+                type: string
+
+  /api/v1/teacher/assignments:
+    post:
+      summary: Assign a lesson to a class with due date
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAssignmentInput'
+      responses:
+        '201':
+          description: Assignment created
+
+components:
+  schemas:
+    ChildSummary:
+      type: object
+      properties:
+        studentId:
+          type: string
+        displayName:
+          type: string
+        totalLearningMinutes:
+          type: integer
+        lessonsCompleted:
+          type: integer
+        averageAccuracy:
+          type: number
+        currentStreak:
+          type: integer
+        strongestSubject:
+          type: object
+        weakestSubject:
+          type: object
+        parentalControl:
+          type: object
+          properties:
+            dailyTimeLimitMinutes:
+              type: integer
+              nullable: true
+            todayTimeSpentMinutes:
+              type: integer
+            isTimeLimitExceeded:
+              type: boolean
+            isPrivacyLocked:
+              type: boolean
+
+    UpdateParentalControlInput:
+      type: object
+      properties:
+        dailyTimeLimitMinutes:
+          type: integer
+          nullable: true
+        isPrivacyLocked:
+          type: boolean
+
+    TeacherClass:
+      type: object
+      properties:
+        classId:
+          type: string
+        className:
+          type: string
+        studentCount:
+          type: integer
+
+    ClassStudentProgress:
+      type: object
+      properties:
+        studentId:
+          type: string
+        displayName:
+          type: string
+        totalLearningMinutes:
+          type: integer
+        lessonsCompleted:
+          type: integer
+        averageAccuracy:
+          type: number
+        riskStatus:
+          type: string
+          enum: [ON_TRACK, BEHIND]
+        riskReasons:
+          type: array
+          items:
+            type: string
+
+    ItemAccuracyAnalysis:
+      type: object
+      properties:
+        questionId:
+          type: string
+        questionTextSnippet:
+          type: string
+        totalAttempts:
+          type: integer
+        correctAttempts:
+          type: integer
+        wrongAttempts:
+          type: integer
+        accuracyRate:
+          type: number
+
+    CreateAssignmentInput:
+      type: object
+      required:
+        - classId
+        - lessonId
+        - title
+        - dueDate
+      properties:
+        classId:
+          type: string
+        lessonId:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        dueDate:
+          type: string
+          format: date-time
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

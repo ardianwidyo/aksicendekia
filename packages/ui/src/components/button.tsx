@@ -79,6 +79,11 @@ export const ButtonPrimary = React.forwardRef<HTMLButtonElement, ButtonProps>(
 );
 ButtonPrimary.displayName = 'ButtonPrimary';
 
+export const ButtonSecondary = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  (props, ref) => <Button ref={ref} variant="secondary" {...props} />
+);
+ButtonSecondary.displayName = 'ButtonSecondary';
+
 export const GhostButton = React.forwardRef<HTMLButtonElement, ButtonProps>(
   (props, ref) => <Button ref={ref} variant="ghost" {...props} />
 );

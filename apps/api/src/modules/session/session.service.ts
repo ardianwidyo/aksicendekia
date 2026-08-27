@@ -28,6 +28,40 @@ export class SessionService {
       throw new ForbiddenError('Hanya pelajaran terbit (PUBLISHED) yang dapat diakses');
     }
 
+    // Check Parental Control Daily Time Limit
+    if (this.prisma) {
+      const parentalControl = await this.prisma.parentalControlSetting.findUnique({
+        where: { studentUserId: studentId },
+      });
+
+      if (parentalControl && parentalControl.dailyTimeLimitMinutes !== null) {
+        const progress = await this.prisma.studentProgress.findUnique({
+          where: { studentId },
+        });
+        const timezoneStr = progress?.timezone || "Asia/Jakarta";
+        const now = new Date();
+        const todayStr = now.toLocaleDateString("en-CA", { timeZone: timezoneStr });
+        const startOfToday = new Date(`${todayStr}T00:00:00.000Z`);
+
+        const todaySessions = await this.prisma.learningSession.findMany({
+          where: {
+            studentId,
+            startedAt: { gte: startOfToday },
+          },
+        });
+
+        const todayTimeSpentSeconds = todaySessions.reduce((acc, s) => acc + s.durationSeconds, 0);
+        const todayTimeSpentMinutes = Math.round(todayTimeSpentSeconds / 60);
+
+        if (todayTimeSpentMinutes >= parentalControl.dailyTimeLimitMinutes) {
+          throw new ForbiddenError(
+            "Batas waktu belajar harian yang ditetapkan orang tua telah tercapai. Istirahatlah sejenak!",
+            "DAILY_TIME_LIMIT_EXCEEDED"
+          );
+        }
+      }
+    }
+
     // Check prerequisites
     if (lesson.prerequisites && lesson.prerequisites.length > 0 && this.prisma) {
       const studentProfile = await this.prisma.studentProfile.findUnique({
@@ -385,6 +419,36 @@ export class SessionService {
             completedAt
           }
         });
+
+        // Also update matching lesson assignments for student
+        const matchingAssignments = await this.prisma.lessonAssignment.findMany({
+          where: { lessonId: session.lessonId }
+        });
+
+        for (const assign of matchingAssignments) {
+          await this.prisma.studentAssignmentProgress.upsert({
+            where: {
+              assignmentId_studentUserId: {
+                assignmentId: assign.id,
+                studentUserId: studentId,
+              },
+            },
+            create: {
+              assignmentId: assign.id,
+              studentUserId: studentId,
+              status: "SUBMITTED",
+              score: Math.round(percentageScore),
+              accuracy: percentageScore,
+              completedAt,
+            },
+            update: {
+              status: "SUBMITTED",
+              score: Math.round(percentageScore),
+              accuracy: percentageScore,
+              completedAt,
+            },
+          });
+        }
       }
     }
 
