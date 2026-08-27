@@ -1,0 +1,139 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  SISWA
+  ORANG_TUA
+  GURU
+  ADMIN
+}
+
+enum AccountStatus {
+  PENDING_CONSENT
+  ACTIVE
+  SUSPENDED
+}
+
+enum EducationStage {
+  TK
+  SD
+  SMP
+  SMA
+}
+
+enum VerificationMethod {
+  EMAIL_LINK
+  OTP_CODE
+  DIRECT_PARENT_DASHBOARD
+}
+
+model User {
+  id           String        @id @default(uuid())
+  email        String        @unique
+  passwordHash String        @map("password_hash")
+  role         Role
+  status       AccountStatus @default(ACTIVE)
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+
+  studentProfile   StudentProfile?
+  parentLinks      ParentChildLink[]  @relation("ParentLinks")
+  parentalConsents ParentalConsent[]
+  taughtClasses    Class[]            @relation("TaughtClasses")
+  refreshTokens    RefreshToken[]
+
+  @@map("users")
+}
+
+model StudentProfile {
+  id             String         @id @default(uuid())
+  userId         String         @unique @map("user_id")
+  displayName    String         @map("display_name")
+  educationStage EducationStage @map("education_stage")
+  gradeLevel     Int            @map("grade_level")
+  avatarId       String         @map("avatar_id")
+  birthDate      DateTime       @map("birth_date")
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
+
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parentLinks      ParentChildLink[]
+  classEnrollments ClassEnrollment[]
+
+  @@map("student_profiles")
+}
+
+model ParentChildLink {
+  id               String   @id @default(uuid())
+  parentId         String   @map("parent_id")
+  studentProfileId String   @map("student_profile_id")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  parent         User            @relation("ParentLinks", fields: [parentId], references: [id], onDelete: Cascade)
+  studentProfile StudentProfile  @relation(fields: [studentProfileId], references: [id], onDelete: Cascade)
+  consent        ParentalConsent?
+
+  @@unique([parentId, studentProfileId])
+  @@map("parent_child_links")
+}
+
+model ParentalConsent {
+  id                 String             @id @default(uuid())
+  linkId             String             @unique @map("link_id")
+  parentUserId       String             @map("parent_user_id")
+  consentedAt        DateTime           @default(now()) @map("consented_at")
+  verificationMethod VerificationMethod @map("verification_method")
+  consentVersion     String             @default("v1.0") @map("consent_version")
+
+  link       ParentChildLink @relation(fields: [linkId], references: [id], onDelete: Cascade)
+  parentUser User            @relation(fields: [parentUserId], references: [id], onDelete: Cascade)
+
+  @@map("parental_consents")
+}
+
+model Class {
+  id             String         @id @default(uuid())
+  teacherId      String         @map("teacher_id")
+  name           String
+  educationStage EducationStage @map("education_stage")
+  classCode      String         @unique @map("class_code")
+  createdAt      DateTime       @default(now()) @map("created_at")
+
+  teacher     User              @relation("TaughtClasses", fields: [teacherId], references: [id], onDelete: Cascade)
+  enrollments ClassEnrollment[]
+
+  @@map("classes")
+}
+
+model ClassEnrollment {
+  id               String   @id @default(uuid())
+  classId          String   @map("class_id")
+  studentProfileId String   @map("student_profile_id")
+  enrolledAt       DateTime @default(now()) @map("enrolled_at")
+
+  class          Class          @relation(fields: [classId], references: [id], onDelete: Cascade)
+  studentProfile StudentProfile @relation(fields: [studentProfileId], references: [id], onDelete: Cascade)
+
+  @@unique([classId, studentProfileId])
+  @@map("class_enrollments")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  tokenHash String   @unique @map("token_hash")
+  familyId  String   @map("family_id")
+  isRevoked Boolean  @default(false) @map("is_revoked")
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
+}
