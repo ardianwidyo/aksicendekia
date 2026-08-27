@@ -53,6 +53,13 @@ import { TeacherDashboardService } from "./modules/class/teacher-dashboard.servi
 import { registerTeacherRoutes } from "./modules/class/teacher.controller.js";
 import { WeeklyReportsService } from "./modules/weekly-reports/weekly-reports.service.js";
 
+import { EntitlementService } from "./modules/entitlements/entitlements.service.js";
+import { registerEntitlementRoutes } from "./modules/entitlements/entitlements.controller.js";
+import { SubscriptionService } from "./modules/subscriptions/subscriptions.service.js";
+import { registerSubscriptionRoutes } from "./modules/subscriptions/subscriptions.controller.js";
+import { PaymentService } from "./modules/payments/payments.service.js";
+import { registerPaymentRoutes } from "./modules/payments/payments.controller.js";
+
 declare module "fastify" {
   interface FastifyInstance {
     authenticate: (request: FastifyRequest, reply: FastifyReply) => Promise<void>;
@@ -114,6 +121,10 @@ export function buildApp(prisma: PrismaClient, jwtSecret: string = "secret-super
   const leaderboardRepo = new LeaderboardRepository(prisma);
   const csvImportService = new CsvImportService();
 
+  const entitlementService = new EntitlementService(prisma);
+  const subscriptionService = new SubscriptionService(prisma);
+  const paymentService = new PaymentService(prisma);
+
   const authService = new AuthService(authRepo, studentRepo, parentRepo, argon2Service, emailService);
   const studentService = new StudentService(studentRepo);
   const parentService = new ParentService(parentRepo, authRepo, studentRepo, argon2Service);
@@ -122,7 +133,7 @@ export function buildApp(prisma: PrismaClient, jwtSecret: string = "secret-super
   const weeklyReportsService = new WeeklyReportsService(prisma);
   const classService = new ClassService(classRepo, studentRepo);
   const curriculumService = new CurriculumService(curriculumRepo, csvImportService);
-  const sessionService = new SessionService(sessionRepo, prisma);
+  const sessionService = new SessionService(sessionRepo, prisma, entitlementService);
   const progressService = new ProgressService(prisma, progressRepo);
   const gamificationService = new GamificationService(prisma, progressRepo);
   const dailyChallengeService = new DailyChallengeService(dailyChallengeRepo);
@@ -139,6 +150,10 @@ export function buildApp(prisma: PrismaClient, jwtSecret: string = "secret-super
   registerProgressRoutes(app, progressService);
   registerDailyChallengeRoutes(app, dailyChallengeService);
   registerLeaderboardRoutes(app, leaderboardService);
+
+  registerEntitlementRoutes(app, entitlementService);
+  registerSubscriptionRoutes(app, subscriptionService);
+  registerPaymentRoutes(app, paymentService);
 
   // Weekly Report Generation Route
   app.post("/api/v1/reports/weekly/generate", { preHandler: [app.authenticate] }, async (_req, reply) => {

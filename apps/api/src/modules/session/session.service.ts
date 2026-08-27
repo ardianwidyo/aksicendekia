@@ -9,12 +9,14 @@ import {
   SessionSummaryDTO,
   SessionHistoryItemDTO
 } from './session.dto';
-import { PrismaClient } from '@prisma/client';
+import { EntitlementService } from "../entitlements/entitlements.service";
+import { EntitlementKey, PrismaClient } from "@prisma/client";
 
 export class SessionService {
   constructor(
     private sessionRepo: SessionRepository,
-    private prisma?: PrismaClient
+    private prisma?: PrismaClient,
+    private entitlementService?: EntitlementService
   ) {}
 
   async createSession(studentId: string, lessonId: string) {
@@ -26,6 +28,14 @@ export class SessionService {
 
     if (lesson.status !== 'PUBLISHED') {
       throw new ForbiddenError('Hanya pelajaran terbit (PUBLISHED) yang dapat diakses');
+    }
+
+    // Check Centralized Entitlement Layer (Freemium Daily Session Limit)
+    if (this.entitlementService) {
+      await this.entitlementService.checkQuotaAccess(studentId, EntitlementKey.DAILY_SESSION_LIMIT);
+    } else if (this.prisma) {
+      const entService = new EntitlementService(this.prisma);
+      await entService.checkQuotaAccess(studentId, EntitlementKey.DAILY_SESSION_LIMIT);
     }
 
     // Check Parental Control Daily Time Limit

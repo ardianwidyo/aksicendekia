@@ -39,3 +39,13 @@ export class TooManyRequestsError extends AppError {
     super(message, 429, code);
   }
 }
+
+export class PaywallLimitError extends AppError {
+  constructor(
+    message: string = "Kuota paket gratis telah habis. Tingkatkan ke Pro untuk akses tanpa batas!",
+    code: string = "PAYWALL_LIMIT_REACHED"
+  ) {
+    super(message, 403, code);
+  }
+}
+

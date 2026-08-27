@@ -1,0 +1,299 @@
+openapi: 3.0.3
+info:
+  title: AksiCendekia Subscription & Entitlement API
+  version: 1.0.0
+  description: OpenAPI 3.0 specification for Freemium and Pro Subscription Engine endpoints.
+
+paths:
+  /api/v1/entitlements/me:
+    get:
+      summary: Ambil status entitlement & sisa kuota pengguna saat ini
+      operationId: getMyEntitlements
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Berhasil mengembalikan entitelment pengguna
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserEntitlementsResponse'
+        '401':
+          description: Token JWT tidak valid atau kedaluwarsa
+
+  /api/v1/subscriptions/checkout:
+    post:
+      summary: Inisiasi transaksi checkout pembayaran langganan Pro
+      operationId: createCheckoutSession
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CheckoutSubscriptionRequest'
+      responses:
+        '201':
+          description: Transaksi berhasil dibuat, mengembalikan token Snap / URL redirect gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CheckoutSubscriptionResponse'
+        '400':
+          description: Payload request tidak valid
+        '401':
+          description: Unauthenticated
+
+  /api/v1/payments/webhook:
+    post:
+      summary: Webhook konfirmasi transaksi pembayaran dari Payment Gateway Indonesia
+      operationId: handlePaymentWebhook
+      description: WAJIB memverifikasi signature header/hash dan idempoten.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentGatewayWebhookPayload'
+      responses:
+        '200':
+          description: Webhook diproses atau diabaikan secara idempoten
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "OK"
+                  message:
+                    type: string
+                    example: "Webhook processed successfully"
+        '401':
+          description: Signature webhook tidak valid
+        '400':
+          description: Payload webhook tidak terurai dengan benar
+
+  /api/v1/subscriptions/cancel:
+    post:
+      summary: Batalkan perpanjangan otomatis langganan Pro
+      operationId: cancelAutoRenew
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Perpanjangan otomatis berhasil dibatalkan, langganan tetap berlaku hingga endsAt
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Perpanjangan otomatis berhasil dibatalkan"
+                  endsAt:
+                    type: string
+                    format: date-time
+
+  /api/v1/payments/history:
+    get:
+      summary: Ambil daftar riwayat transaksi pembayaran pengguna
+      operationId: getPaymentHistory
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Daftar riwayat transaksi pembayaran
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  transactions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PaymentTransactionItem'
+
+  /api/v1/payments/invoices/{invoiceId}:
+    get:
+      summary: Ambil rincian digital invoice
+      operationId: getInvoiceDetail
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: invoiceId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Rincian invoice digital terformat
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceDetail'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    UserEntitlementsResponse:
+      type: object
+      properties:
+        tier:
+          type: string
+          enum: [FREE, PRO_PERSONAL, PRO_FAMILY]
+        source:
+          type: string
+          enum: [DIRECT, INHERITED_PARENT, DEFAULT_FREE]
+        isProActive:
+          type: boolean
+        endsAt:
+          type: string
+          format: date-time
+          nullable: true
+        entitlements:
+          type: object
+          properties:
+            dailySessionLimit:
+              type: integer
+              description: -1 untuk unlimited, atau batas misal 3
+            dailySessionsUsed:
+              type: integer
+            subjectAccessTier:
+              type: string
+              enum: [BASIC, ALL]
+            dailyPowerupAllowance:
+              type: integer
+            dailyPowerupsUsed:
+              type: integer
+            parentReportDepth:
+              type: string
+              enum: [SUMMARY_ONLY, FULL_ANALYTICS]
+            familyMemberCapacity:
+              type: integer
+
+    CheckoutSubscriptionRequest:
+      type: object
+      required:
+        - planCode
+        - billingCycle
+        - paymentMethod
+      properties:
+        planCode:
+          type: string
+          enum: [PRO_PERSONAL, PRO_FAMILY]
+        billingCycle:
+          type: string
+          enum: [MONTHLY, ANNUAL]
+        paymentMethod:
+          type: string
+          enum: [EWALLET, VIRTUAL_ACCOUNT, CREDIT_CARD, QRIS, BANK_TRANSFER]
+        customerDetails:
+          type: object
+          properties:
+            name:
+              type: string
+            email:
+              type: string
+            phone:
+              type: string
+
+    CheckoutSubscriptionResponse:
+      type: object
+      properties:
+        orderId:
+          type: string
+        subscriptionId:
+          type: string
+        grossAmountIdr:
+          type: integer
+        snapToken:
+          type: string
+        snapRedirectUrl:
+          type: string
+
+    PaymentGatewayWebhookPayload:
+      type: object
+      required:
+        - order_id
+        - status_code
+        - gross_amount
+        - signature_key
+        - transaction_status
+      properties:
+        order_id:
+          type: string
+        status_code:
+          type: string
+        gross_amount:
+          type: string
+        signature_key:
+          type: string
+        transaction_status:
+          type: string
+        payment_type:
+          type: string
+        transaction_id:
+          type: string
+
+    PaymentTransactionItem:
+      type: object
+      properties:
+        id:
+          type: string
+        orderId:
+          type: string
+        planName:
+          type: string
+        grossAmountIdr:
+          type: integer
+        paymentMethod:
+          type: string
+        status:
+          type: string
+          enum: [PENDING, SETTLED, FAILED, EXPIRED, REFUNDED]
+        paidAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+
+    InvoiceDetail:
+      type: object
+      properties:
+        id:
+          type: string
+        invoiceNumber:
+          type: string
+        orderId:
+          type: string
+        billingName:
+          type: string
+        billingEmail:
+          type: string
+        planName:
+          type: string
+        subtotalIdr:
+          type: integer
+        taxIdr:
+          type: integer
+        totalIdr:
+          type: integer
+        status:
+          type: string
+          enum: [PAID, UNPAID, VOID]
+        issuedAt:
+          type: string
+          format: date-time
