@@ -40,6 +40,14 @@ import { ProgressService } from "./modules/progress/progress.service.js";
 import { GamificationService } from "./modules/progress/gamification.service.js";
 import { registerProgressRoutes } from "./modules/progress/progress.controller.js";
 
+import { DailyChallengeRepository } from "./modules/daily-challenge/daily-challenge.repository.js";
+import { DailyChallengeService } from "./modules/daily-challenge/daily-challenge.service.js";
+import { registerDailyChallengeRoutes } from "./modules/daily-challenge/daily-challenge.controller.js";
+
+import { LeaderboardRepository } from "./modules/leaderboard/leaderboard.repository.js";
+import { LeaderboardService } from "./modules/leaderboard/leaderboard.service.js";
+import { registerLeaderboardRoutes } from "./modules/leaderboard/leaderboard.controller.js";
+
 declare module "fastify" {
   interface FastifyInstance {
     authenticate: (request: FastifyRequest, reply: FastifyReply) => Promise<void>;
@@ -97,6 +105,8 @@ export function buildApp(prisma: PrismaClient, jwtSecret: string = "secret-super
   const curriculumRepo = new CurriculumRepository(prisma);
   const sessionRepo = new SessionRepository(prisma);
   const progressRepo = new ProgressRepository(prisma);
+  const dailyChallengeRepo = new DailyChallengeRepository(prisma);
+  const leaderboardRepo = new LeaderboardRepository(prisma);
   const csvImportService = new CsvImportService();
 
   const authService = new AuthService(authRepo, studentRepo, parentRepo, argon2Service, emailService);
@@ -107,6 +117,8 @@ export function buildApp(prisma: PrismaClient, jwtSecret: string = "secret-super
   const sessionService = new SessionService(sessionRepo, prisma);
   const progressService = new ProgressService(prisma, progressRepo);
   const gamificationService = new GamificationService(prisma, progressRepo);
+  const dailyChallengeService = new DailyChallengeService(dailyChallengeRepo);
+  const leaderboardService = new LeaderboardService(leaderboardRepo);
 
   // Register routes
   registerAuthRoutes(app, authService);
@@ -116,6 +128,8 @@ export function buildApp(prisma: PrismaClient, jwtSecret: string = "secret-super
   registerCurriculumRoutes(app, curriculumService);
   registerSessionRoutes(app, sessionService);
   registerProgressRoutes(app, progressService);
+  registerDailyChallengeRoutes(app, dailyChallengeService);
+  registerLeaderboardRoutes(app, leaderboardService);
 
   return app;
 }

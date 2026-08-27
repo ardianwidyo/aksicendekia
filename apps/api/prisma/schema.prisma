@@ -50,9 +50,11 @@ model User {
   learningSessions    LearningSession[]
   studentProgress     StudentProgress?
   xpTransactions      XpTransaction[]
-  studentBadges       StudentBadge[]
-  studentPowerups     StudentPowerup[]
-  powerupTransactions PowerupTransaction[]
+  studentBadges          StudentBadge[]
+  studentPowerups        StudentPowerup[]
+  powerupTransactions    PowerupTransaction[]
+  studentDailyChallenges StudentDailyChallenge[]
+  studentPrivacySetting  StudentPrivacySetting?
 
   @@map("users")
 }
@@ -408,6 +410,7 @@ enum XpSourceType {
   LESSON_BONUS
   PERFECT_SCORE_BONUS
   MILESTONE_BONUS
+  DAILY_CHALLENGE_BONUS
 }
 
 enum BadgeCategory {
@@ -518,3 +521,70 @@ model ProcessedEventLog {
 
   @@map("processed_event_logs")
 }
+
+// ==========================================
+// Daily Challenge & Privacy Setting Models
+// ==========================================
+
+enum ChallengeTargetType {
+  QUESTION_COUNT
+  LESSON_COUNT
+  ACCURACY_TARGET
+}
+
+enum ChallengeStatus {
+  IN_PROGRESS
+  COMPLETED
+  CLAIMED
+  EXPIRED
+}
+
+model DailyChallenge {
+  id                String              @id @default(uuid())
+  educationStage    EducationStage      @map("education_stage")
+  challengeDate     DateTime            @db.Date @map("challenge_date")
+  title             String
+  description       String
+  targetType        ChallengeTargetType @map("target_type")
+  targetValue       Int                 @map("target_value")
+  rewardXp          Int                 @default(50) @map("reward_xp")
+  rewardPowerupType PowerupType?        @map("reward_powerup_type")
+  rewardPowerupQty  Int                 @default(0) @map("reward_powerup_qty")
+  createdAt         DateTime            @default(now()) @map("created_at")
+
+  studentProgresses StudentDailyChallenge[]
+
+  @@unique([educationStage, challengeDate])
+  @@map("daily_challenges")
+}
+
+model StudentDailyChallenge {
+  id               String          @id @default(uuid())
+  studentUserId    String          @map("student_user_id")
+  dailyChallengeId String          @map("daily_challenge_id")
+  currentProgress  Int             @default(0) @map("current_progress")
+  status           ChallengeStatus @default(IN_PROGRESS)
+  completedAt      DateTime?       @map("completed_at")
+  claimedAt        DateTime?       @map("claimed_at")
+  createdAt        DateTime        @default(now()) @map("created_at")
+  updatedAt        DateTime        @updatedAt @map("updated_at")
+
+  studentUser    User           @relation(fields: [studentUserId], references: [id], onDelete: Cascade)
+  dailyChallenge DailyChallenge @relation(fields: [dailyChallengeId], references: [id], onDelete: Cascade)
+
+  @@unique([studentUserId, dailyChallengeId])
+  @@index([studentUserId])
+  @@map("student_daily_challenges")
+}
+
+model StudentPrivacySetting {
+  studentUserId           String   @id @map("student_user_id")
+  isHiddenFromLeaderboard Boolean  @default(false) @map("is_hidden_from_leaderboard")
+  isPrivacyLocked         Boolean  @default(false) @map("is_privacy_locked")
+  updatedAt               DateTime @updatedAt @map("updated_at")
+
+  studentUser User @relation(fields: [studentUserId], references: [id], onDelete: Cascade)
+
+  @@map("student_privacy_settings")
+}
+
