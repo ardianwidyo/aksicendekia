@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AksiCendekia - Setup &amp; Level Selection</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&amp;family=Quicksand:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-fixed-variant": "#004395",
+                        "tertiary": "#006947",
+                        "primary": "#0058be",
+                        "on-secondary-fixed": "#2a1700",
+                        "on-primary-fixed": "#001a42",
+                        "on-primary": "#ffffff",
+                        "tertiary-container": "#00855b",
+                        "surface-tint": "#005ac2",
+                        "on-primary-container": "#fefcff",
+                        "secondary-fixed-dim": "#ffb95f",
+                        "on-secondary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "on-surface": "#0b1c30",
+                        "on-secondary-container": "#684000",
+                        "secondary-container": "#fea619",
+                        "background": "#f8f9ff",
+                        "surface": "#f8f9ff",
+                        "surface-container": "#e5eeff",
+                        "primary-fixed": "#d8e2ff",
+                        "tertiary-fixed": "#6ffbbe",
+                        "outline": "#727785",
+                        "tertiary-fixed-dim": "#4edea3",
+                        "on-secondary-fixed-variant": "#653e00",
+                        "outline-variant": "#c2c6d6",
+                        "inverse-surface": "#213145",
+                        "surface-container-high": "#dce9ff",
+                        "surface-dim": "#cbdbf5",
+                        "surface-variant": "#d3e4fe",
+                        "on-error-container": "#93000a",
+                        "on-background": "#0b1c30",
+                        "error": "#ba1a1a",
+                        "on-tertiary-container": "#f5fff6",
+                        "on-tertiary-fixed-variant": "#005236",
+                        "primary-container": "#2170e4",
+                        "on-tertiary-fixed": "#002113",
+                        "surface-container-low": "#eff4ff",
+                        "secondary-fixed": "#ffddb8",
+                        "on-tertiary": "#ffffff",
+                        "primary-fixed-dim": "#adc6ff",
+                        "on-surface-variant": "#424754",
+                        "surface-container-lowest": "#ffffff",
+                        "inverse-on-surface": "#eaf1ff",
+                        "inverse-primary": "#adc6ff",
+                        "secondary": "#855300",
+                        "surface-bright": "#f8f9ff",
+                        "surface-container-highest": "#d3e4fe"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "lg": "48px",
+                        "container-max": "1200px",
+                        "md": "24px",
+                        "base": "8px",
+                        "xl": "64px",
+                        "sm": "12px",
+                        "gutter": "20px",
+                        "xs": "4px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Quicksand"],
+                        "label-sm": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "display-lg": ["Quicksand"],
+                        "body-md": ["Inter"],
+                        "title-md": ["Quicksand"],
+                        "headline-lg": ["Quicksand"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["28px", { "lineHeight": "36px", "fontWeight": "700" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "title-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .geometric-bg {
+            background-color: #f8f9ff;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(33, 112, 228, 0.05) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(254, 166, 25, 0.05) 0%, transparent 20%),
+                linear-gradient(45deg, transparent 49%, rgba(194, 198, 214, 0.1) 49%, rgba(194, 198, 214, 0.1) 51%, transparent 51%);
+            background-size: 100vw 100vh, 100vw 100vh, 40px 40px;
+        }
+        
+        .level-card {
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
+        }
+        
+        .level-card:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 12px 24px -8px rgba(0, 88, 190, 0.15);
+        }
+        
+        .level-card:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 4px rgba(0, 88, 190, 0.1);
+        }
+
+        .level-card.selected {
+            border-color: #2170e4;
+            background-color: #e5eeff;
+            border-width: 2px;
+            border-bottom-width: 6px;
+            border-bottom-color: #0058be;
+        }
+
+        .btn-primary {
+            border-bottom-width: 4px;
+            border-bottom-color: #004395;
+            transition: all 0.1s ease;
+        }
+        .btn-primary:active {
+            transform: translateY(2px);
+            border-bottom-width: 2px;
+            margin-top: 2px;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen font-body-md text-body-md geometric-bg flex flex-col antialiased">
+<!-- Navbar: Suppressed navigation links for transactional flow -->
+<nav class="bg-surface shadow-sm sticky top-0 z-50 w-full px-md md:px-lg h-16 flex items-center justify-between mx-auto">
+<div class="flex items-center gap-sm">
+<img alt="AksiCendekia Logo" class="h-10 w-10 object-contain rounded-md" src="https://lh3.googleusercontent.com/aida/AEtjO1Xb7cng8awxAwUblZx8L_PfySKfcCQetGyNMTBMyKxPJ9w8SSIJ-ogujf13Zl_E6DxQ-dOzNTpJL9_Q2SVyVT6zrMwwg78uwLhO2t0wa0VfR550apFnF6yw22bHk1T9FDL28kHt4yWtCoyJEfuQUv1XdKhEah3F-roMWDYj5TeR4g-HriILB_YGqOBObscas_1_4PLuUn7X1sUxzxV_nHF2Szp5o9WoN_-ib54ek0UO-nVXnzoU5eqGN0wp"/>
+<span class="font-headline-lg text-headline-lg font-bold text-primary hidden md:block">AksiCendekia</span>
+<span class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-primary md:hidden">AksiCendekia</span>
+</div>
+<div>
+<button class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors flex items-center gap-xs">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">help</span>
+                Need Help?
+            </button>
+</div>
+</nav>
+<main class="flex-1 w-full max-w-container-max mx-auto px-md md:px-lg py-xl flex flex-col items-center">
+<!-- Step Indicator -->
+<div class="w-full max-w-2xl mb-lg">
+<div class="flex items-center justify-between relative">
+<div class="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-surface-variant rounded-full z-0"></div>
+<div class="absolute left-0 top-1/2 -translate-y-1/2 w-1/2 h-1 bg-primary-container rounded-full z-0"></div>
+<div class="relative z-10 flex flex-col items-center gap-xs">
+<div class="w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold shadow-sm">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1; font-size: 16px;">check</span>
+</div>
+<span class="font-label-sm text-label-sm text-primary">Account</span>
+</div>
+<div class="relative z-10 flex flex-col items-center gap-xs">
+<div class="w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold shadow-sm border-2 border-primary-container">
+                        2
+                    </div>
+<span class="font-label-sm text-label-sm text-primary font-bold">Setup</span>
+</div>
+<div class="relative z-10 flex flex-col items-center gap-xs">
+<div class="w-8 h-8 rounded-full bg-surface text-on-surface-variant flex items-center justify-center font-bold border-2 border-outline-variant shadow-sm">
+                        3
+                    </div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Adventure</span>
+</div>
+</div>
+</div>
+<div class="w-full max-w-4xl bg-surface-container-lowest rounded-xl shadow-md border border-surface-variant p-md md:p-xl flex flex-col gap-lg">
+<!-- Header -->
+<div class="text-center space-y-sm">
+<h1 class="font-display-lg text-display-lg text-primary hidden md:block">Welcome to MathQuest!</h1>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary md:hidden">Welcome to MathQuest!</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mx-auto">Let's set up your learning journey. Parents, please verify this account before the explorer chooses their path.</p>
+</div>
+<!-- Parental Consent Section -->
+<div class="bg-surface-container-low rounded-lg p-md border border-outline-variant flex flex-col md:flex-row items-start md:items-center gap-md">
+<div class="bg-secondary-container text-on-secondary-container p-sm rounded-full flex-shrink-0">
+<span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+</div>
+<div class="flex-1">
+<h2 class="font-title-md text-title-md text-on-surface mb-xs">Parental Verification</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mb-sm">To ensure a safe learning environment, an adult must authorize this account.</p>
+<label class="flex items-center gap-sm cursor-pointer group">
+<input class="w-5 h-5 rounded border-outline-variant text-primary focus:ring-primary-container transition-colors" id="parent-verify" type="checkbox"/>
+<span class="font-label-sm text-label-sm text-on-surface group-hover:text-primary transition-colors">I am a parent/guardian and I authorize the creation of this account.</span>
+</label>
+</div>
+</div>
+<hr class="border-surface-variant"/>
+<!-- Level Selection Section -->
+<div class="space-y-md">
+<div class="text-center">
+<h2 class="font-title-md text-title-md text-on-surface">Choose Your Level</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Select the grade level to customize your math adventure.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-md" id="level-grid">
+<!-- TK Card -->
+<button class="level-card bg-surface border border-outline-variant rounded-xl p-md flex flex-col items-center gap-sm text-center relative overflow-hidden group focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2" onclick="selectLevel(this)">
+<div class="absolute inset-0 bg-gradient-to-br from-tertiary-fixed-dim/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<div class="w-16 h-16 bg-tertiary-container text-on-tertiary-container rounded-full flex items-center justify-center mb-sm shadow-sm">
+<span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 0;">child_care</span>
+</div>
+<h3 class="font-title-md text-title-md text-on-surface">TK</h3>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Taman Kanak-Kanak</p>
+<p class="font-body-md text-body-md text-on-surface-variant mt-sm text-sm">Counting, shapes, and fun basics.</p>
+<div class="mt-auto pt-sm text-primary opacity-0 group-hover:opacity-100 transition-opacity font-label-sm text-label-sm flex items-center gap-xs">
+                            Select <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</div>
+</button>
+<!-- SD Card -->
+<button class="level-card bg-surface border border-outline-variant rounded-xl p-md flex flex-col items-center gap-sm text-center relative overflow-hidden group focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2" onclick="selectLevel(this)">
+<div class="absolute inset-0 bg-gradient-to-br from-primary-fixed-dim/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<div class="w-16 h-16 bg-primary-container text-on-primary-container rounded-full flex items-center justify-center mb-sm shadow-sm">
+<span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 0;">school</span>
+</div>
+<h3 class="font-title-md text-title-md text-on-surface">SD</h3>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Sekolah Dasar</p>
+<p class="font-body-md text-body-md text-on-surface-variant mt-sm text-sm">Addition, subtraction, and exploring numbers.</p>
+<div class="mt-auto pt-sm text-primary opacity-0 group-hover:opacity-100 transition-opacity font-label-sm text-label-sm flex items-center gap-xs">
+                            Select <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</div>
+</button>
+<!-- SMP Card -->
+<button class="level-card bg-surface border border-outline-variant rounded-xl p-md flex flex-col items-center gap-sm text-center relative overflow-hidden group focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2" onclick="selectLevel(this)">
+<div class="absolute inset-0 bg-gradient-to-br from-secondary-fixed-dim/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<div class="w-16 h-16 bg-secondary-container text-on-secondary-container rounded-full flex items-center justify-center mb-sm shadow-sm">
+<span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 0;">menu_book</span>
+</div>
+<h3 class="font-title-md text-title-md text-on-surface">SMP</h3>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Sekolah Menengah Pertama</p>
+<p class="font-body-md text-body-md text-on-surface-variant mt-sm text-sm">Algebra, geometry, and problem solving.</p>
+<div class="mt-auto pt-sm text-primary opacity-0 group-hover:opacity-100 transition-opacity font-label-sm text-label-sm flex items-center gap-xs">
+                            Select <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</div>
+</button>
+<!-- SMA Card -->
+<button class="level-card bg-surface border border-outline-variant rounded-xl p-md flex flex-col items-center gap-sm text-center relative overflow-hidden group focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2" onclick="selectLevel(this)">
+<div class="absolute inset-0 bg-gradient-to-br from-error-container/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<div class="w-16 h-16 bg-inverse-surface text-inverse-on-surface rounded-full flex items-center justify-center mb-sm shadow-sm">
+<span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 0;">functions</span>
+</div>
+<h3 class="font-title-md text-title-md text-on-surface">SMA</h3>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Sekolah Menengah Atas</p>
+<p class="font-body-md text-body-md text-on-surface-variant mt-sm text-sm">Calculus, statistics, and advanced logic.</p>
+<div class="mt-auto pt-sm text-primary opacity-0 group-hover:opacity-100 transition-opacity font-label-sm text-label-sm flex items-center gap-xs">
+                            Select <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</div>
+</button>
+</div>
+</div>
+<!-- Action Area -->
+<div class="flex flex-col sm:flex-row items-center justify-between gap-md mt-sm pt-md border-t border-surface-variant">
+<button class="w-full sm:w-auto px-md py-sm rounded-lg border-2 border-outline text-on-surface hover:bg-surface-variant transition-colors font-label-sm text-label-sm flex items-center justify-center gap-xs focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0; font-size: 18px;">arrow_back</span>
+                    Back
+                </button>
+<button class="btn-primary w-full sm:w-auto px-xl py-sm rounded-lg bg-primary text-on-primary font-label-sm text-label-sm flex items-center justify-center gap-xs focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 opacity-50 cursor-not-allowed" disabled="" id="continue-btn">
+                    Start Adventure
+                    <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0; font-size: 18px;">rocket_launch</span>
+</button>
+</div>
+</div>
+</main>
+<script>
+        let selectedLevel = null;
+        const parentCheckbox = document.getElementById('parent-verify');
+        const continueBtn = document.getElementById('continue-btn');
+
+        function selectLevel(element) {
+            // Remove selection from all cards
+            document.querySelectorAll('.level-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            // Add selection to clicked card
+            element.classList.add('selected');
+            selectedLevel = element.querySelector('h3').innerText;
+            
+            checkFormValidity();
+        }
+
+        parentCheckbox.addEventListener('change', checkFormValidity);
+
+        function checkFormValidity() {
+            if (parentCheckbox.checked && selectedLevel) {
+                continueBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                continueBtn.disabled = false;
+            } else {
+                continueBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                continueBtn.disabled = true;
+            }
+        }
+    </script>
+</body></html>

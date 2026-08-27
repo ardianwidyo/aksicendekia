@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Utility States - AksiCendekia</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&amp;family=Inter:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-primary-fixed-variant": "#004395",
+                    "tertiary": "#006947",
+                    "primary": "#0058be",
+                    "on-secondary-fixed": "#2a1700",
+                    "on-primary-fixed": "#001a42",
+                    "on-primary": "#ffffff",
+                    "tertiary-container": "#00855b",
+                    "surface-tint": "#005ac2",
+                    "on-primary-container": "#fefcff",
+                    "secondary-fixed-dim": "#ffb95f",
+                    "on-secondary": "#ffffff",
+                    "on-error": "#ffffff",
+                    "error-container": "#ffdad6",
+                    "on-surface": "#0b1c30",
+                    "on-secondary-container": "#684000",
+                    "secondary-container": "#fea619",
+                    "background": "#f8f9ff",
+                    "surface": "#f8f9ff",
+                    "surface-container": "#e5eeff",
+                    "primary-fixed": "#d8e2ff",
+                    "tertiary-fixed": "#6ffbbe",
+                    "outline": "#727785",
+                    "tertiary-fixed-dim": "#4edea3",
+                    "on-secondary-fixed-variant": "#653e00",
+                    "outline-variant": "#c2c6d6",
+                    "inverse-surface": "#213145",
+                    "surface-container-high": "#dce9ff",
+                    "surface-dim": "#cbdbf5",
+                    "surface-variant": "#d3e4fe",
+                    "on-error-container": "#93000a",
+                    "on-background": "#0b1c30",
+                    "error": "#ba1a1a",
+                    "on-tertiary-container": "#f5fff6",
+                    "on-tertiary-fixed-variant": "#005236",
+                    "primary-container": "#2170e4",
+                    "on-tertiary-fixed": "#002113",
+                    "surface-container-low": "#eff4ff",
+                    "secondary-fixed": "#ffddb8",
+                    "on-tertiary": "#ffffff",
+                    "primary-fixed-dim": "#adc6ff",
+                    "on-surface-variant": "#424754",
+                    "surface-container-lowest": "#ffffff",
+                    "inverse-on-surface": "#eaf1ff",
+                    "inverse-primary": "#adc6ff",
+                    "secondary": "#855300",
+                    "surface-bright": "#f8f9ff",
+                    "surface-container-highest": "#d3e4fe"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "lg": "48px",
+                    "container-max": "1200px",
+                    "md": "24px",
+                    "base": "8px",
+                    "xl": "64px",
+                    "sm": "12px",
+                    "gutter": "20px",
+                    "xs": "4px"
+            },
+            "fontFamily": {
+                    "headline-lg-mobile": ["Quicksand"],
+                    "label-sm": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "display-lg": ["Quicksand"],
+                    "body-md": ["Inter"],
+                    "title-md": ["Quicksand"],
+                    "headline-lg": ["Quicksand"]
+            },
+            "fontSize": {
+                    "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "700"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "600"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "title-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        .tactile-card {
+            border: 1px solid theme('colors.outline-variant');
+            box-shadow: 0 4px 8px rgba(0, 88, 190, 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .tactile-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 88, 190, 0.15);
+        }
+        .tactile-button {
+            border-bottom: 4px solid theme('colors.on-primary-fixed-variant');
+            transition: all 0.1s;
+        }
+        .tactile-button:active {
+            border-bottom-width: 0px;
+            transform: translateY(4px);
+            margin-bottom: 4px;
+        }
+        .ghost-button {
+            border: 2px solid theme('colors.outline');
+            transition: all 0.2s;
+        }
+        .ghost-button:hover {
+            background-color: theme('colors.surface-variant');
+            border-color: theme('colors.outline-variant');
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md min-h-screen flex flex-col antialiased">
+<!-- TopNavBar (Nav suppression rule applied for this isolated showcase, but included structurally per instructions if needed, opting to suppress here to focus on the states as requested by the "linear/transactional/isolated" nature of utility screens, but wait, the prompt says "A screen showing three variations of feedback UI". I'll wrap them in a presentation container). -->
+<main class="flex-grow flex flex-col items-center justify-center p-md md:p-lg gap-xl max-w-container-max mx-auto w-full">
+<header class="text-center mb-md">
+<h1 class="font-display-lg text-display-lg text-primary mb-base">Utility States</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Empty, Error, and Loading feedback variations.</p>
+</header>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-md w-full">
+<!-- Empty State -->
+<div class="tactile-card bg-surface-container-lowest rounded-xl p-lg flex flex-col items-center justify-center text-center min-h-[400px]">
+<div class="w-48 h-48 mb-md relative rounded-full bg-surface-container-low flex items-center justify-center">
+<img class="object-contain w-3/4 h-3/4" data-alt="A 3D energetic educational mascot character looking around with a magnifying glass, geometric style, flat vector aesthetic but with soft tactile 3D shading, predominantly primary blue and secondary gold colors, set against a clean white and light grey background, communicating a 'nothing found' or 'empty' state." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCTNeB_YdyX6I75awY-AujeVWh9wfsRz8Fm5GU_KZ5YGx3HiYqG3slNUr2xA3HzqLQkAv_zr8zmdoyI8xnVemI65IoR7aLEB-BGz6UXuExREWqr_S10ZP74gkv0QFV9czfBDbmyfon1L_kFhc8deNPVBPWEO6tddAd57u9lQVJnJgCkwEVcMiiZ555_QOnJwTDlSlXr9J2hHY8w832qk9ttxicth2STLkf-hdaLGVENYGlIgQjtOXwfOw"/>
+</div>
+<h2 class="font-title-md text-title-md text-on-surface mb-base">Belum ada kuis di sini</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mb-md">Mungkin guru belum memberikan tugas, atau kamu sudah menyelesaikan semuanya!</p>
+<button class="tactile-button bg-primary text-on-primary font-label-sm text-label-sm py-sm px-md rounded-lg flex items-center gap-xs">
+<span class="material-symbols-outlined" data-icon="explore" style="font-variation-settings: 'FILL' 1;">explore</span>
+                    Cari Petualangan Lain
+                </button>
+</div>
+<!-- Error State -->
+<div class="tactile-card bg-error-container/30 rounded-xl p-lg flex flex-col items-center justify-center text-center min-h-[400px] border-error-container">
+<div class="w-48 h-48 mb-md relative rounded-full bg-error-container/50 flex items-center justify-center">
+<img class="object-contain w-3/4 h-3/4" data-alt="A 3D energetic educational mascot character looking surprised or slightly tangled in a geometric net or disconnected wire, flat vector aesthetic but with soft tactile 3D shading, predominantly primary blue and secondary gold colors with hints of error red, set against a clean white and light red-tinted background, communicating an 'error' or 'disconnected' state." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAsqq0dhY0f7Z0vvaBCRVuuwXTeYjvAlZyLhsTYptdpMMopzyR7g2xonas_I0d6uO7LqMYoowEezJ1H_ZrBwhuB1voaE-K82F3POO27Myu_7sn7h_afjoS8blMDO43s--GCCg0dKhpOcViU9z2428MQrjEmL9bRbecsFY60FkZiTHTZCeahKFHa05XYzbFic9Mv4p-WSUxWKxtBWCw_t0r2iGvJralTrypz-grEi1m3azEAchQYpAEUNg"/>
+</div>
+<h2 class="font-title-md text-title-md text-error mb-base">Ups, terjadi kesalahan koneksi</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mb-md">Koneksi internetmu sepertinya terputus. Coba periksa kembali jaringanmu.</p>
+<div class="flex gap-sm">
+<button class="ghost-button text-on-surface-variant font-label-sm text-label-sm py-sm px-md rounded-lg flex items-center gap-xs">
+                        Kembali
+                    </button>
+<button class="tactile-button bg-primary text-on-primary font-label-sm text-label-sm py-sm px-md rounded-lg flex items-center gap-xs">
+<span class="material-symbols-outlined" data-icon="refresh" style="font-variation-settings: 'FILL' 1;">refresh</span>
+                        Coba Lagi
+                    </button>
+</div>
+</div>
+<!-- Loading State -->
+<div class="tactile-card bg-surface-container-lowest rounded-xl p-lg flex flex-col items-center justify-center text-center min-h-[400px]">
+<div class="w-48 h-48 mb-md relative flex items-center justify-center">
+<!-- Geometric loading animation placeholder (simulated with CSS pulse for tactile feel) -->
+<div class="absolute inset-0 bg-primary-container/20 rounded-full animate-ping opacity-75"></div>
+<img class="object-contain w-3/4 h-3/4 relative z-10 animate-bounce" data-alt="A 3D energetic educational mascot character dynamically running or flying forward with a trail of geometric shapes (cubes, spheres, triangles) behind it, flat vector aesthetic but with soft tactile 3D shading, predominantly primary blue and secondary gold colors, set against a clean white background, communicating 'loading' or 'preparing'." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCky1a3p96d-WpHLHX7rU0GiHTugHvTlx4fNenivJjpafc3Zr4-8tZnJ_zNppWY8HV6LMIdxc59LfkQt16B1j4HX-pZuyQiH2WR1eNFyGg_0R_IU_Uty3SfkoVCsZfdRkBpBK65156nanN3oUiAkvIeC9SQkYShRzZmfTspSl0uEgogku6Xrl8cHnhhBbNeY9GCqOLucaY7LOEx19nBUxlnsrc4HSI8oq_2pdpzjUCv3Pheqotmfhf0MA"/>
+</div>
+<h2 class="font-title-md text-title-md text-primary mb-base">Menyiapkan petualanganmu...</h2>
+<!-- Double-layered Progress Bar per Style Guidance -->
+<div class="w-full max-w-[200px] h-3 bg-primary-fixed rounded-full overflow-hidden relative">
+<div class="absolute top-0 left-0 h-full bg-gradient-to-r from-primary to-tertiary w-2/3 rounded-full animate-pulse"></div>
+</div>
+</div>
+</div>
+</main>
+</body></html>
