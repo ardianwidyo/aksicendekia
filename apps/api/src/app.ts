@@ -31,6 +31,10 @@ import { CsvImportService } from "./modules/curriculum/csv-import.service.js";
 import { CurriculumService } from "./modules/curriculum/curriculum.service.js";
 import { registerCurriculumRoutes } from "./modules/curriculum/curriculum.controller.js";
 
+import { SessionRepository } from "./modules/session/session.repository.js";
+import { SessionService } from "./modules/session/session.service.js";
+import { registerSessionRoutes } from "./modules/session/session.controller.js";
+
 declare module "fastify" {
   interface FastifyInstance {
     authenticate: (request: FastifyRequest, reply: FastifyReply) => Promise<void>;
@@ -86,6 +90,7 @@ export function buildApp(prisma: PrismaClient, jwtSecret: string = "secret-super
   const parentRepo = new ParentRepository(prisma);
   const classRepo = new ClassRepository(prisma);
   const curriculumRepo = new CurriculumRepository(prisma);
+  const sessionRepo = new SessionRepository(prisma);
   const csvImportService = new CsvImportService();
 
   const authService = new AuthService(authRepo, studentRepo, parentRepo, argon2Service, emailService);
@@ -93,6 +98,7 @@ export function buildApp(prisma: PrismaClient, jwtSecret: string = "secret-super
   const parentService = new ParentService(parentRepo, authRepo, studentRepo, argon2Service);
   const classService = new ClassService(classRepo, studentRepo);
   const curriculumService = new CurriculumService(curriculumRepo, csvImportService);
+  const sessionService = new SessionService(sessionRepo, prisma);
 
   // Register routes
   registerAuthRoutes(app, authService);
@@ -100,6 +106,7 @@ export function buildApp(prisma: PrismaClient, jwtSecret: string = "secret-super
   registerParentRoutes(app, parentService);
   registerClassRoutes(app, classService);
   registerCurriculumRoutes(app, curriculumService);
+  registerSessionRoutes(app, sessionService);
 
   return app;
 }
