@@ -9,6 +9,7 @@ export * from './components/achievement-badge';
 export * from './components/button';
 export * from './components/mascot-speech-bubble';
 export * from './components/level-selector';
+export * from './components/tactile-option-button';
 
 // Group B - Form Primitives & Feedback
 export * from './components/forms/TextInput';

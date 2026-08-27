@@ -1,7 +1,7 @@
 import { Subject, Unit, Lesson, QuestionItem, ContentStatus, EducationStage, QuestionType, MatchingMode, Prisma } from "@prisma/client";
 import { CurriculumRepository } from "./curriculum.repository.js";
 import { CsvImportService, CsvImportReport } from "./csv-import.service.js";
-import { BadRequestError, NotFoundError, ConflictError } from "../../common/errors/app-error.js";
+import { AppError, NotFoundError, ConflictError } from "../../common/errors/app-error.js";
 import {
   CreateSubjectInput,
   UpdateSubjectInput,
@@ -11,7 +11,7 @@ import {
   UpdateLessonInput,
   CreateQuestionItemInput,
   UpdateQuestionItemInput,
-} from "./curriculum.schema.ts";
+} from "./curriculum.schema.js";
 
 export class CurriculumService {
   constructor(
@@ -227,7 +227,7 @@ export class CurriculumService {
     await this.validatePrerequisites(targetPrerequisiteIds);
 
     if (targetPrerequisiteIds.includes(lessonId)) {
-      throw new BadRequestError("Pelajaran tidak dapat menjadi prasyarat untuk dirinya sendiri");
+      throw new AppError("Pelajaran tidak dapat menjadi prasyarat untuk dirinya sendiri", 400, "BAD_REQUEST");
     }
 
     const allLinks = await this.repo.getPrerequisitesGraph();
@@ -250,7 +250,7 @@ export class CurriculumService {
       while (stack.length > 0) {
         const curr = stack.pop()!;
         if (curr === lessonId) {
-          throw new BadRequestError("Terdeteksi siklus prasyarat antar-pelajaran (circular prerequisite dependency)");
+          throw new AppError("Terdeteksi siklus prasyarat antar-pelajaran (circular prerequisite dependency)", 400, "BAD_REQUEST");
         }
         if (!visited.has(curr)) {
           visited.add(curr);
