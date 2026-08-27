@@ -12,6 +12,7 @@ import {
   FormField,
   Alert,
 } from '@aksicendekia/ui';
+import { apiFetch } from '../../../lib/api-fetch';
 
 export default function ParentChildrenPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -46,9 +47,9 @@ export default function ParentChildrenPage() {
     setLoading(true);
 
     try {
-      const res = await fetch('/api/v1/parent/children', {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      const res = await apiFetch('/api/v1/parent/children', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           displayName,
           email,

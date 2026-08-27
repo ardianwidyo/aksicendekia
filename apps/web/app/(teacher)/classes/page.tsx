@@ -12,6 +12,7 @@ import {
   Alert,
   StatCard,
 } from '@aksicendekia/ui';
+import { apiFetch } from '../../../lib/api-fetch';
 
 export default function TeacherClassesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -45,9 +46,8 @@ export default function TeacherClassesPage() {
     setLoading(true);
 
     try {
-      const res = await fetch('/api/v1/classes', {
+      const res = await apiFetch('/api/v1/classes', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: className,
           educationStage,

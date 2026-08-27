@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button, Card, ProgressBar, Modal } from '@aksicendekia/ui';
+import { apiFetch } from '../../../lib/api-fetch';
 
 interface Badge {
   badgeId: string;
@@ -55,12 +56,7 @@ export default function AchievementsPage() {
   const fetchAchievements = async () => {
     setLoading(true);
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-      const res = await fetch('/api/v1/students/achievements', {
-        headers: {
-          Authorization: token ? `Bearer ${token}` : ''
-        }
-      });
+      const res = await apiFetch('/api/v1/students/achievements');
 
       if (!res.ok) {
         throw new Error('Gagal memuat data pencapaian');
@@ -144,13 +140,8 @@ export default function AchievementsPage() {
   const handleConsumePowerup = async (powerupType: 'HINT_TOKEN' | 'STREAK_FREEZE') => {
     setConsumingPowerup(true);
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-      const res = await fetch('/api/v1/powerups/consume', {
+      const res = await apiFetch('/api/v1/powerups/consume', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: token ? `Bearer ${token}` : ''
-        },
         body: JSON.stringify({ powerupType })
       });
 

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button, Card } from '@aksicendekia/ui';
+import { apiFetch } from '../../../../lib/api-fetch';
 
 interface SessionHistoryItem {
   sessionId: string;
@@ -25,10 +26,7 @@ export default function StudentSessionHistoryPage() {
 
   const fetchHistory = async () => {
     try {
-      const token = localStorage.getItem('token') || '';
-      const res = await fetch('/api/v1/students/me/sessions?page=1&limit=20', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const res = await apiFetch('/api/v1/students/me/sessions?page=1&limit=20');
       if (res.ok) {
         const data = await res.json();
         setHistory(data.data || []);

@@ -10,6 +10,7 @@ import {
   Modal,
   Toast
 } from '@aksicendekia/ui';
+import { apiFetch } from '../../../../lib/api-fetch';
 
 interface Option {
   id: string;
@@ -71,10 +72,7 @@ export default function ActiveSessionPage() {
 
   const fetchSession = async () => {
     try {
-      const token = localStorage.getItem('token') || '';
-      const res = await fetch(`/api/v1/sessions/${sessionId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const res = await apiFetch(`/api/v1/sessions/${sessionId}`);
       if (res.ok) {
         const data = await res.json();
         setSession(data);
@@ -91,13 +89,8 @@ export default function ActiveSessionPage() {
   const handleRequestHint = async () => {
     if (!session?.currentQuestion) return;
     try {
-      const token = localStorage.getItem('token') || '';
-      const res = await fetch(`/api/v1/sessions/${sessionId}/hints`, {
+      const res = await apiFetch(`/api/v1/sessions/${sessionId}/hints`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
         body: JSON.stringify({ questionId: session.currentQuestion.id })
       });
       if (res.ok) {
@@ -129,13 +122,10 @@ export default function ActiveSessionPage() {
     const timeSpentSeconds = Math.max(1, Math.round((Date.now() - startTime) / 1000));
 
     try {
-      const token = localStorage.getItem('token') || '';
-      const res = await fetch(`/api/v1/sessions/${sessionId}/answers`, {
+      const res = await apiFetch(`/api/v1/sessions/${sessionId}/answers`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
           'Idempotency-Key': idempotencyKey,
-          Authorization: `Bearer ${token}`
         },
         body: JSON.stringify({
           questionId: session.currentQuestion.id,
@@ -180,11 +170,7 @@ export default function ActiveSessionPage() {
 
   const handlePauseSession = async () => {
     try {
-      const token = localStorage.getItem('token') || '';
-      await fetch(`/api/v1/sessions/${sessionId}/pause`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await apiFetch(`/api/v1/sessions/${sessionId}/pause`, { method: 'POST' });
       router.push('/catalog');
     } catch (err) {
       console.error(err);
@@ -285,6 +271,46 @@ export default function ActiveSessionPage() {
               />
             </div>
           )}
+
+          {q.type === 'MATCHING_PAIRS' && q.matchingItemsLeft && q.matchingItemsRight && (
+            <div className="mt-6 space-y-4">
+              <p className="text-sm font-semibold text-slate-600 mb-2">
+                Pasangkan setiap pernyataan di kolom kiri dengan jawaban yang sesuai di kolom kanan:
+              </p>
+              <div className="space-y-3">
+                {q.matchingItemsLeft.map((leftItem, idx) => (
+                  <div
+                    key={idx}
+                    className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-4 bg-slate-50 border border-slate-200 rounded-xl"
+                  >
+                    <div className="font-semibold text-slate-800 text-sm sm:text-base sm:w-1/2">
+                      {leftItem}
+                    </div>
+                    <div className="sm:w-1/2">
+                      <select
+                        disabled={feedback?.isSubmitted}
+                        value={matchingPairs[leftItem] || ''}
+                        onChange={(e) =>
+                          setMatchingPairs((prev) => ({
+                            ...prev,
+                            [leftItem]: e.target.value,
+                          }))
+                        }
+                        className="w-full p-2.5 text-sm font-medium bg-white border-2 border-slate-300 rounded-lg focus:border-blue-500 focus:outline-none disabled:bg-slate-100"
+                      >
+                        <option value="">-- Pilih Pasangan Jawaban --</option>
+                        {q.matchingItemsRight?.map((rightItem, rIdx) => (
+                          <option key={rIdx} value={rightItem}>
+                            {rightItem}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </Card>
 
         {/* Feedback Container */}
@@ -317,8 +343,15 @@ export default function ActiveSessionPage() {
         {!feedback?.isSubmitted && (
           <Button
             onClick={handleSubmitAnswer}
-            disabled={isSubmitting || (!selectedOptionId && !shortAnswerText.trim())}
-            className="w-full py-4 text-lg bg-blue-600 hover:bg-blue-700 font-bold"
+            disabled={
+              isSubmitting ||
+              (q.type === 'MULTIPLE_CHOICE' && !selectedOptionId) ||
+              (q.type === 'SHORT_ANSWER' && !shortAnswerText.trim()) ||
+              (q.type === 'MATCHING_PAIRS' &&
+                (!q.matchingItemsLeft ||
+                  q.matchingItemsLeft.some((item) => !matchingPairs[item])))
+            }
+            className="w-full py-4 text-lg bg-blue-600 hover:bg-blue-700 font-bold disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSubmitting ? 'Menilai Jawaban...' : 'Kirim Jawaban ✓'}
           </Button>

@@ -21,7 +21,7 @@ export function toClientQuestionDTO(question: QuestionItemRecord): ClientQuestio
   };
 
   if (question.questionType === 'MULTIPLE_CHOICE') {
-    const rawOptions = payload.options || [];
+    const rawOptions = payload.options || payload.choices || [];
     dto.options = rawOptions.map((opt: any) => ({
       id: opt.id,
       text: opt.text

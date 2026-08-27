@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button, Card, ProgressBar } from '@aksicendekia/ui';
+import { Button, Card, ProgressBar, Alert, Select } from '@aksicendekia/ui';
+import { apiFetch } from '../../../lib/api-fetch';
 
 interface MissionNode {
   lessonId: string;
@@ -19,103 +20,97 @@ interface MissionMapData {
   nodes: MissionNode[];
 }
 
+interface SubjectItem {
+  id: string;
+  name: string;
+  code: string;
+  educationStage: string;
+}
+
 export default function MissionMapPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
+  const [sessionLoading, setSessionLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [subjects, setSubjects] = useState<SubjectItem[]>([]);
+  const [selectedSubjectId, setSelectedSubjectId] = useState<string>('');
   const [missionMap, setMissionMap] = useState<MissionMapData | null>(null);
-  const [selectedSubjectId, setSelectedSubjectId] = useState<string>('subj-sd-mtk-01');
 
+  // Load subjects first
   useEffect(() => {
-    fetchMissionMap(selectedSubjectId);
+    fetchSubjects();
+  }, []);
+
+  // When selectedSubjectId changes, load mission map
+  useEffect(() => {
+    if (selectedSubjectId) {
+      fetchMissionMap(selectedSubjectId);
+    }
   }, [selectedSubjectId]);
+
+  const fetchSubjects = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await apiFetch('/api/v1/subjects');
+      if (!res.ok) {
+        throw new Error('Gagal memuat daftar mata pelajaran');
+      }
+      const data = await res.json();
+      const list: SubjectItem[] = data.subjects || [];
+      setSubjects(list);
+
+      if (list.length > 0) {
+        setSelectedSubjectId(list[0].id);
+      } else {
+        setLoading(false);
+      }
+    } catch (err: any) {
+      setError(err.message || 'Terjadi kesalahan saat memuat mata pelajaran');
+      setLoading(false);
+    }
+  };
 
   const fetchMissionMap = async (subjectId: string) => {
     setLoading(true);
     setError(null);
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-      const res = await fetch(`/api/v1/curriculum/subjects/${subjectId}/mission-map`, {
-        headers: {
-          Authorization: token ? `Bearer ${token}` : ''
-        }
-      });
-
+      const res = await apiFetch(`/api/v1/curriculum/subjects/${subjectId}/mission-map`);
       if (!res.ok) {
-        throw new Error('Gagal memuat data Peta Misi');
+        const errJson = await res.json().catch(() => ({}));
+        throw new Error(errJson.message || 'Gagal memuat data Peta Misi');
       }
-
       const data = await res.json();
       setMissionMap(data);
     } catch (err: any) {
-      // Demo fallback jika API belum terhubung ke database live
-      setMissionMap({
-        subjectId: 'subj-sd-mtk-01',
-        subjectName: 'Matematika SD Kelas 1',
-        nodes: [
-          {
-            lessonId: 'les-01',
-            title: 'Mengenal Angka 1-10',
-            sequenceOrder: 1,
-            status: 'COMPLETED',
-            bestScore: 100,
-            prerequisites: []
-          },
-          {
-            lessonId: 'les-02',
-            title: 'Penjumlahan Dasar 1-10',
-            sequenceOrder: 2,
-            status: 'CURRENT',
-            bestScore: null,
-            prerequisites: ['les-01']
-          },
-          {
-            lessonId: 'les-03',
-            title: 'Pengurangan Dasar 1-10',
-            sequenceOrder: 3,
-            status: 'LOCKED',
-            bestScore: null,
-            prerequisites: ['les-02']
-          },
-          {
-            lessonId: 'les-04',
-            title: 'Bentuk Bangun Datar',
-            sequenceOrder: 4,
-            status: 'LOCKED',
-            bestScore: null,
-            prerequisites: ['les-03']
-          }
-        ]
-      });
+      setError(err.message || 'Gagal memuat data Peta Misi');
     } finally {
       setLoading(false);
     }
   };
 
   const handleStartSession = async (lessonId: string) => {
+    setSessionLoading(true);
+    setError(null);
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-      const res = await fetch('/api/v1/sessions', {
+      const res = await apiFetch('/api/v1/sessions', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: token ? `Bearer ${token}` : ''
-        },
         body: JSON.stringify({ lessonId })
       });
 
-      if (res.ok) {
-        const sessionData = await res.json();
-        router.push(`/session/${sessionData.sessionId}`);
-      } else {
-        router.push(`/session/demo-session-id`);
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || 'Gagal memulai sesi belajar');
       }
-    } catch {
-      router.push(`/session/demo-session-id`);
+
+      router.push(`/session/${data.sessionId}`);
+    } catch (err: any) {
+      setError(err.message || 'Terjadi kesalahan saat memulai sesi');
+      setSessionLoading(false);
     }
   };
 
-  if (loading) {
+  if (loading && !missionMap) {
     return (
       <div className="min-h-screen bg-amber-50 flex items-center justify-center p-4">
         <p className="text-xl font-bold text-amber-800 animate-pulse">Memuat Peta Misi Petualangan...</p>
@@ -123,27 +118,55 @@ export default function MissionMapPage() {
     );
   }
 
-  const completedCount = missionMap?.nodes.filter((n) => n.status === 'COMPLETED').length || 0;
-  const totalCount = missionMap?.nodes.length || 1;
+  const completedCount = missionMap?.nodes?.filter((n) => n.status === 'COMPLETED').length || 0;
+  const totalCount = missionMap?.nodes?.length || 1;
   const progressPercent = Math.round((completedCount / totalCount) * 100);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-sky-100 via-amber-50 to-emerald-50 p-4 md:p-8 font-sans">
       <div className="max-w-4xl mx-auto space-y-6">
+        {/* Error Alert */}
+        {error && (
+          <Alert variant="error" title="Perhatian">
+            {error}
+          </Alert>
+        )}
+
         {/* Header Peta Misi */}
         <Card className="p-6 bg-white/90 backdrop-blur shadow-xl border-4 border-amber-300 rounded-3xl">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <div>
-              <span className="inline-block px-3 py-1 bg-amber-200 text-amber-900 font-extrabold text-xs rounded-full uppercase tracking-wider mb-2">
+            <div className="space-y-2">
+              <span className="inline-block px-3 py-1 bg-amber-200 text-amber-900 font-extrabold text-xs rounded-full uppercase tracking-wider">
                 Peta Misi Belajar
               </span>
               <h1 className="text-3xl font-black text-slate-800 tracking-tight">
-                {missionMap?.subjectName}
+                {missionMap?.subjectName || 'Mata Pelajaran'}
               </h1>
-              <p className="text-slate-600 font-medium text-sm mt-1">
+              <p className="text-slate-600 font-medium text-sm">
                 Selesaikan setiap simpul misi untuk membuka petualangan berikutnya!
               </p>
+
+              {/* Subject Selector if multiple subjects exist */}
+              {subjects.length > 1 && (
+                <div className="pt-2">
+                  <label className="text-xs font-bold text-slate-600 block mb-1">
+                    Ganti Mata Pelajaran:
+                  </label>
+                  <select
+                    value={selectedSubjectId}
+                    onChange={(e) => setSelectedSubjectId(e.target.value)}
+                    className="px-3 py-1.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-semibold text-slate-800"
+                  >
+                    {subjects.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.name} ({s.educationStage})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </div>
+
             <div className="w-full md:w-64 space-y-2">
               <div className="flex justify-between text-sm font-bold text-slate-700">
                 <span>Kemajuan Subjek</span>
@@ -159,74 +182,80 @@ export default function MissionMapPage() {
 
         {/* Graf Simpul Pelajaran (Path Vector Layout) */}
         <div className="relative py-8 px-4 flex flex-col items-center space-y-12">
-          {missionMap?.nodes.map((node, index) => {
-            const isCompleted = node.status === 'COMPLETED';
-            const isCurrent = node.status === 'CURRENT';
-            const isUnlocked = node.status === 'UNLOCKED';
-            const isLocked = node.status === 'LOCKED';
+          {missionMap?.nodes && missionMap.nodes.length > 0 ? (
+            missionMap.nodes.map((node, index) => {
+              const isCompleted = node.status === 'COMPLETED';
+              const isCurrent = node.status === 'CURRENT';
+              const isUnlocked = node.status === 'UNLOCKED';
+              const isLocked = node.status === 'LOCKED';
 
-            // Zig-zag offset untuk nuansa Peta Misi Petualangan
-            const offsetClasses = [
-              'translate-x-0',
-              'translate-x-12 md:translate-x-24',
-              'translate-x-0',
-              '-translate-x-12 md:-translate-x-24'
-            ];
-            const currentOffset = offsetClasses[index % offsetClasses.length];
+              // Zig-zag offset untuk nuansa Peta Misi Petualangan
+              const offsetClasses = [
+                'translate-x-0',
+                'translate-x-12 md:translate-x-24',
+                'translate-x-0',
+                '-translate-x-12 md:-translate-x-24'
+              ];
+              const currentOffset = offsetClasses[index % offsetClasses.length];
 
-            return (
-              <div
-                key={node.lessonId}
-                className={`relative flex flex-col items-center transition-transform duration-300 ${currentOffset}`}
-              >
-                {/* Node Button */}
-                <button
-                  type="button"
-                  disabled={isLocked}
-                  onClick={() => !isLocked && handleStartSession(node.lessonId)}
-                  aria-label={`${node.title} - Status: ${node.status}`}
-                  className={`
-                    relative group min-w-[76px] min-h-[76px] w-20 h-20 rounded-full flex items-center justify-center font-black text-2xl shadow-lg border-4
-                    transition-all duration-200 active:scale-95 focus:outline-none focus:ring-4 focus:ring-amber-400
-                    ${
-                      isCompleted
-                        ? 'bg-emerald-500 border-emerald-300 text-white shadow-emerald-700/40 hover:bg-emerald-600'
-                        : isCurrent
-                        ? 'bg-amber-400 border-amber-200 text-amber-950 shadow-amber-600/50 animate-bounce ring-4 ring-amber-300/60'
-                        : isUnlocked
-                        ? 'bg-sky-500 border-sky-300 text-white shadow-sky-700/40 hover:bg-sky-600'
-                        : 'bg-slate-300 border-slate-400 text-slate-500 shadow-slate-400/30 cursor-not-allowed'
-                    }
-                  `}
+              return (
+                <div
+                  key={node.lessonId}
+                  className={`relative flex flex-col items-center transition-transform duration-300 ${currentOffset}`}
                 >
-                  {isCompleted && <span>✓</span>}
-                  {isCurrent && <span>★</span>}
-                  {isUnlocked && <span>▶</span>}
-                  {isLocked && <span>🔒</span>}
-                </button>
+                  {/* Node Button */}
+                  <button
+                    type="button"
+                    disabled={isLocked || sessionLoading}
+                    onClick={() => !isLocked && handleStartSession(node.lessonId)}
+                    aria-label={`${node.title} - Status: ${node.status}`}
+                    className={`
+                      relative group min-w-[76px] min-h-[76px] w-20 h-20 rounded-full flex items-center justify-center font-black text-2xl shadow-lg border-4
+                      transition-all duration-200 active:scale-95 focus:outline-none focus:ring-4 focus:ring-amber-400
+                      ${
+                        isCompleted
+                          ? 'bg-emerald-500 border-emerald-300 text-white shadow-emerald-700/40 hover:bg-emerald-600'
+                          : isCurrent
+                          ? 'bg-amber-400 border-amber-200 text-amber-950 shadow-amber-600/50 animate-bounce ring-4 ring-amber-300/60'
+                          : isUnlocked
+                          ? 'bg-sky-500 border-sky-300 text-white shadow-sky-700/40 hover:bg-sky-600'
+                          : 'bg-slate-300 border-slate-400 text-slate-500 shadow-slate-400/30 cursor-not-allowed'
+                      }
+                    `}
+                  >
+                    {isCompleted && <span>✓</span>}
+                    {isCurrent && <span>★</span>}
+                    {isUnlocked && <span>▶</span>}
+                    {isLocked && <span>🔒</span>}
+                  </button>
 
-                {/* Info Card Badge */}
-                <div className="mt-3 text-center max-w-xs bg-white/90 backdrop-blur px-4 py-2 rounded-2xl border-2 border-slate-200 shadow-md">
-                  <p className="font-extrabold text-slate-800 text-sm">{node.title}</p>
-                  {isCompleted && node.bestScore !== null && (
-                    <span className="inline-block mt-1 px-2.5 py-0.5 bg-emerald-100 text-emerald-800 text-xs font-black rounded-full">
-                      Skor Terbaik: {node.bestScore}%
-                    </span>
-                  )}
-                  {isCurrent && (
-                    <span className="inline-block mt-1 px-2.5 py-0.5 bg-amber-200 text-amber-900 text-xs font-black rounded-full animate-pulse">
-                      Target Sekarang
-                    </span>
-                  )}
-                  {isLocked && (
-                    <span className="inline-block mt-1 px-2.5 py-0.5 bg-slate-100 text-slate-500 text-xs font-semibold rounded-full">
-                      Prasyarat Terkunci
-                    </span>
-                  )}
+                  {/* Info Card Badge */}
+                  <div className="mt-3 text-center max-w-xs bg-white/90 backdrop-blur px-4 py-2 rounded-2xl border-2 border-slate-200 shadow-md">
+                    <p className="font-extrabold text-slate-800 text-sm">{node.title}</p>
+                    {isCompleted && node.bestScore !== null && (
+                      <span className="inline-block mt-1 px-2.5 py-0.5 bg-emerald-100 text-emerald-800 text-xs font-black rounded-full">
+                        Skor Terbaik: {node.bestScore}%
+                      </span>
+                    )}
+                    {isCurrent && (
+                      <span className="inline-block mt-1 px-2.5 py-0.5 bg-amber-200 text-amber-900 text-xs font-black rounded-full animate-pulse">
+                        Target Sekarang
+                      </span>
+                    )}
+                    {isLocked && (
+                      <span className="inline-block mt-1 px-2.5 py-0.5 bg-slate-100 text-slate-500 text-xs font-semibold rounded-full">
+                        Prasyarat Terkunci
+                      </span>
+                    )}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })
+          ) : (
+            <Card className="p-8 text-center bg-white/80 rounded-2xl">
+              <p className="text-slate-600 font-medium">Belum ada pelajaran yang tersedia untuk mata pelajaran ini.</p>
+            </Card>
+          )}
         </div>
 
         {/* Footer Navigation */}

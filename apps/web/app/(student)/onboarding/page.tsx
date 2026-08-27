@@ -10,6 +10,7 @@ import {
   FormField,
   Alert,
 } from '@aksicendekia/ui';
+import { apiFetch } from '../../../lib/api-fetch';
 
 export default function StudentOnboardingPage() {
   const router = useRouter();
@@ -33,9 +34,8 @@ export default function StudentOnboardingPage() {
     setLoading(true);
 
     try {
-      const res = await fetch('/api/v1/students/me', {
+      const res = await apiFetch('/api/v1/students/me', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           displayName,
           educationStage: stage.toUpperCase(),
@@ -49,7 +49,7 @@ export default function StudentOnboardingPage() {
         throw new Error(data.message || 'Gagal menyimpan profil');
       }
 
-      router.push('/catalog');
+      router.push('/mission-map');
     } catch (err: any) {
       setError(err.message || 'Terjadi kesalahan saat menyimpan profil');
     } finally {

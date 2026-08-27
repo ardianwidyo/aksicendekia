@@ -1,4 +1,4 @@
-import { PrismaClient, EducationStage, CurriculumPhase, ContentStatus, DifficultyLevel, QuestionType, MatchingMode } from "@prisma/client";
+import { PrismaClient, EducationStage, CurriculumPhase, ContentStatus, DifficultyLevel, QuestionType } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -41,7 +41,7 @@ async function main() {
             i === 2 ? "10" : i === 5 ? "Satuan Si" : i === 8 ? "Panjang" : `Jawaban ${i}`,
             i === 2 ? "Sepuluh" : i === 5 ? "SI" : `jawaban ${i}`,
           ],
-          matchingMode: MatchingMode.NORMALIZED,
+          matchingMode: "NORMALIZED",
         };
       } else {
         // Matching Pairs

@@ -14,6 +14,7 @@ import {
   StatCard,
   Badge,
 } from '@aksicendekia/ui';
+import { apiFetch } from '../../../lib/api-fetch';
 
 interface StudentProgress {
   studentId: string;
@@ -105,9 +106,8 @@ export default function TeacherDashboardPage() {
     setMessage(null);
 
     try {
-      const res = await fetch('/api/v1/teacher/assignments', {
+      const res = await apiFetch('/api/v1/teacher/assignments', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           classId: selectedClassId,
           lessonId,

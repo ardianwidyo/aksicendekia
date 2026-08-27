@@ -397,7 +397,7 @@ export class SessionService {
           sessionId,
           studentId,
           lessonId: session.lessonId,
-          subjectId: session.lesson.unit.subject.id,
+          subjectId: session.lesson?.unit?.subject?.id || '',
           score: percentageScore,
           totalQuestions: session.totalQuestions,
           correctCount: session.correctCount,
@@ -421,11 +421,15 @@ export class SessionService {
           create: {
             studentProfileId: studentProfile.id,
             lessonId: session.lessonId,
+            status: 'COMPLETED',
             isCompleted: true,
+            bestScore: new Prisma.Decimal(percentageScore),
             completedAt
           },
           update: {
+            status: 'COMPLETED',
             isCompleted: true,
+            bestScore: new Prisma.Decimal(percentageScore),
             completedAt
           }
         });
@@ -475,8 +479,8 @@ export class SessionService {
 
     const data: SessionHistoryItemDTO[] = items.map((s) => ({
       sessionId: s.id,
-      lessonTitle: s.lesson.title,
-      subjectName: s.lesson.unit.subject.name,
+      lessonTitle: s.lesson?.title || 'Pelajaran',
+      subjectName: s.lesson?.unit?.subject?.name || 'Mata Pelajaran',
       score: s.score ? Number(s.score) : null,
       status: s.status,
       completedAt: s.completedAt ? s.completedAt.toISOString() : null,
@@ -498,18 +502,19 @@ export class SessionService {
     const incorrectAnswers = (session.answers || []).filter((a: any) => !a.isCorrect);
 
     const incorrectQuestionsSummary = incorrectAnswers.map((a: any) => {
+      const qType = a.question?.questionType || 'MULTIPLE_CHOICE';
       const { correctAnswerDetails } = gradeQuestion(
-        a.question.questionType,
-        a.question.contentPayload,
+        qType,
+        a.question?.contentPayload,
         a.studentAnswer
       );
 
       return {
         questionId: a.questionId,
-        prompt: a.question.promptText,
+        prompt: a.question?.promptText || 'Soal',
         studentAnswer: a.studentAnswer,
         correctAnswer: correctAnswerDetails,
-        explanation: a.question.explanation
+        explanation: a.question?.explanation || 'Pembahasan tidak tersedia'
       };
     });
 

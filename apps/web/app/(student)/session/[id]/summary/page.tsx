@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { Button, Card } from '@aksicendekia/ui';
+import { apiFetch } from '../../../../../lib/api-fetch';
 
 interface IncorrectQuestionSummary {
   questionId: string;
@@ -32,24 +33,24 @@ export default function SessionSummaryPage() {
 
   const [summary, setSummary] = useState<SummaryData | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     fetchSummary();
   }, [sessionId]);
 
   const fetchSummary = async () => {
+    setIsLoading(true);
+    setErrorMessage(null);
     try {
-      const token = localStorage.getItem('token') || '';
-      const res = await fetch(`/api/v1/sessions/${sessionId}/complete`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setSummary(data);
+      const res = await apiFetch(`/api/v1/sessions/${sessionId}/complete`, { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || 'Gagal memuat ringkasan hasil belajar');
       }
-    } catch (err) {
-      console.error(err);
+      setSummary(data);
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Terjadi kesalahan saat memproses hasil');
     } finally {
       setIsLoading(false);
     }
@@ -58,13 +59,8 @@ export default function SessionSummaryPage() {
   const handleRetake = async () => {
     if (!summary) return;
     try {
-      const token = localStorage.getItem('token') || '';
-      const res = await fetch('/api/v1/sessions', {
+      const res = await apiFetch('/api/v1/sessions', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
         body: JSON.stringify({ lessonId: summary.lessonId })
       });
       if (res.ok) {
@@ -76,10 +72,30 @@ export default function SessionSummaryPage() {
     }
   };
 
-  if (isLoading || !summary) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
         <p className="text-slate-500 text-lg animate-pulse">Menghitung hasil belajar...</p>
+      </div>
+    );
+  }
+
+  if (errorMessage || !summary) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 p-4">
+        <Card className="max-w-md p-6 bg-white rounded-2xl border border-rose-200 text-center space-y-4 shadow-sm">
+          <span className="text-4xl">⚠️</span>
+          <h2 className="text-xl font-bold text-slate-800">Gagal Memuat Hasil</h2>
+          <p className="text-sm text-slate-600">{errorMessage || 'Data hasil belajar tidak ditemukan.'}</p>
+          <div className="flex gap-3 justify-center pt-2">
+            <Button variant="outline" onClick={() => router.push('/mission-map')}>
+              Kembali ke Peta Misi
+            </Button>
+            <Button onClick={fetchSummary} className="bg-blue-600 hover:bg-blue-700">
+              🔄 Coba Lagi
+            </Button>
+          </div>
+        </Card>
       </div>
     );
   }

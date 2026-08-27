@@ -20,8 +20,11 @@ export function gradeQuestion(
 
   if (questionType === 'MULTIPLE_CHOICE') {
     const correctOptionId = payload.correctOptionId ||
-      payload.options?.find((o: any) => o.isCorrect)?.id;
-    const selectedOptionId = studentAnswer?.selectedOptionId;
+      payload.options?.find((o: any) => o.isCorrect)?.id ||
+      payload.choices?.find((o: any) => o.isCorrect)?.id;
+    const selectedOptionId = typeof studentAnswer === 'object' && studentAnswer !== null
+      ? studentAnswer.selectedOptionId || studentAnswer.optionId || studentAnswer.id
+      : studentAnswer;
 
     const isCorrect = Boolean(selectedOptionId && correctOptionId && selectedOptionId === correctOptionId);
 
@@ -34,7 +37,9 @@ export function gradeQuestion(
   }
 
   if (questionType === 'SHORT_ANSWER') {
-    const rawInput = studentAnswer?.text || '';
+    const rawInput = typeof studentAnswer === 'object' && studentAnswer !== null
+      ? studentAnswer.text ?? studentAnswer.answer ?? ''
+      : (typeof studentAnswer === 'string' ? studentAnswer : '');
     const acceptedAnswers: string[] = payload.acceptedAnswers || [];
     const matchingMode: 'EXACT' | 'CASE_INSENSITIVE' | 'NORMALIZED' = payload.matchingMode || 'NORMALIZED';
 
@@ -43,12 +48,12 @@ export function gradeQuestion(
     if (matchingMode === 'EXACT') {
       isCorrect = acceptedAnswers.some((acc) => acc === rawInput);
     } else if (matchingMode === 'CASE_INSENSITIVE') {
-      const lowerInput = rawInput.trim().toLowerCase();
-      isCorrect = acceptedAnswers.some((acc) => acc.trim().toLowerCase() === lowerInput);
+      const lowerInput = String(rawInput).trim().toLowerCase();
+      isCorrect = acceptedAnswers.some((acc) => String(acc).trim().toLowerCase() === lowerInput);
     } else {
       // NORMALIZED (default)
-      const normInput = normalizeAnswerText(rawInput);
-      isCorrect = acceptedAnswers.some((acc) => normalizeAnswerText(acc) === normInput);
+      const normInput = normalizeAnswerText(String(rawInput));
+      isCorrect = acceptedAnswers.some((acc) => normalizeAnswerText(String(acc)) === normInput);
     }
 
     return {
@@ -61,7 +66,8 @@ export function gradeQuestion(
   }
 
   if (questionType === 'MATCHING_PAIRS') {
-    const studentPairs: Record<string, string> = studentAnswer?.pairs || {};
+    const studentPairs: Record<string, string> =
+      (typeof studentAnswer === 'object' && studentAnswer !== null ? studentAnswer.pairs || studentAnswer : {}) || {};
     const rawPairs = payload.pairs || [];
 
     const expectedPairs: Record<string, string> = {};
@@ -69,7 +75,7 @@ export function gradeQuestion(
       rawPairs.forEach((p: { left: string; right: string }) => {
         if (p.left && p.right) expectedPairs[p.left] = p.right;
       });
-    } else if (typeof rawPairs === 'object') {
+    } else if (typeof rawPairs === 'object' && rawPairs !== null) {
       Object.assign(expectedPairs, rawPairs);
     }
 

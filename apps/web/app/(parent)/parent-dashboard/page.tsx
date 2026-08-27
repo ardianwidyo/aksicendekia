@@ -13,6 +13,7 @@ import {
   StatCard,
   Badge,
 } from '@aksicendekia/ui';
+import { apiFetch } from '../../../lib/api-fetch';
 
 interface ChildSummary {
   studentId: string;
@@ -100,9 +101,8 @@ export default function ParentDashboardPage() {
 
     try {
       const limitMinutes = dailyLimit === 'unlimited' ? null : Number(dailyLimit);
-      const res = await fetch(`/api/v1/parent/children/${selectedChildId}/controls`, {
+      const res = await apiFetch(`/api/v1/parent/children/${selectedChildId}/controls`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           dailyTimeLimitMinutes: limitMinutes,
           isPrivacyLocked: privacyLocked,

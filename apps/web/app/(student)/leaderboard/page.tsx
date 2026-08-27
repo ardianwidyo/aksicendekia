@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button, Card, ProgressBar, Modal } from '@aksicendekia/ui';
+import { apiFetch } from '../../../lib/api-fetch';
 
 interface DailyChallengeData {
   id: string;
@@ -62,18 +63,15 @@ export default function LeaderboardPage() {
     setLoading(true);
     setErrorMessage(null);
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-      const headers = { Authorization: token ? `Bearer ${token}` : '' };
-
       // Fetch Today's Daily Challenge
-      const challengeRes = await fetch('/api/v1/daily-challenges/today', { headers });
+      const challengeRes = await apiFetch('/api/v1/daily-challenges/today');
       if (challengeRes.ok) {
         const json = await challengeRes.json();
         setChallenge(json.data);
       }
 
       // Fetch Privacy Settings
-      const privacyRes = await fetch('/api/v1/students/me/privacy', { headers });
+      const privacyRes = await apiFetch('/api/v1/students/me/privacy');
       if (privacyRes.ok) {
         const json = await privacyRes.json();
         setPrivacy(json.data);
@@ -81,7 +79,7 @@ export default function LeaderboardPage() {
 
       // Demo fallback or class fetch
       const demoClassId = 'cls-demo-123';
-      const leaderboardRes = await fetch(`/api/v1/classes/${demoClassId}/leaderboard`, { headers });
+      const leaderboardRes = await apiFetch(`/api/v1/classes/${demoClassId}/leaderboard`);
       if (leaderboardRes.ok) {
         const json = await leaderboardRes.json();
         setLeaderboard(json.data);
@@ -121,13 +119,8 @@ export default function LeaderboardPage() {
     setSuccessMessage(null);
 
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-      const res = await fetch(`/api/v1/daily-challenges/${challenge.id}/claim`, {
+      const res = await apiFetch(`/api/v1/daily-challenges/${challenge.id}/claim`, {
         method: 'POST',
-        headers: {
-          Authorization: token ? `Bearer ${token}` : '',
-          'Content-Type': 'application/json'
-        }
       });
 
       const json = await res.json();
@@ -153,13 +146,8 @@ export default function LeaderboardPage() {
     const newHiddenState = !privacy.isHiddenFromLeaderboard;
 
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-      const res = await fetch('/api/v1/students/me/privacy', {
+      const res = await apiFetch('/api/v1/students/me/privacy', {
         method: 'PATCH',
-        headers: {
-          Authorization: token ? `Bearer ${token}` : '',
-          'Content-Type': 'application/json'
-        },
         body: JSON.stringify({ isHiddenFromLeaderboard: newHiddenState })
       });
 

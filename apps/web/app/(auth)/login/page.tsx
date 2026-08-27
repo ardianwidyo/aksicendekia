@@ -36,13 +36,19 @@ export default function LoginPage() {
         throw new Error(data.message || 'Login gagal');
       }
 
-      // Store in-memory access token & navigate based on role/status
+      // Simpan access token ke localStorage
+      if (data.accessToken) {
+        localStorage.setItem('token', data.accessToken);
+        localStorage.setItem('userRole', data.user.role);
+      }
+
+      // Navigate based on role/status
       if (data.user.status === 'PENDING_CONSENT') {
         router.push('/consent-status');
       } else if (data.user.role === 'GURU') {
-        router.push('/teacher/classes');
+        router.push('/teacher-dashboard');
       } else if (data.user.role === 'ORANG_TUA') {
-        router.push('/parent/children');
+        router.push('/children');
       } else {
         router.push('/onboarding');
       }
