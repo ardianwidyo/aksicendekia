@@ -1,0 +1,31 @@
+{
+  "xpRules": {
+    "correctAnswerBaseXp": 10,
+    "lessonCompletionBonusXp": 50,
+    "perfectScoreBonusXp": 20
+  },
+  "levelCurve": {
+    "baseXp": 100,
+    "exponent": 1.5,
+    "maxLevel": 100
+  },
+  "powerups": {
+    "initialHintTokens": 3,
+    "initialStreakFreezes": 1,
+    "levelUpHintReward": 1,
+    "streakMilestoneRewards": {
+      "7": {
+        "type": "STREAK_FREEZE",
+        "amount": 1
+      },
+      "14": {
+        "type": "HINT_TOKEN",
+        "amount": 3
+      },
+      "30": {
+        "type": "STREAK_FREEZE",
+        "amount": 2
+      }
+    }
+  }
+}

@@ -35,6 +35,11 @@ import { SessionRepository } from "./modules/session/session.repository.js";
 import { SessionService } from "./modules/session/session.service.js";
 import { registerSessionRoutes } from "./modules/session/session.controller.js";
 
+import { ProgressRepository } from "./modules/progress/progress.repository.js";
+import { ProgressService } from "./modules/progress/progress.service.js";
+import { GamificationService } from "./modules/progress/gamification.service.js";
+import { registerProgressRoutes } from "./modules/progress/progress.controller.js";
+
 declare module "fastify" {
   interface FastifyInstance {
     authenticate: (request: FastifyRequest, reply: FastifyReply) => Promise<void>;
@@ -91,6 +96,7 @@ export function buildApp(prisma: PrismaClient, jwtSecret: string = "secret-super
   const classRepo = new ClassRepository(prisma);
   const curriculumRepo = new CurriculumRepository(prisma);
   const sessionRepo = new SessionRepository(prisma);
+  const progressRepo = new ProgressRepository(prisma);
   const csvImportService = new CsvImportService();
 
   const authService = new AuthService(authRepo, studentRepo, parentRepo, argon2Service, emailService);
@@ -99,6 +105,8 @@ export function buildApp(prisma: PrismaClient, jwtSecret: string = "secret-super
   const classService = new ClassService(classRepo, studentRepo);
   const curriculumService = new CurriculumService(curriculumRepo, csvImportService);
   const sessionService = new SessionService(sessionRepo, prisma);
+  const progressService = new ProgressService(prisma, progressRepo);
+  const gamificationService = new GamificationService(prisma, progressRepo);
 
   // Register routes
   registerAuthRoutes(app, authService);
@@ -107,6 +115,7 @@ export function buildApp(prisma: PrismaClient, jwtSecret: string = "secret-super
   registerClassRoutes(app, classService);
   registerCurriculumRoutes(app, curriculumService);
   registerSessionRoutes(app, sessionService);
+  registerProgressRoutes(app, progressService);
 
   return app;
 }

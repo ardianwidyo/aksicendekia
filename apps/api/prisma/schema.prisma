@@ -42,12 +42,17 @@ model User {
   createdAt    DateTime      @default(now()) @map("created_at")
   updatedAt    DateTime      @updatedAt @map("updated_at")
 
-  studentProfile   StudentProfile?
-  parentLinks      ParentChildLink[]       @relation("ParentLinks")
-  parentalConsents ParentalConsent[]
-  taughtClasses    Class[]                 @relation("TaughtClasses")
-  refreshTokens    RefreshToken[]
-  learningSessions LearningSession[]
+  studentProfile      StudentProfile?
+  parentLinks         ParentChildLink[]       @relation("ParentLinks")
+  parentalConsents    ParentalConsent[]
+  taughtClasses       Class[]                 @relation("TaughtClasses")
+  refreshTokens       RefreshToken[]
+  learningSessions    LearningSession[]
+  studentProgress     StudentProgress?
+  xpTransactions      XpTransaction[]
+  studentBadges       StudentBadge[]
+  studentPowerups     StudentPowerup[]
+  powerupTransactions PowerupTransaction[]
 
   @@map("users")
 }
@@ -280,14 +285,24 @@ model QuestionHint {
   @@map("question_hints")
 }
 
+enum ProgressStatus {
+  LOCKED
+  UNLOCKED
+  IN_PROGRESS
+  COMPLETED
+}
+
 model StudentLessonProgress {
-  id               String    @id @default(uuid())
-  studentProfileId String    @map("student_profile_id")
-  lessonId         String    @map("lesson_id")
-  isCompleted      Boolean   @default(false) @map("is_completed")
-  completedAt      DateTime? @map("completed_at")
-  createdAt        DateTime  @default(now()) @map("created_at")
-  updatedAt        DateTime  @updatedAt @map("updated_at")
+  id               String         @id @default(uuid())
+  studentProfileId String         @map("student_profile_id")
+  lessonId         String         @map("lesson_id")
+  status           ProgressStatus @default(LOCKED)
+  isCompleted      Boolean        @default(false) @map("is_completed")
+  bestScore        Decimal?       @db.Decimal(5, 2) @map("best_score")
+  attemptsCount    Int            @default(0) @map("attempts_count")
+  completedAt      DateTime?      @map("completed_at")
+  createdAt        DateTime       @default(now()) @map("created_at")
+  updatedAt        DateTime       @updatedAt @map("updated_at")
 
   studentProfile StudentProfile @relation(fields: [studentProfileId], references: [id], onDelete: Cascade)
   lesson         Lesson         @relation(fields: [lessonId], references: [id], onDelete: Cascade)
@@ -376,4 +391,130 @@ model OutboxEvent {
 
   @@index([published, createdAt])
   @@map("outbox_events")
+}
+
+enum PowerupType {
+  HINT_TOKEN
+  STREAK_FREEZE
+}
+
+enum PowerupAction {
+  EARNED
+  CONSUMED
+}
+
+enum XpSourceType {
+  QUESTION_CORRECT
+  LESSON_BONUS
+  PERFECT_SCORE_BONUS
+  MILESTONE_BONUS
+}
+
+enum BadgeCategory {
+  LESSON_MILESTONE
+  STREAK_MILESTONE
+  ACCURACY_MASTER
+  SUBJECT_MASTER
+}
+
+model StudentProgress {
+  id             String   @id @default(uuid())
+  studentId      String   @unique @map("student_id")
+  totalXp        Int      @default(0) @map("total_xp")
+  level          Int      @default(1)
+  currentStreak  Int      @default(0) @map("current_streak")
+  longestStreak  Int      @default(0) @map("longest_streak")
+  lastActiveDate String?  @map("last_active_date")
+  timezone       String   @default("Asia/Jakarta")
+
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  student        User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([studentId])
+  @@map("student_progress")
+}
+
+model XpTransaction {
+  id          String       @id @default(uuid())
+  studentId   String       @map("student_id")
+  amount      Int
+  source      XpSourceType
+  referenceId String?      @map("reference_id")
+  createdAt   DateTime     @default(now()) @map("created_at")
+
+  student     User         @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([studentId, createdAt])
+  @@map("xp_transactions")
+}
+
+model BadgeDefinition {
+  id                 String         @id @default(uuid())
+  code               String         @unique
+  name               String
+  description        String
+  iconUrl            String         @map("icon_url")
+  category           BadgeCategory
+  conditionType      String         @map("condition_type")
+  conditionParameter Json           @map("condition_parameter")
+
+  createdAt          DateTime       @default(now()) @map("created_at")
+  studentBadges      StudentBadge[]
+
+  @@map("badge_definitions")
+}
+
+model StudentBadge {
+  id             String          @id @default(uuid())
+  studentId      String          @map("student_id")
+  badgeId        String          @map("badge_id")
+  triggerEventId String?         @map("trigger_event_id")
+  unlockedAt     DateTime        @default(now()) @map("unlocked_at")
+
+  student        User            @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  badge          BadgeDefinition @relation(fields: [badgeId], references: [id], onDelete: Restrict)
+
+  @@unique([studentId, badgeId])
+  @@index([studentId])
+  @@map("student_badges")
+}
+
+model StudentPowerup {
+  id          String      @id @default(uuid())
+  studentId   String      @map("student_id")
+  powerupType PowerupType @map("powerup_type")
+  quantity    Int         @default(0)
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+
+  student     User        @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, powerupType])
+  @@index([studentId])
+  @@map("student_powerups")
+}
+
+model PowerupTransaction {
+  id          String        @id @default(uuid())
+  studentId   String        @map("student_id")
+  powerupType PowerupType   @map("powerup_type")
+  actionType  PowerupAction @map("action_type")
+  amount      Int
+  source      String
+  referenceId String?       @map("reference_id")
+  createdAt   DateTime      @default(now()) @map("created_at")
+
+  student     User          @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([studentId, createdAt])
+  @@map("powerup_transactions")
+}
+
+model ProcessedEventLog {
+  eventId     String   @id @map("event_id")
+  eventType   String   @map("event_type")
+  aggregateId String   @map("aggregate_id")
+  processedAt DateTime @default(now()) @map("processed_at")
+
+  @@map("processed_event_logs")
 }
