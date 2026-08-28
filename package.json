@@ -1,6 +1,7 @@
 {
   "name": "aksicendekia-monorepo",
   "private": true,
+  "packageManager": "pnpm@9.15.0",
   "scripts": {
     "dev": "pnpm --filter web dev",
     "build": "pnpm --filter \"@aksicendekia/*\" build && pnpm --filter web build",

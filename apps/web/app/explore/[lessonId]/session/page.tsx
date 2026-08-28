@@ -150,7 +150,7 @@ export default function GuestSessionPage() {
     } else {
       // Completed all questions
       const completedAt = new Date().toISOString();
-      const correctCount = answersLog.filter((a) => a.isCorrect).length + (isCurrentCorrect ? 1 : 0);
+      const correctCount = answersLog.filter((a) => a.isCorrect).length;
 
       const sessionRecord = LocalSessionEngine.buildSessionRecord({
         lessonId,

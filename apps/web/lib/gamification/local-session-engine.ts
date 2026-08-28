@@ -146,7 +146,9 @@ export class LocalSessionEngine {
     answers: GuestSessionAnswerRecord[];
   }): GuestSessionRecord {
     const scorePercentage =
-      params.totalQuestions > 0 ? Math.round((params.correctCount / params.totalQuestions) * 100) : 0;
+      params.totalQuestions > 0
+        ? Math.min(100, Math.max(0, Math.round((params.correctCount / params.totalQuestions) * 100)))
+        : 0;
     const xpEarned = LocalSessionEngine.calculateXp(scorePercentage, params.correctCount);
 
     return {
