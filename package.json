@@ -5,6 +5,8 @@
   "scripts": {
     "dev": "pnpm --filter web dev",
     "build": "pnpm --filter \"@aksicendekia/*\" build && pnpm --filter web build",
+    "deploy": "pnpm build && npx wrangler pages deploy apps/web/out --project-name=aksicendekia",
+    "build:pages": "pnpm --filter \"@aksicendekia/*\" build && pnpm --filter web pages:build",
     "build:tokens": "pnpm --filter @aksicendekia/design-tokens build",
     "lint": "pnpm --filter \"*\" lint",
     "test": "pnpm --filter \"*\" test"
