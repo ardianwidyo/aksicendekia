@@ -345,6 +345,27 @@ export function createMockPrismaClient(): PrismaClient {
           })),
         };
       },
+      findFirst: async ({ where }: { where?: any }) => {
+        let res = [...lessons];
+        if (where?.id) res = res.filter((l) => l.id === where.id);
+        if (where?.unitId) res = res.filter((l) => l.unitId === where.unitId);
+        if (where?.status) res = res.filter((l) => l.status === where.status);
+        const l = res[0];
+        if (!l) return null;
+        const prereqs = lessonPrerequisites.filter((p) => p.lessonId === l.id);
+        let qItems = questionItems.filter((q) => q.lessonId === l.id);
+        if (where?.questionItems?.where?.status) {
+          qItems = qItems.filter((q) => q.status === where.questionItems.where.status);
+        }
+        return {
+          ...l,
+          prerequisites: prereqs.map((p) => ({ prerequisiteLessonId: p.prerequisiteLessonId })),
+          questionItems: qItems.map((q) => ({
+            ...q,
+            hints: questionHints.filter((h) => h.questionItemId === q.id),
+          })),
+        };
+      },
       findMany: async ({ where }: { where?: any }) => {
         let res = [...lessons];
         if (where?.unitId) res = res.filter((l) => l.unitId === where.unitId);
@@ -416,6 +437,18 @@ export function createMockPrismaClient(): PrismaClient {
     questionItem: {
       findUnique: async ({ where }: { where: { id: string } }) => {
         const q = questionItems.find((item) => item.id === where.id);
+        if (!q) return null;
+        return {
+          ...q,
+          hints: questionHints.filter((h) => h.questionItemId === q.id),
+        };
+      },
+      findFirst: async ({ where }: { where?: any }) => {
+        let res = [...questionItems];
+        if (where?.id) res = res.filter((q) => q.id === where.id);
+        if (where?.lessonId) res = res.filter((q) => q.lessonId === where.lessonId);
+        if (where?.status) res = res.filter((q) => q.status === where.status);
+        const q = res[0];
         if (!q) return null;
         return {
           ...q,
@@ -500,6 +533,50 @@ export function createMockPrismaClient(): PrismaClient {
           studentLessonProgress.push(p);
         }
         return p;
+      },
+    },
+
+    studentProgress: {
+      findUnique: async ({ where }: { where: { studentId: string } }) => {
+        return (mockPrisma as any)._studentProgresses?.find((sp: any) => sp.studentId === where.studentId) || null;
+      },
+      create: async ({ data }: { data: any }) => {
+        if (!(mockPrisma as any)._studentProgresses) (mockPrisma as any)._studentProgresses = [];
+        const item = {
+          id: randomUUID(),
+          studentId: data.studentId,
+          timezone: data.timezone || "Asia/Jakarta",
+          totalXp: data.totalXp || 0,
+          level: data.level || 1,
+          currentStreak: data.currentStreak || 0,
+          longestStreak: data.longestStreak || 0,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+        (mockPrisma as any)._studentProgresses.push(item);
+        return item;
+      },
+      update: async ({ where, data }: { where: { studentId: string }; data: any }) => {
+        const item = (mockPrisma as any)._studentProgresses?.find((sp: any) => sp.studentId === where.studentId);
+        if (!item) throw new Error("StudentProgress not found");
+        Object.assign(item, data, { updatedAt: new Date() });
+        return item;
+      },
+    },
+
+    xpTransaction: {
+      create: async ({ data }: { data: any }) => {
+        if (!(mockPrisma as any)._xpTransactions) (mockPrisma as any)._xpTransactions = [];
+        const item = {
+          id: randomUUID(),
+          studentId: data.studentId,
+          amount: data.amount,
+          source: data.source,
+          referenceId: data.referenceId || null,
+          createdAt: new Date(),
+        };
+        (mockPrisma as any)._xpTransactions.push(item);
+        return item;
       },
     },
 

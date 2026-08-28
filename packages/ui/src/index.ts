@@ -40,3 +40,10 @@ export * from './components/data/FileDropzone';
 export * from './shells/StudentShell';
 export * from './shells/ProfessionalShell';
 export * from './components/app-shell';
+
+// Guest Mode Components (Feature 009)
+export * from './components/guest/guest-header-banner';
+export * from './components/guest/guest-profile-modal';
+export * from './components/guest/guest-sync-modal';
+export * from './components/guest/guest-reset-modal';
+export * from './components/guest/guest-feature-gate';
