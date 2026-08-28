@@ -98,5 +98,51 @@
       "name": "SMA / SMK / MA",
       "subtitle": "Fase E - F (Kelas 10 - 12)"
     }
+  },
+  "guest": {
+    "banner": {
+      "title": "Mode Tamu Aktif (Lokal)",
+      "cta": "Simpan Progres ke Akun",
+      "hint": "Progresmu tersimpan di memori perangkat ini."
+    },
+    "sync": {
+      "dialog": {
+        "title": "Simpan Progres Belajarmu!",
+        "description": "Kami mendeteksi progres belajar tamu di perangkat ini. Apakah kamu ingin memindahkan XP, modul selesai, dan streak ke akun barumu?",
+        "confirm": "Ya, Simpan ke Akunku",
+        "skip": "Lewati (Mulai dari Awal)",
+        "success": "Progres belajarmu berhasil digabungkan ke akun!"
+      }
+    },
+    "reset": {
+      "dialog": {
+        "title": "Reset Progres Belajar Lokal?",
+        "description": "Seluruh XP, modul selesai, dan riwayat belajar di perangkat ini akan dihapus permanen. Tindakan ini tidak dapat dibatalkan.",
+        "confirm": "Ya, Hapus Semua Progres",
+        "cancel": "Batal",
+        "success": "Progres lokal telah direset."
+      }
+    },
+    "feature_gate": {
+      "title": "Fitur Khusus Pengguna Terdaftar",
+      "description": "Fitur ini membutuhkan akun agar dapat terhubung dengan teman, guru, atau orang tua.",
+      "cta": "Daftar Akun Gratis",
+      "login_cta": "Sudah punya akun? Masuk"
+    },
+    "profile": {
+      "edit_title": "Profil Belajar Lokal",
+      "name_label": "Nama Panggilan",
+      "name_placeholder": "Masukkan nama panggilanmu",
+      "avatar_label": "Pilih Karakter Favorit",
+      "save": "Simpan Profil"
+    },
+    "onboarding": {
+      "explore_prompt": "Jelajahi seluruh mata pelajaran dan mulai belajar sekarang!",
+      "start_learning": "Mulai Belajar Langsung",
+      "login": "Masuk ke Akun"
+    },
+    "incognito": {
+      "warning": "Kamu sedang menggunakan Mode Penyamaran (Incognito). Progres belajarmu akan hilang saat browser ditutup. Buat akun untuk menyimpan permanen!"
+    }
   }
 }

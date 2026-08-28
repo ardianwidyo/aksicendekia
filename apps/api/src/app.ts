@@ -59,6 +59,10 @@ import { SubscriptionService } from "./modules/subscriptions/subscriptions.servi
 import { registerSubscriptionRoutes } from "./modules/subscriptions/subscriptions.controller.js";
 import { PaymentService } from "./modules/payments/payments.service.js";
 import { registerPaymentRoutes } from "./modules/payments/payments.controller.js";
+import { registerPublicContentRoutes } from "./modules/sync/public-content.controller.js";
+import { GuestSyncRepository } from "./modules/sync/guest-sync.repository.js";
+import { GuestSyncService } from "./modules/sync/guest-sync.service.js";
+import { registerGuestSyncRoutes } from "./modules/sync/guest-sync.controller.js";
 
 declare module "fastify" {
   interface FastifyInstance {
@@ -138,6 +142,8 @@ export function buildApp(prisma: PrismaClient, jwtSecret: string = "secret-super
   const gamificationService = new GamificationService(prisma, progressRepo);
   const dailyChallengeService = new DailyChallengeService(dailyChallengeRepo);
   const leaderboardService = new LeaderboardService(leaderboardRepo);
+  const guestSyncRepo = new GuestSyncRepository(prisma);
+  const guestSyncService = new GuestSyncService(guestSyncRepo);
 
   // Register routes
   registerAuthRoutes(app, authService);
@@ -154,6 +160,8 @@ export function buildApp(prisma: PrismaClient, jwtSecret: string = "secret-super
   registerEntitlementRoutes(app, entitlementService);
   registerSubscriptionRoutes(app, subscriptionService);
   registerPaymentRoutes(app, paymentService);
+  registerPublicContentRoutes(app, prisma);
+  registerGuestSyncRoutes(app, guestSyncService);
 
   // Weekly Report Generation Route
   app.post("/api/v1/reports/weekly/generate", { preHandler: [app.authenticate] }, async (_req, reply) => {

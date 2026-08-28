@@ -1,0 +1,67 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "GuestSyncContract",
+  "description": "API Contract for POST /api/v1/sync/guest-progress",
+  "type": "object",
+  "properties": {
+    "request": {
+      "type": "object",
+      "required": ["guestId", "totalXp", "streakCount", "completedLessonIds", "completedModuleIds", "sessionHistory"],
+      "properties": {
+        "guestId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "totalXp": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000
+        },
+        "streakCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 365
+        },
+        "completedLessonIds": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "completedModuleIds": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "unlockedBadgeIds": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "sessionHistory": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["sessionId", "lessonId", "scorePercentage", "xpEarned", "startedAt", "completedAt"],
+            "properties": {
+              "sessionId": { "type": "string", "format": "uuid" },
+              "lessonId": { "type": "string" },
+              "scorePercentage": { "type": "number", "minimum": 0, "maximum": 100 },
+              "xpEarned": { "type": "integer", "minimum": 0 },
+              "startedAt": { "type": "string", "format": "date-time" },
+              "completedAt": { "type": "string", "format": "date-time" }
+            }
+          }
+        }
+      }
+    },
+    "response": {
+      "type": "object",
+      "required": ["success", "mergedXp", "newLevel", "totalCompletedLessons", "syncedAt", "message"],
+      "properties": {
+        "success": { "type": "boolean" },
+        "mergedXp": { "type": "integer" },
+        "newLevel": { "type": "integer" },
+        "totalCompletedLessons": { "type": "integer" },
+        "syncedAt": { "type": "string", "format": "date-time" },
+        "message": { "type": "string" }
+      }
+    }
+  }
+}

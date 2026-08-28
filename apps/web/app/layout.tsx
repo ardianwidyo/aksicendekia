@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Quicksand, Inter, Montserrat } from 'next/font/google';
 import './globals.css';
 import { ThemeProvider, I18nProvider } from '@aksicendekia/ui';
+import { GuestProgressProvider } from '../lib/context/guest-progress-context';
 
 const quicksand = Quicksand({
   subsets: ['latin'],
@@ -40,7 +41,9 @@ export default function RootLayout({
       <body className="bg-background text-on-surface font-body antialiased min-h-screen">
         <ThemeProvider defaultGradeLevel="sd">
           <I18nProvider defaultLocale="id">
-            {children}
+            <GuestProgressProvider>
+              {children}
+            </GuestProgressProvider>
           </I18nProvider>
         </ThemeProvider>
       </body>
