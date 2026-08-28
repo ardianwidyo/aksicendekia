@@ -6,6 +6,6 @@
     "nodejs_compat"
   ],
   "assets": {
-    "directory": "out"
+    "directory": "./apps/web/out"
   }
 }
