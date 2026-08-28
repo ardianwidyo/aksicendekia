@@ -8,6 +8,8 @@ import { LocalSessionEngine } from '@/lib/gamification/local-session-engine';
 import { useGuestProgress } from '@/lib/context/guest-progress-context';
 import { GuestSessionAnswerRecord } from '@/lib/gamification/guest-progress.schema';
 
+import { getGuestLessonFallback } from '@/lib/guest-lessons';
+
 export default function GuestSessionClient() {
   const params = useParams();
   const router = useRouter();
@@ -36,64 +38,10 @@ export default function GuestSessionClient() {
           const data = await res.json();
           setLesson(data);
         } else {
-          // Fallback sample lesson
-          setLesson({
-            id: lessonId,
-            title: 'Latihan Interaktif Mode Tamu',
-            educationStage: gradeLevel.toUpperCase(),
-            questionItems: [
-              {
-                id: 'q1',
-                questionType: 'MULTIPLE_CHOICE',
-                promptText: 'Berapakah hasil dari 7 + 8?',
-                contentPayload: {
-                  options: [
-                    { id: 'opt_1', text: '14' },
-                    { id: 'opt_2', text: '15' },
-                    { id: 'opt_3', text: '16' },
-                  ],
-                  correct_option_id: 'opt_2',
-                  explanation: '7 + 8 = 15.',
-                },
-                hints: [{ stepOrder: 1, hintText: 'Ingat: 7 + 7 = 14, tambahkan 1 lagi.' }],
-              },
-              {
-                id: 'q2',
-                questionType: 'SHORT_ANSWER',
-                promptText: 'Tuliskan nama ibukota negara Indonesia (IKN baru):',
-                contentPayload: {
-                  matching_mode: 'NORMALIZED',
-                  accepted_answers: ['nusantara', 'ikn nusantara'],
-                  explanation: 'Ibukota Nusantara (IKN) terletak di Kalimantan Timur.',
-                },
-                hints: [{ stepOrder: 1, hintText: 'Dimulai dengan huruf N dan berakhiran A.' }],
-              },
-            ],
-          });
+          setLesson(getGuestLessonFallback(lessonId, gradeLevel));
         }
       } catch {
-        setLesson({
-          id: lessonId,
-          title: 'Latihan Interaktif Mode Tamu',
-          educationStage: gradeLevel.toUpperCase(),
-          questionItems: [
-            {
-              id: 'q1',
-              questionType: 'MULTIPLE_CHOICE',
-              promptText: 'Berapakah hasil dari 7 + 8?',
-              contentPayload: {
-                options: [
-                  { id: 'opt_1', text: '14' },
-                  { id: 'opt_2', text: '15' },
-                  { id: 'opt_3', text: '16' },
-                ],
-                correct_option_id: 'opt_2',
-                explanation: '7 + 8 = 15.',
-              },
-              hints: [{ stepOrder: 1, hintText: 'Ingat: 7 + 7 = 14, tambahkan 1 lagi.' }],
-            },
-          ],
-        });
+        setLesson(getGuestLessonFallback(lessonId, gradeLevel));
       } finally {
         setLoading(false);
       }

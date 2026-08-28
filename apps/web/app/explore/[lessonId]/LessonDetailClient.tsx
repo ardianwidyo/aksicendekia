@@ -7,6 +7,8 @@ import { BookOpen, Sparkles, Clock, Target, ArrowLeft, Play, Award } from 'lucid
 import Link from 'next/link';
 import { useGuestProgress } from '@/lib/context/guest-progress-context';
 
+import { getGuestLessonFallback } from '@/lib/guest-lessons';
+
 export default function LessonDetailClient() {
   const params = useParams();
   const router = useRouter();
@@ -26,73 +28,10 @@ export default function LessonDetailClient() {
           const data = await res.json();
           setLesson(data);
         } else {
-          // Fallback sample lesson for standalone preview
-          setLesson({
-            id: lessonId,
-            title: 'Mengenal Angka & Nilai Tempat',
-            summary: 'Pahami konsep satuan, puluhan, dan ratusan dengan ilustrasi benda nyata.',
-            learningObjective: 'Siswa mampu membaca dan menguraikan bilangan hingga 100.',
-            educationStage: gradeLevel.toUpperCase(),
-            difficultyLevel: 'BEGINNER',
-            estimatedDurationMinutes: 10,
-            questionItems: [
-              {
-                id: 'q1',
-                questionType: 'MULTIPLE_CHOICE',
-                promptText: 'Berapakah jumlah puluhan pada angka 45?',
-                contentPayload: {
-                  options: [
-                    { id: 'opt_a', text: '4' },
-                    { id: 'opt_b', text: '5' },
-                    { id: 'opt_c', text: '40' },
-                  ],
-                  correct_option_id: 'opt_a',
-                  explanation: 'Angka 45 terdiri dari 4 puluhan (40) dan 5 satuan (5).',
-                },
-                hints: [{ stepOrder: 1, hintText: 'Perhatikan angka yang berada di posisi depan (kiri).' }],
-              },
-              {
-                id: 'q2',
-                questionType: 'SHORT_ANSWER',
-                promptText: 'Tuliskan nama bilangan dari lambang angka 10 dalam huruf kecil:',
-                contentPayload: {
-                  matching_mode: 'NORMALIZED',
-                  accepted_answers: ['sepuluh'],
-                  explanation: 'Angka 10 dibaca sebagai "sepuluh".',
-                },
-                hints: [{ stepOrder: 1, hintText: 'Dimulai dengan huruf s dan diakhiri huruf h.' }],
-              },
-            ],
-          });
+          setLesson(getGuestLessonFallback(lessonId, gradeLevel));
         }
       } catch {
-        // Fallback sample lesson
-        setLesson({
-          id: lessonId,
-          title: 'Mengenal Angka & Nilai Tempat',
-          summary: 'Pahami konsep satuan, puluhan, dan ratusan dengan ilustrasi benda nyata.',
-          learningObjective: 'Siswa mampu membaca dan menguraikan bilangan hingga 100.',
-          educationStage: gradeLevel.toUpperCase(),
-          difficultyLevel: 'BEGINNER',
-          estimatedDurationMinutes: 10,
-          questionItems: [
-            {
-              id: 'q1',
-              questionType: 'MULTIPLE_CHOICE',
-              promptText: 'Berapakah jumlah puluhan pada angka 45?',
-              contentPayload: {
-                options: [
-                  { id: 'opt_a', text: '4' },
-                  { id: 'opt_b', text: '5' },
-                  { id: 'opt_c', text: '40' },
-                ],
-                correct_option_id: 'opt_a',
-                explanation: 'Angka 45 terdiri dari 4 puluhan (40) dan 5 satuan (5).',
-              },
-              hints: [{ stepOrder: 1, hintText: 'Perhatikan angka yang berada di posisi depan.' }],
-            },
-          ],
-        });
+        setLesson(getGuestLessonFallback(lessonId, gradeLevel));
       } finally {
         setLoading(false);
       }

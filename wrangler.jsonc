@@ -6,6 +6,7 @@
     "nodejs_compat"
   ],
   "assets": {
-    "directory": "./apps/web/out"
+    "directory": "./apps/web/out",
+    "not_found_handling": "single-page-application"
   }
 }
