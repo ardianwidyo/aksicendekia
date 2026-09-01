@@ -1,13 +1,38 @@
+import {
+  INTERACTIVE_LESSONS,
+  getLessonById,
+  listForCatalog,
+  allLessonIds as contentKitAllLessonIds,
+  getLegacyLessonRef,
+  type InteractiveLesson,
+  type LessonBlockInput,
+} from '@aksicendekia/content-kit';
+
 export interface QuestionItem {
   id: string;
-  questionType: 'MULTIPLE_CHOICE' | 'SHORT_ANSWER';
+  questionType: 'MULTIPLE_CHOICE' | 'SHORT_ANSWER' | 'MATCHING_PAIRS' | 'DRAG_DROP_GROUPING' | 'NUMBER_LINE';
   promptText: string;
   contentPayload: {
-    options?: { id: string; text: string }[];
+    options?: { id: string; text: string; illustrationAssetId?: string }[];
     correct_option_id?: string;
-    matching_mode?: 'EXACT' | 'NORMALIZED';
+    correctOptionId?: string;
+    matching_mode?: 'EXACT' | 'CASE_INSENSITIVE' | 'NORMALIZED';
+    matchingMode?: 'EXACT' | 'CASE_INSENSITIVE' | 'NORMALIZED';
     accepted_answers?: string[];
+    acceptedAnswers?: string[];
     explanation?: string;
+    narrationText?: string;
+    // interactive question types (DRAG_DROP_GROUPING / NUMBER_LINE)
+    items?: { id: string; label: string; illustrationAssetId?: string }[];
+    groups?: { id: string; label: string }[];
+    correctMapping?: Record<string, string>;
+    requireAllPlaced?: boolean;
+    min?: number;
+    max?: number;
+    step?: number;
+    targetValue?: number;
+    tolerance?: number;
+    [key: string]: unknown;
   };
   hints?: { stepOrder: number; hintText: string }[];
 }
@@ -209,3 +234,73 @@ export function getGuestLessonFallback(lessonId: string, stage: string = 'SD'): 
     ],
   };
 }
+
+// ---------------------------------------------------------------------------
+// Feature 010 — bridge to @aksicendekia/content-kit (the 12 interactive lessons).
+// The legacy GUEST_LESSONS_CATALOG above is kept so old routes never 404.
+// ---------------------------------------------------------------------------
+
+export interface InteractiveLessonView {
+  id: string;
+  title: string;
+  summary: string;
+  learningObjective: string;
+  educationStage: string;
+  difficultyLevel: string;
+  estimatedDurationMinutes: number;
+  contentBlocks: LessonBlockInput[];
+  questionItems: QuestionItem[];
+  supersededByLessonId?: string;
+}
+
+function toQuestionItem(q: InteractiveLesson['questions'][number]): QuestionItem {
+  return {
+    id: q.id,
+    // widen: renderer handles the interactive types too
+    questionType: q.questionType as QuestionItem['questionType'],
+    promptText: q.promptText,
+    contentPayload: q.contentPayload as QuestionItem['contentPayload'],
+    hints: q.hints,
+  };
+}
+
+export function toInteractiveLessonView(lesson: InteractiveLesson): InteractiveLessonView {
+  return {
+    id: lesson.id,
+    title: lesson.title,
+    summary: lesson.summary,
+    learningObjective: lesson.learningObjective,
+    educationStage: lesson.educationStage,
+    difficultyLevel: lesson.difficultyLevel,
+    estimatedDurationMinutes: lesson.estimatedDurationMinutes,
+    contentBlocks: lesson.contentBlocks,
+    questionItems: lesson.questions.map(toQuestionItem),
+    supersededByLessonId: lesson.supersededByLessonId,
+  };
+}
+
+/** Interactive lesson for a given route id, or the legacy replacement, or undefined. */
+export function getInteractiveLesson(lessonId: string): InteractiveLessonView | undefined {
+  const direct = getLessonById(lessonId);
+  if (direct) return toInteractiveLessonView(direct);
+  const legacy = getLegacyLessonRef(lessonId);
+  if (legacy) {
+    const replacement = getLessonById(legacy.supersededByLessonId);
+    if (replacement) {
+      return { ...toInteractiveLessonView(replacement), id: lessonId, supersededByLessonId: legacy.supersededByLessonId };
+    }
+  }
+  return undefined;
+}
+
+export function listExploreLessons(stage?: string): InteractiveLessonView[] {
+  const normalized = stage ? (stage.toUpperCase() as 'TK' | 'SD' | 'SMP' | 'SMA') : undefined;
+  return listForCatalog(normalized).map(toInteractiveLessonView);
+}
+
+/** All routable lesson ids (12 interactive + 3 legacy) for generateStaticParams. */
+export function allLessonIds(): string[] {
+  return contentKitAllLessonIds();
+}
+
+export { INTERACTIVE_LESSONS };

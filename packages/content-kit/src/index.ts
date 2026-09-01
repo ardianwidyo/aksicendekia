@@ -16,3 +16,7 @@ export * from './schema/question-payload.schema.js';
 export * from './grading/normalize.js';
 export * from './grading/grade-question.js';
 export * from './catalog/widget-catalog.js';
+export * from './curriculum/achievements.js';
+export * from './lessons/types.js';
+export * from './lessons/legacy.js';
+export * from './lessons/catalog.js';
