@@ -111,4 +111,88 @@ describe("Public Content API (Feature 009 - US1)", () => {
 
     expect(res.statusCode).toBe(404);
   });
+
+  // Feature 010
+  it("GET /api/v1/public/lessons/:id menyertakan contentBlocks, curriculumReference, dan listing", async () => {
+    await mockPrisma.curriculumAchievement.upsert({
+      where: { id: "cp-x" },
+      create: {
+        educationStage: EducationStage.SD,
+        phase: "FASE_B",
+        subjectCode: "MATH_SD",
+        element: "Bilangan",
+        achievementText: "Peserta didik menunjukkan pemahaman bilangan cacah sampai 10.000.",
+        sourceDocument: "Keputusan Kepala BSKAP No. 032/H/KR/2024",
+        sourceUrl: "https://kurikulummerdeka.com/x",
+        retrievedAt: new Date("2026-09-01"),
+      },
+      update: {},
+    });
+
+    const lesson = await mockPrisma.lesson.create({
+      data: {
+        unitId: "unit-x",
+        title: "Nilai Tempat",
+        summary: "Uraikan nilai tempat.",
+        learningObjective: "Menentukan nilai tempat sampai ribuan.",
+        educationStage: EducationStage.SD,
+        phase: "FASE_B",
+        difficultyLevel: "BEGINNER",
+        estimatedDurationMinutes: 12,
+        orderIndex: 0,
+        status: ContentStatus.PUBLISHED,
+      },
+    });
+    lesson.curriculumAchievementId = "cp-x";
+    lesson.listing = "LISTED";
+
+    await mockPrisma.lessonContentBlock.create({
+      data: {
+        id: `${lesson.id}-b0`,
+        lessonId: lesson.id,
+        orderIndex: 0,
+        blockType: "ANIMATION",
+        payload: { animationId: "place-value-split", steps: [] },
+        transcriptText: "Uraikan 3.482.",
+        status: ContentStatus.PUBLISHED,
+      },
+    });
+
+    const res = await app.inject({ method: "GET", url: `/api/v1/public/lessons/${lesson.id}` });
+    expect(res.statusCode).toBe(200);
+    const body = JSON.parse(res.body);
+    expect(body.contentBlocks).toHaveLength(1);
+    expect(body.contentBlocks[0].blockType).toBe("ANIMATION");
+    expect(body.listing).toBe("LISTED");
+    expect(body.curriculumReference.sourceUrl).toMatch(/^https:\/\//);
+    expect(body.curriculumReference.achievementText.length).toBeGreaterThan(20);
+  });
+
+  it("GET /api/v1/public/lessons/:id — pelajaran REVIEW tersembunyi kecuali saklar pratinjau menyala", async () => {
+    const lesson = await mockPrisma.lesson.create({
+      data: {
+        unitId: "unit-y",
+        title: "Draf",
+        summary: "s",
+        learningObjective: "lo",
+        educationStage: EducationStage.SD,
+        phase: "FASE_B",
+        difficultyLevel: "BEGINNER",
+        estimatedDurationMinutes: 10,
+        orderIndex: 0,
+        status: ContentStatus.REVIEW,
+      },
+    });
+
+    const off = await app.inject({ method: "GET", url: `/api/v1/public/lessons/${lesson.id}` });
+    expect(off.statusCode).toBe(404);
+
+    process.env.CONTENT_PREVIEW_INCLUDE_REVIEW = "true";
+    try {
+      const on = await app.inject({ method: "GET", url: `/api/v1/public/lessons/${lesson.id}` });
+      expect(on.statusCode).toBe(200);
+    } finally {
+      delete process.env.CONTENT_PREVIEW_INCLUDE_REVIEW;
+    }
+  });
 });

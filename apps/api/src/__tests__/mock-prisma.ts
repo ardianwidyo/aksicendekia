@@ -16,6 +16,19 @@ export function createMockPrismaClient(): PrismaClient {
   const questionItems: any[] = [];
   const questionHints: any[] = [];
   const studentLessonProgress: any[] = [];
+  const lessonContentBlocks: any[] = [];
+  const curriculumAchievements: any[] = [];
+
+  // Accept both `status: "PUBLISHED"` and `status: { in: [...] }`.
+  const statusMatches = (value: any, filter: any): boolean => {
+    if (filter === undefined) return true;
+    if (filter && typeof filter === "object" && Array.isArray(filter.in)) return filter.in.includes(value);
+    return value === filter;
+  };
+  const listingMatches = (value: any, filter: any): boolean => {
+    if (filter === undefined) return true;
+    return (value ?? "LISTED") === filter;
+  };
 
   const mockPrisma = {
     user: {
@@ -262,8 +275,16 @@ export function createMockPrismaClient(): PrismaClient {
       findMany: async ({ where }: { where?: any }) => {
         let res = [...subjects];
         if (where?.educationStage) res = res.filter((s) => s.educationStage === where.educationStage);
-        if (where?.status) res = res.filter((s) => s.status === where.status);
-        return res;
+        if (where?.status !== undefined) res = res.filter((s) => statusMatches(s.status, where.status));
+        return res.map((s) => ({
+          ...s,
+          units: units
+            .filter((u) => u.subjectId === s.id)
+            .map((u) => ({
+              ...u,
+              lessons: lessons.filter((l) => l.unitId === u.id),
+            })),
+        }));
       },
       create: async ({ data }: { data: any }) => {
         const item = {
@@ -300,7 +321,7 @@ export function createMockPrismaClient(): PrismaClient {
       findMany: async ({ where }: { where?: any }) => {
         let res = [...units];
         if (where?.subjectId) res = res.filter((u) => u.subjectId === where.subjectId);
-        if (where?.status) res = res.filter((u) => u.status === where.status);
+        if (where?.status !== undefined) res = res.filter((u) => statusMatches(u.status, where.status));
         return res;
       },
       create: async ({ data }: { data: any }) => {
@@ -349,17 +370,23 @@ export function createMockPrismaClient(): PrismaClient {
         let res = [...lessons];
         if (where?.id) res = res.filter((l) => l.id === where.id);
         if (where?.unitId) res = res.filter((l) => l.unitId === where.unitId);
-        if (where?.status) res = res.filter((l) => l.status === where.status);
+        if (where?.status !== undefined) res = res.filter((l) => statusMatches(l.status, where.status));
+        if (where?.listing !== undefined) res = res.filter((l) => listingMatches(l.listing, where.listing));
         const l = res[0];
         if (!l) return null;
         const prereqs = lessonPrerequisites.filter((p) => p.lessonId === l.id);
         let qItems = questionItems.filter((q) => q.lessonId === l.id);
-        if (where?.questionItems?.where?.status) {
-          qItems = qItems.filter((q) => q.status === where.questionItems.where.status);
+        if (where?.questionItems?.where?.status !== undefined) {
+          qItems = qItems.filter((q) => statusMatches(q.status, where.questionItems.where.status));
         }
         return {
           ...l,
           prerequisites: prereqs.map((p) => ({ prerequisiteLessonId: p.prerequisiteLessonId })),
+          curriculumAchievement:
+            curriculumAchievements.find((c) => c.id === l.curriculumAchievementId) ?? null,
+          contentBlocks: lessonContentBlocks
+            .filter((b) => b.lessonId === l.id)
+            .sort((a, b) => a.orderIndex - b.orderIndex),
           questionItems: qItems.map((q) => ({
             ...q,
             hints: questionHints.filter((h) => h.questionItemId === q.id),
@@ -369,7 +396,8 @@ export function createMockPrismaClient(): PrismaClient {
       findMany: async ({ where }: { where?: any }) => {
         let res = [...lessons];
         if (where?.unitId) res = res.filter((l) => l.unitId === where.unitId);
-        if (where?.status) res = res.filter((l) => l.status === where.status);
+        if (where?.status !== undefined) res = res.filter((l) => statusMatches(l.status, where.status));
+        if (where?.listing !== undefined) res = res.filter((l) => listingMatches(l.listing, where.listing));
 
         return res.map((l) => ({
           ...l,
@@ -431,6 +459,51 @@ export function createMockPrismaClient(): PrismaClient {
           }
         }
         return { count };
+      },
+    },
+
+    lessonContentBlock: {
+      findMany: async ({ where }: { where?: any }) => {
+        let res = [...lessonContentBlocks];
+        if (where?.lessonId) res = res.filter((b) => b.lessonId === where.lessonId);
+        if (where?.status !== undefined) res = res.filter((b) => statusMatches(b.status, where.status));
+        return res.sort((a, b) => a.orderIndex - b.orderIndex);
+      },
+      create: async ({ data }: { data: any }) => {
+        const item = { id: data.id || randomUUID(), status: data.status || "DRAFT", ...data };
+        lessonContentBlocks.push(item);
+        return item;
+      },
+      deleteMany: async ({ where }: { where?: any }) => {
+        let count = 0;
+        for (let i = lessonContentBlocks.length - 1; i >= 0; i--) {
+          if (!where?.lessonId || lessonContentBlocks[i].lessonId === where.lessonId) {
+            lessonContentBlocks.splice(i, 1);
+            count++;
+          }
+        }
+        return { count };
+      },
+    },
+
+    curriculumAchievement: {
+      findUnique: async ({ where }: { where: { id: string } }) =>
+        curriculumAchievements.find((c) => c.id === where.id) || null,
+      findMany: async () => [...curriculumAchievements],
+      upsert: async ({ where, create, update }: { where: { id: string }; create: any; update: any }) => {
+        const existing = curriculumAchievements.find((c) => c.id === where.id);
+        if (existing) {
+          Object.assign(existing, update);
+          return existing;
+        }
+        const item = { id: where.id, ...create };
+        curriculumAchievements.push(item);
+        return item;
+      },
+      count: async ({ where }: { where?: any } = {}) => {
+        let res = [...curriculumAchievements];
+        if (where?.id?.in) res = res.filter((c) => where.id.in.includes(c.id));
+        return res.length;
       },
     },
 

@@ -2,12 +2,31 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Card, Button, ProgressBar, useTheme } from '@aksicendekia/ui';
-import { BookOpen, Sparkles, Clock, Target, ArrowLeft, Play, Award } from 'lucide-react';
+import { Card, Button, useTheme, LessonContentRenderer, type RenderableBlock } from '@aksicendekia/ui';
+import { BookOpen, Sparkles, Clock, Target, ArrowLeft, Play, Award, ArrowUpRight } from 'lucide-react';
 import Link from 'next/link';
 import { useGuestProgress } from '@/lib/context/guest-progress-context';
 
-import { getGuestLessonFallback } from '@/lib/guest-lessons';
+import { getGuestLessonFallback, getInteractiveLesson } from '@/lib/guest-lessons';
+
+/** Map a content-kit / public-API block into the renderer's RenderableBlock. */
+function toRenderableBlocks(raw: any[]): RenderableBlock[] {
+  if (!Array.isArray(raw)) return [];
+  return raw.map((b, i) => {
+    const src = b.payload ?? b;
+    const payload: Record<string, unknown> = { ...src };
+    if (src.mediaStorageKey && !payload.imageUrl) payload.imageUrl = `/${src.mediaStorageKey}`;
+    if (src.fallbackStorageKey) payload.fallbackImageUrl = `/${src.fallbackStorageKey}`;
+    if (b.altText && !payload.altText) payload.altText = b.altText;
+    if (b.transcriptText && !payload.transcriptText) payload.transcriptText = b.transcriptText;
+    return {
+      id: b.id ?? `b${i}`,
+      blockType: b.blockType,
+      payload,
+      narrationText: b.narrationText ?? null,
+    };
+  });
+}
 
 export default function LessonDetailClient() {
   const params = useParams();
@@ -25,13 +44,12 @@ export default function LessonDetailClient() {
       try {
         const res = await fetch(`http://localhost:4000/api/v1/public/lessons/${lessonId}`);
         if (res.ok) {
-          const data = await res.json();
-          setLesson(data);
+          setLesson(await res.json());
         } else {
-          setLesson(getGuestLessonFallback(lessonId, gradeLevel));
+          setLesson(getInteractiveLesson(lessonId) ?? getGuestLessonFallback(lessonId, gradeLevel));
         }
       } catch {
-        setLesson(getGuestLessonFallback(lessonId, gradeLevel));
+        setLesson(getInteractiveLesson(lessonId) ?? getGuestLessonFallback(lessonId, gradeLevel));
       } finally {
         setLoading(false);
       }
@@ -152,19 +170,48 @@ export default function LessonDetailClient() {
           </div>
         </div>
 
-        {/* Learning Objective */}
+        {/* Learning Objective + official curriculum quote */}
         {lesson.learningObjective && (
           <div className="p-4 bg-primary/5 rounded-2xl border border-primary/15 space-y-1">
             <h4 className="text-xs font-bold text-primary uppercase tracking-wider flex items-center gap-1.5">
               <Target className="w-3.5 h-3.5" />
               Capaian Pembelajaran
             </h4>
-            <p className="text-xs text-on-surface leading-relaxed">
-              {lesson.learningObjective}
-            </p>
+            <p className="text-xs text-on-surface leading-relaxed">{lesson.learningObjective}</p>
+            {lesson.curriculumReference && (
+              <blockquote className="mt-2 border-l-2 border-primary/40 pl-3 text-xs italic text-on-surface-variant">
+                &ldquo;{lesson.curriculumReference.achievementText}&rdquo;
+                <cite className="mt-1 block not-italic">
+                  — {lesson.curriculumReference.sourceDocument}
+                </cite>
+              </blockquote>
+            )}
           </div>
         )}
       </Card>
+
+      {/* Legacy notice — this route is kept alive but superseded (FR-031a) */}
+      {lesson.supersededByLessonId && (
+        <Card variant="surface" padding="md" className="border border-amber-300 bg-amber-50">
+          <p className="text-sm text-amber-900">
+            Materi ini punya versi interaktif yang lebih baru.{' '}
+            <Link
+              href={`/explore/${lesson.supersededByLessonId}`}
+              className="inline-flex items-center gap-1 font-semibold underline"
+            >
+              Buka versi interaktif <ArrowUpRight className="w-3.5 h-3.5" />
+            </Link>
+          </p>
+        </Card>
+      )}
+
+      {/* Concept walkthrough (FR-010) */}
+      {Array.isArray(lesson.contentBlocks) && lesson.contentBlocks.length > 0 && (
+        <Card variant="surface" padding="lg" className="space-y-4">
+          <h2 className="text-lg font-heading font-bold text-on-surface">Pelajari Konsepnya</h2>
+          <LessonContentRenderer blocks={toRenderableBlocks(lesson.contentBlocks)} />
+        </Card>
+      )}
     </div>
   );
 }

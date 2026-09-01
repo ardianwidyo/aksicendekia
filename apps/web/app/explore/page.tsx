@@ -5,6 +5,7 @@ import { Card, Button, ProgressBar, useTheme, useI18n } from '@aksicendekia/ui';
 import { BookOpen, CheckCircle, ArrowRight, Sparkles, Clock } from 'lucide-react';
 import Link from 'next/link';
 import { useGuestProgress } from '../../lib/context/guest-progress-context';
+import { listExploreLessons } from '../../lib/guest-lessons';
 
 interface LessonSummary {
   id: string;
@@ -35,6 +36,43 @@ const STAGES = [
   { id: 'sma', label: 'SMA / SMK' },
 ];
 
+/**
+ * Feature 010 — build the catalog from the bundled content-kit lessons (LISTED
+ * only; legacy lessons are excluded). Used when the API is unreachable, which is
+ * always the case for the static-export production build.
+ */
+function buildCatalogFromContentKit(stageUpper: string): SubjectSummary[] {
+  const lessons = listExploreLessons(stageUpper);
+  if (lessons.length === 0) return [];
+  const bySubject = new Map<string, LessonSummary[]>();
+  const subjectName = new Map<string, string>();
+  for (const l of lessons) {
+    const key = `${l.educationStage}`;
+    if (!bySubject.has(key)) bySubject.set(key, []);
+    bySubject.get(key)!.push({
+      id: l.id,
+      title: l.title,
+      summary: l.summary,
+      difficultyLevel: l.difficultyLevel,
+      estimatedDurationMinutes: l.estimatedDurationMinutes,
+    });
+    subjectName.set(key, l.educationStage === 'TK' ? 'Numerasi & Literasi Dasar' : 'Matematika');
+  }
+  return [...bySubject.entries()].map(([key, subjectLessons]) => ({
+    id: `subject-${key}`,
+    code: `MATH_${key}`,
+    name: `${subjectName.get(key)} ${key}`,
+    units: [
+      {
+        id: `unit-${key}`,
+        title: 'Materi Interaktif',
+        description: 'Pelajari konsep dengan animasi dan manipulatif, lalu berlatih.',
+        lessons: subjectLessons,
+      },
+    ],
+  }));
+}
+
 export default function ExplorePage() {
   const { gradeLevel, setGradeLevel } = useTheme();
   const { state } = useGuestProgress();
@@ -44,92 +82,19 @@ export default function ExplorePage() {
   useEffect(() => {
     async function fetchSubjects() {
       setLoading(true);
+      const stageUpper = gradeLevel.toUpperCase();
       try {
-        const stageUpper = gradeLevel.toUpperCase();
         const res = await fetch(`http://localhost:4000/api/v1/public/subjects?stage=${stageUpper}`);
         if (res.ok) {
           const data = await res.json();
-          setSubjects(data.subjects || []);
+          const apiSubjects: SubjectSummary[] = data.subjects || [];
+          const hasLessons = apiSubjects.some((s) => s.units.some((u) => u.lessons.length > 0));
+          setSubjects(hasLessons ? apiSubjects : buildCatalogFromContentKit(stageUpper));
         } else {
-          // Fallback sample data if backend is not actively running during static render
-          setSubjects([
-            {
-              id: 'sub_math',
-              code: `MATH_${stageUpper}`,
-              name: `Matematika ${stageUpper}`,
-              units: [
-                {
-                  id: 'unit_1',
-                  title: 'Unit 1: Bilangan & Operasi Hitung',
-                  description: 'Konsep dasar angka dan logika berhitung',
-                  lessons: [
-                    {
-                      id: 'lesson_m1',
-                      title: 'Mengenal Angka & Nilai Tempat',
-                      summary: 'Belajar membaca dan menulis angka secara visual',
-                      difficultyLevel: 'BEGINNER',
-                      estimatedDurationMinutes: 10,
-                    },
-                    {
-                      id: 'lesson_m2',
-                      title: 'Penjumlahan & Pengurangan Cepat',
-                      summary: 'Latihan taktik berhitung penjumlahan seru',
-                      difficultyLevel: 'BEGINNER',
-                      estimatedDurationMinutes: 15,
-                    },
-                  ],
-                },
-              ],
-            },
-            {
-              id: 'sub_ipa',
-              code: `IPA_${stageUpper}`,
-              name: `Ilmu Pengetahuan Alam (IPA) ${stageUpper}`,
-              units: [
-                {
-                  id: 'unit_2',
-                  title: 'Unit 1: Makhluk Hidup & Lingkungan',
-                  description: 'Eksplorasi alam semesta dan rantai makanan',
-                  lessons: [
-                    {
-                      id: 'lesson_i1',
-                      title: 'Klasifikasi Tumbuhan dan Hewan',
-                      summary: 'Mengenal ciri-ciri makhluk hidup di sekitar',
-                      difficultyLevel: 'BEGINNER',
-                      estimatedDurationMinutes: 12,
-                    },
-                  ],
-                },
-              ],
-            },
-          ]);
+          setSubjects(buildCatalogFromContentKit(stageUpper));
         }
       } catch {
-        // Fallback sample data for offline / standalone preview
-        const stageUpper = gradeLevel.toUpperCase();
-        setSubjects([
-          {
-            id: 'sub_math',
-            code: `MATH_${stageUpper}`,
-            name: `Matematika ${stageUpper}`,
-            units: [
-              {
-                id: 'unit_1',
-                title: 'Unit 1: Bilangan & Operasi Hitung',
-                description: 'Konsep dasar angka dan logika berhitung',
-                lessons: [
-                  {
-                    id: 'lesson_m1',
-                    title: 'Mengenal Angka & Nilai Tempat',
-                    summary: 'Belajar membaca dan menulis angka secara visual',
-                    difficultyLevel: 'BEGINNER',
-                    estimatedDurationMinutes: 10,
-                  },
-                ],
-              },
-            ],
-          },
-        ]);
+        setSubjects(buildCatalogFromContentKit(stageUpper));
       } finally {
         setLoading(false);
       }
