@@ -41,5 +41,68 @@
       "name": "Senior High School",
       "subtitle": "Phase E - F (Dark Mode & Neon Accent)"
     }
+  },
+  "interactive": {
+    "listen": {
+      "play": "Listen",
+      "stop": "Stop"
+    },
+    "widget": {
+      "stepReveal": {
+        "next": "Next step",
+        "prev": "Previous step",
+        "stepOf": "Step {current} of {total}"
+      },
+      "parameterExplorer": {
+        "readout": "Current value"
+      },
+      "numberLine": {
+        "label": "Number line",
+        "value": "Value {value}"
+      },
+      "fractionBar": {
+        "part": "Part {index}",
+        "shadedOf": "{shaded} of {total} parts shaded"
+      },
+      "hotspot": {
+        "open": "Open explanation",
+        "close": "Close explanation"
+      },
+      "sort": {
+        "pick": "Pick this item",
+        "placeIn": "Place in {group}",
+        "movedTo": "{item} moved to {group}",
+        "unplaced": "Not grouped yet"
+      },
+      "animation": {
+        "play": "Play",
+        "pause": "Pause",
+        "replay": "Replay",
+        "stepOf": "Part {current} of {total}"
+      },
+      "unsupported": {
+        "title": "Component unavailable",
+        "body": "This interactive part cannot render on your device. The explanation is still available below."
+      }
+    },
+    "block": {
+      "transcript": {
+        "show": "Show transcript",
+        "hide": "Hide transcript"
+      },
+      "video": {
+        "play": "Play video",
+        "captions": "Captions"
+      }
+    },
+    "media": {
+      "fallbackNote": "Media could not load. Here is a short explanation."
+    },
+    "feedback": {
+      "correct": "Exactly right!",
+      "incorrect": "Not quite, try again.",
+      "showHint": "Show hint",
+      "showExplanation": "Show explanation"
+    }
   }
 }

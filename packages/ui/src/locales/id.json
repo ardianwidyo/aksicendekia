@@ -144,5 +144,68 @@
     "incognito": {
       "warning": "Kamu sedang menggunakan Mode Penyamaran (Incognito). Progres belajarmu akan hilang saat browser ditutup. Buat akun untuk menyimpan permanen!"
     }
+  },
+  "interactive": {
+    "listen": {
+      "play": "Dengarkan",
+      "stop": "Hentikan"
+    },
+    "widget": {
+      "stepReveal": {
+        "next": "Langkah berikutnya",
+        "prev": "Langkah sebelumnya",
+        "stepOf": "Langkah {current} dari {total}"
+      },
+      "parameterExplorer": {
+        "readout": "Nilai saat ini"
+      },
+      "numberLine": {
+        "label": "Garis bilangan",
+        "value": "Nilai {value}"
+      },
+      "fractionBar": {
+        "part": "Bagian {index}",
+        "shadedOf": "{shaded} dari {total} bagian diarsir"
+      },
+      "hotspot": {
+        "open": "Buka penjelasan",
+        "close": "Tutup penjelasan"
+      },
+      "sort": {
+        "pick": "Pilih objek ini",
+        "placeIn": "Letakkan di {group}",
+        "movedTo": "{item} dipindahkan ke {group}",
+        "unplaced": "Belum dikelompokkan"
+      },
+      "animation": {
+        "play": "Putar",
+        "pause": "Jeda",
+        "replay": "Ulang",
+        "stepOf": "Bagian {current} dari {total}"
+      },
+      "unsupported": {
+        "title": "Komponen tidak tersedia",
+        "body": "Bagian interaktif ini belum bisa ditampilkan di perangkatmu. Penjelasan tetap tersedia di bawah."
+      }
+    },
+    "block": {
+      "transcript": {
+        "show": "Lihat transkrip",
+        "hide": "Sembunyikan transkrip"
+      },
+      "video": {
+        "play": "Putar video",
+        "captions": "Takarir"
+      }
+    },
+    "media": {
+      "fallbackNote": "Media tidak dapat dimuat. Berikut penjelasan singkatnya."
+    },
+    "feedback": {
+      "correct": "Tepat sekali!",
+      "incorrect": "Belum tepat, coba lagi ya.",
+      "showHint": "Lihat petunjuk",
+      "showExplanation": "Lihat pembahasan"
+    }
   }
 }
