@@ -10,7 +10,7 @@ import {
   SessionHistoryItemDTO
 } from './session.dto';
 import { EntitlementService } from "../entitlements/entitlements.service";
-import { EntitlementKey, PrismaClient } from "@prisma/client";
+import { EntitlementKey, Prisma, PrismaClient } from "@prisma/client";
 
 export class SessionService {
   constructor(

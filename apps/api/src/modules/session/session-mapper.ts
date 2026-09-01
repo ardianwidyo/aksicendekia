@@ -1,8 +1,9 @@
+import type { QuestionType } from '@prisma/client';
 import { ClientQuestionDTO } from './session.dto';
 
 interface QuestionItemRecord {
   id: string;
-  questionType: 'MULTIPLE_CHOICE' | 'SHORT_ANSWER' | 'MATCHING_PAIRS';
+  questionType: QuestionType;
   promptText: string;
   contentPayload: any;
   hints?: Array<{ id: string }>;

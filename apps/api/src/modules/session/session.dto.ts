@@ -1,3 +1,5 @@
+import type { QuestionType } from '@prisma/client';
+
 export interface ClientQuestionOption {
   id: string;
   text: string;
@@ -5,7 +7,7 @@ export interface ClientQuestionOption {
 
 export interface ClientQuestionDTO {
   id: string;
-  type: 'MULTIPLE_CHOICE' | 'SHORT_ANSWER' | 'MATCHING_PAIRS';
+  type: QuestionType;
   prompt: string;
   options?: ClientQuestionOption[];
   matchingItemsLeft?: string[];

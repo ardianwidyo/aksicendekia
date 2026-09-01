@@ -1,0 +1,195 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PublicInteractiveLessonContract",
+  "description": "Kontrak respons GET /api/v1/public/lessons/:id yang diperluas dengan contentBlocks (Feature 010). Perluasan bersifat additive terhadap kontrak Feature 009: klien lama yang mengabaikan contentBlocks tetap berfungsi. Payload ini juga merupakan bentuk yang di-bundle oleh packages/content-kit untuk static export apps/web. FILTER STATUS: jalur produksi hanya menyajikan pelajaran berstatus PUBLISHED; status REVIEW hanya ikut tersaji bila CONTENT_PREVIEW_INCLUDE_REVIEW=true (API) atau NEXT_PUBLIC_CONTENT_PREVIEW=true (bundel statis), yang keduanya WAJIB false di build produksi.",
+  "type": "object",
+  "required": [
+    "id",
+    "title",
+    "summary",
+    "learningObjective",
+    "educationStage",
+    "phase",
+    "difficultyLevel",
+    "estimatedDurationMinutes",
+    "listing",
+    "curriculumReference",
+    "contentBlocks",
+    "questionItems"
+  ],
+  "properties": {
+    "id": { "type": "string" },
+    "unitId": { "type": "string" },
+    "title": { "type": "string" },
+    "summary": { "type": "string" },
+    "learningObjective": { "type": "string" },
+    "educationStage": { "enum": ["TK", "SD", "SMP", "SMA"] },
+    "phase": {
+      "enum": ["FOUNDATION", "FASE_A", "FASE_B", "FASE_C", "FASE_D", "FASE_E", "FASE_F"]
+    },
+    "difficultyLevel": { "enum": ["BEGINNER", "INTERMEDIATE", "ADVANCED"] },
+    "estimatedDurationMinutes": { "type": "integer", "minimum": 1 },
+    "orderIndex": { "type": "integer", "minimum": 0 },
+
+    "listing": {
+      "enum": ["LISTED", "HIDDEN_LEGACY"],
+      "description": "LISTED tampil di katalog eksplorasi. HIDDEN_LEGACY tetap dapat diakses lewat rutenya (tidak 404) tetapi disembunyikan dari daftar (FR-031a)."
+    },
+    "supersededByLessonId": {
+      "type": ["string", "null"],
+      "description": "Untuk pelajaran HIDDEN_LEGACY: id pelajaran interaktif padanannya, dipakai untuk menautkan pengunjung ke versi yang lebih baik."
+    },
+
+    "curriculumReference": {
+      "type": "object",
+      "description": "Kutipan capaian pembelajaran resmi beserta rujukan sumbernya. WAJIB ada pada pelajaran interaktif (FR-008a). Bernilai null hanya untuk pelajaran legacy yang belum dipetakan.",
+      "required": ["achievementText", "sourceDocument", "sourceUrl", "retrievedAt"],
+      "properties": {
+        "element": { "type": "string" },
+        "achievementText": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Kutipan verbatim dari dokumen resmi Kemendikbudristek. DILARANG berisi parafrase atau rumusan bebas."
+        },
+        "sourceDocument": { "type": "string", "minLength": 1 },
+        "sourceUrl": { "type": "string", "pattern": "^https://" },
+        "retrievedAt": { "type": "string", "format": "date-time" }
+      }
+    },
+
+    "contentBlocks": {
+      "type": "array",
+      "description": "Blok penelusuran konsep, terurut menaik menurut orderIndex. Array kosong menandakan pelajaran non-interaktif lama (FR-031).",
+      "items": {
+        "type": "object",
+        "required": ["id", "orderIndex", "blockType", "payload"],
+        "properties": {
+          "id": { "type": "string" },
+          "orderIndex": { "type": "integer", "minimum": 0 },
+          "blockType": {
+            "enum": ["RICH_TEXT", "ILLUSTRATION", "ANIMATION", "VIDEO", "INTERACTIVE_WIDGET"]
+          },
+          "payload": { "type": "object" },
+          "altText": { "type": ["string", "null"] },
+          "transcriptText": { "type": ["string", "null"] },
+          "narrationText": {
+            "type": ["string", "null"],
+            "description": "Teks yang dibacakan kontrol \"dengarkan\". WAJIB terisi untuk pelajaran TK (gerbang A8)."
+          },
+          "media": { "$ref": "#/definitions/mediaRef" },
+          "captions": { "$ref": "#/definitions/mediaRef" },
+          "fallback": { "$ref": "#/definitions/mediaRef" },
+          "narration": {
+            "$ref": "#/definitions/mediaRef",
+            "description": "Slot audio narasi terekam. Null di v1 — komponen memakai sintesis suara bawaan peramban (FR-017d)."
+          }
+        },
+        "allOf": [
+          {
+            "if": { "properties": { "blockType": { "const": "ILLUSTRATION" } } },
+            "then": {
+              "required": ["media", "altText"],
+              "properties": { "altText": { "type": "string", "minLength": 1 } }
+            }
+          },
+          {
+            "if": { "properties": { "blockType": { "const": "ANIMATION" } } },
+            "then": {
+              "required": ["transcriptText", "fallback"],
+              "properties": { "transcriptText": { "type": "string", "minLength": 1 } }
+            }
+          },
+          {
+            "if": { "properties": { "blockType": { "const": "VIDEO" } } },
+            "then": {
+              "required": ["media", "captions", "transcriptText", "fallback"],
+              "properties": { "transcriptText": { "type": "string", "minLength": 1 } }
+            }
+          },
+          {
+            "if": { "properties": { "blockType": { "const": "INTERACTIVE_WIDGET" } } },
+            "then": {
+              "properties": {
+                "payload": {
+                  "type": "object",
+                  "required": ["widgetType", "params"],
+                  "properties": {
+                    "widgetType": {
+                      "enum": [
+                        "STEP_REVEAL",
+                        "PARAMETER_EXPLORER",
+                        "NUMBER_LINE_EXPLORER",
+                        "FRACTION_BAR_BUILDER",
+                        "IMAGE_HOTSPOT",
+                        "SORT_INTO_GROUPS",
+                        "ANIMATED_WORKED_EXAMPLE"
+                      ]
+                    },
+                    "params": { "type": "object" }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+
+    "questionItems": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "questionType", "promptText", "contentPayload", "orderIndex"],
+        "properties": {
+          "id": { "type": "string" },
+          "questionType": {
+            "enum": [
+              "MULTIPLE_CHOICE",
+              "SHORT_ANSWER",
+              "MATCHING_PAIRS",
+              "DRAG_DROP_GROUPING",
+              "NUMBER_LINE"
+            ]
+          },
+          "promptText": { "type": "string" },
+          "contentPayload": {
+            "type": "object",
+            "description": "Untuk jalur publik/Mode Tamu payload MEMUAT kunci jawaban (penilaian lokal, Feature 009). Untuk jalur sesi terautentikasi, kunci jawaban (correctOptionId, acceptedAnswers, matchingPairs, correctMapping, targetValue, tolerance) WAJIB dibuang sebelum penyajian. Untuk pelajaran TK, payload WAJIB memuat options[].illustrationAssetId pada setiap pilihan dan narrationText pada butir soal (gerbang A7/A8); SHORT_ANSWER dilarang untuk TK."
+          },
+          "explanation": { "type": "string" },
+          "orderIndex": { "type": "integer", "minimum": 0 },
+          "hints": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["stepOrder", "hintText"],
+              "properties": {
+                "stepOrder": { "type": "integer", "minimum": 1 },
+                "hintText": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+
+  "definitions": {
+    "mediaRef": {
+      "type": ["object", "null"],
+      "required": ["id", "storageKey", "mimeType"],
+      "properties": {
+        "id": { "type": "string" },
+        "storageKey": {
+          "type": "string",
+          "description": "Path RELATIF di storage milik platform. Nilai berskema http/https atau diawali // DITOLAK (anti-hotlink, Prinsip VI / FR-003).",
+          "pattern": "^(?!https?://)(?!//).+"
+        },
+        "mimeType": { "type": "string" },
+        "byteSize": { "type": "integer", "minimum": 0 },
+        "altText": { "type": ["string", "null"] },
+        "durationSeconds": { "type": ["integer", "null"] }
+      }
+    }
+  }
+}

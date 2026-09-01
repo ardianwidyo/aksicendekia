@@ -4,6 +4,10 @@ import {
   GuestSessionRecord,
   GuestSessionAnswerRecord,
 } from './guest-progress.schema';
+import {
+  gradeQuestion,
+  normalizeAnswerText as canonicalNormalizeAnswerText,
+} from '@aksicendekia/content-kit';
 
 export interface QuestionEvaluationResult {
   isCorrect: boolean;
@@ -13,66 +17,40 @@ export interface QuestionEvaluationResult {
 
 export class LocalSessionEngine {
   /**
-   * Normalisasi string jawaban isian singkat toleran sesuai standar AksiCendekia
+   * Normalisasi jawaban isian singkat \u2014 didelegasikan ke @aksicendekia/content-kit
+   * agar Mode Tamu dan sesi terautentikasi memakai aturan yang sama persis.
    */
   public static normalizeAnswerText(input: string): string {
-    if (!input) return '';
-    return input
-      .trim()
-      .replace(/\s+/g, ' ')
-      .toLowerCase()
-      .replace(/[.,!?;:]+$/, '')
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '');
+    return canonicalNormalizeAnswerText(input);
   }
 
   /**
-   * Evaluasi jawaban butir soal di sisi klien
+   * Evaluasi jawaban butir soal di sisi klien (Mode Tamu). Logika penilaian
+   * dibagi dengan server lewat @aksicendekia/content-kit; hanya `explanation`
+   * yang diambil langsung dari payload konten publik.
    */
   public static evaluateAnswer(
-    questionType: 'MULTIPLE_CHOICE' | 'SHORT_ANSWER' | 'MATCHING_PAIRS',
+    questionType:
+      | 'MULTIPLE_CHOICE'
+      | 'SHORT_ANSWER'
+      | 'MATCHING_PAIRS'
+      | 'DRAG_DROP_GROUPING'
+      | 'NUMBER_LINE',
     contentPayload: any,
     userAnswer: any
   ): QuestionEvaluationResult {
-    let isCorrect = false;
+    const { isCorrect, correctAnswerDetails } = gradeQuestion(
+      questionType,
+      contentPayload,
+      userAnswer
+    );
 
-    if (questionType === 'MULTIPLE_CHOICE') {
-      const correctOptionId = contentPayload.correct_option_id;
-      isCorrect = String(userAnswer).trim() === String(correctOptionId).trim();
-    } else if (questionType === 'SHORT_ANSWER') {
-      const normalizedUser = LocalSessionEngine.normalizeAnswerText(String(userAnswer || ''));
-      const mode = contentPayload.matching_mode || 'NORMALIZED';
-
-      if (mode === 'EXACT') {
-        const accepted = (contentPayload.accepted_answers || []).map((a: string) => a.trim());
-        isCorrect = accepted.includes(String(userAnswer).trim());
-      } else if (mode === 'CASE_INSENSITIVE') {
-        const accepted = (contentPayload.accepted_answers || []).map((a: string) => a.trim().toLowerCase());
-        isCorrect = accepted.includes(String(userAnswer).trim().toLowerCase());
-      } else {
-        // NORMALIZED
-        const acceptedNormalized = (contentPayload.accepted_answers || []).map((a: string) =>
-          LocalSessionEngine.normalizeAnswerText(a)
-        );
-        isCorrect = acceptedNormalized.includes(normalizedUser);
-      }
-    } else if (questionType === 'MATCHING_PAIRS') {
-      const correctPairs = contentPayload.matching_pairs || [];
-      if (typeof userAnswer === 'object' && userAnswer !== null) {
-        let matchAll = true;
-        for (const pair of correctPairs) {
-          if (userAnswer[pair.left] !== pair.right) {
-            matchAll = false;
-            break;
-          }
-        }
-        isCorrect = matchAll && Object.keys(userAnswer).length === correctPairs.length;
-      }
-    }
+    const acceptedAnswers = (correctAnswerDetails as { acceptedAnswers?: string[] }).acceptedAnswers;
 
     return {
       isCorrect,
-      explanation: contentPayload.explanation || '',
+      explanation: contentPayload?.explanation || '',
+      correctAnswerText: acceptedAnswers?.[0],
     };
   }
 

@@ -8,6 +8,10 @@ out/
 build/
 dist/
 
+# Test coverage
+coverage/
+.vitest/
+
 # Logs
 *.log
 npm-debug.log*

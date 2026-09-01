@@ -186,12 +186,43 @@ enum QuestionType {
   MULTIPLE_CHOICE
   SHORT_ANSWER
   MATCHING_PAIRS
+  DRAG_DROP_GROUPING
+  NUMBER_LINE
 }
 
 enum MatchingMode {
   EXACT
   CASE_INSENSITIVE
   NORMALIZED
+}
+
+// Feature 010 — interactive lesson content
+enum ContentBlockType {
+  RICH_TEXT
+  ILLUSTRATION
+  ANIMATION
+  VIDEO
+  INTERACTIVE_WIDGET
+}
+
+enum MediaAssetKind {
+  IMAGE
+  ANIMATION
+  VIDEO
+  AUDIO
+  CAPTION
+  TRANSCRIPT
+}
+
+enum WidgetSupportStatus {
+  SUPPORTED
+  DEPRECATED
+  REMOVED
+}
+
+enum LessonListing {
+  LISTED
+  HIDDEN_LEGACY
 }
 
 model Subject {
@@ -243,6 +274,11 @@ model Lesson {
   createdAt                DateTime        @default(now()) @map("created_at")
   updatedAt                DateTime        @updatedAt @map("updated_at")
 
+  // Feature 010 — interactive lesson content (all nullable / defaulted: additive)
+  listing                 LessonListing @default(LISTED)
+  supersededByLessonId    String?       @map("superseded_by_lesson_id")
+  curriculumAchievementId String?       @map("curriculum_achievement_id")
+
   unit            Unit                    @relation(fields: [unitId], references: [id], onDelete: Cascade)
   parentVersion   Lesson?                 @relation("LessonVersions", fields: [parentVersionId], references: [id], onDelete: SetNull)
   childVersions   Lesson[]                @relation("LessonVersions")
@@ -253,7 +289,98 @@ model Lesson {
   learningSessions LearningSession[]
   assignments      LessonAssignment[]
 
+  contentBlocks         LessonContentBlock[]
+  supersededBy          Lesson?                @relation("LessonSupersede", fields: [supersededByLessonId], references: [id], onDelete: SetNull)
+  supersedes            Lesson[]               @relation("LessonSupersede")
+  curriculumAchievement CurriculumAchievement? @relation(fields: [curriculumAchievementId], references: [id], onDelete: Restrict)
+
   @@map("lessons")
+}
+
+model MediaAsset {
+  id              String         @id @default(uuid())
+  kind            MediaAssetKind
+  storageKey      String         @unique @map("storage_key")
+  mimeType        String         @map("mime_type")
+  byteSize        Int            @map("byte_size")
+  widthPx         Int?           @map("width_px")
+  heightPx        Int?           @map("height_px")
+  durationSeconds Int?           @map("duration_seconds")
+  altText         String?        @map("alt_text")
+  licenseNote     String?        @map("license_note")
+  attribution     String?
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+
+  blocksAsMedia     LessonContentBlock[] @relation("BlockMedia")
+  blocksAsCaption   LessonContentBlock[] @relation("BlockCaption")
+  blocksAsFallback  LessonContentBlock[] @relation("BlockFallback")
+  blocksAsNarration LessonContentBlock[] @relation("BlockNarration")
+
+  @@index([kind])
+  @@map("media_assets")
+}
+
+model LessonContentBlock {
+  id               String           @id @default(uuid())
+  lessonId         String           @map("lesson_id")
+  orderIndex       Int              @map("order_index")
+  blockType        ContentBlockType @map("block_type")
+  payload          Json
+  altText          String?          @map("alt_text")
+  transcriptText   String?          @map("transcript_text")
+  mediaAssetId     String?          @map("media_asset_id")
+  captionAssetId   String?          @map("caption_asset_id")
+  fallbackAssetId  String?          @map("fallback_asset_id")
+  narrationText    String?          @map("narration_text")
+  narrationAssetId String?          @map("narration_asset_id")
+  status           ContentStatus    @default(DRAFT)
+  createdAt        DateTime         @default(now()) @map("created_at")
+  updatedAt        DateTime         @updatedAt @map("updated_at")
+
+  lesson         Lesson      @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  mediaAsset     MediaAsset? @relation("BlockMedia", fields: [mediaAssetId], references: [id], onDelete: SetNull)
+  captionAsset   MediaAsset? @relation("BlockCaption", fields: [captionAssetId], references: [id], onDelete: SetNull)
+  fallbackAsset  MediaAsset? @relation("BlockFallback", fields: [fallbackAssetId], references: [id], onDelete: SetNull)
+  narrationAsset MediaAsset? @relation("BlockNarration", fields: [narrationAssetId], references: [id], onDelete: SetNull)
+
+  @@unique([lessonId, orderIndex])
+  @@index([lessonId, status])
+  @@map("lesson_content_blocks")
+}
+
+model InteractiveWidgetType {
+  id             String              @id
+  displayName    String              @map("display_name")
+  description    String
+  paramsSchema   Json                @map("params_schema")
+  supportStatus  WidgetSupportStatus @default(SUPPORTED) @map("support_status")
+  catalogVersion Int                 @default(1) @map("catalog_version")
+  a11yNotes      String?             @map("a11y_notes")
+  createdAt      DateTime            @default(now()) @map("created_at")
+  updatedAt      DateTime            @updatedAt @map("updated_at")
+
+  @@map("interactive_widget_types")
+}
+
+model CurriculumAchievement {
+  id              String          @id @default(uuid())
+  educationStage  EducationStage  @map("education_stage")
+  phase           CurriculumPhase
+  subjectCode     String          @map("subject_code")
+  element         String
+  achievementText String          @map("achievement_text")
+  sourceDocument  String          @map("source_document")
+  sourceUrl       String          @map("source_url")
+  retrievedAt     DateTime        @map("retrieved_at")
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
+
+  lessons Lesson[]
+
+  @@unique([phase, subjectCode, element])
+  @@index([educationStage, phase])
+  @@map("curriculum_achievements")
 }
 
 model LessonPrerequisite {
