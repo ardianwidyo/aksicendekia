@@ -1,7 +1,7 @@
 import { Subject, Unit, Lesson, QuestionItem, ContentStatus, EducationStage, QuestionType, MatchingMode, Prisma } from "@prisma/client";
 import { CurriculumRepository } from "./curriculum.repository.js";
 import { CsvImportService, CsvImportReport } from "./csv-import.service.js";
-import { AppError, NotFoundError, ConflictError } from "../../common/errors/app-error.js";
+import { BadRequestError, NotFoundError, ConflictError } from "../../common/errors/app-error.js";
 import {
   CreateSubjectInput,
   UpdateSubjectInput,
@@ -159,6 +159,10 @@ export class CurriculumService {
         orderIndex: input.orderIndex,
         status: ContentStatus.DRAFT,
         version: 1,
+        // Feature 010 (FR-008a, gate C3): link to the official CP quote, if given.
+        ...(input.curriculumAchievementId
+          ? { curriculumAchievement: { connect: { id: input.curriculumAchievementId } } }
+          : {}),
       },
       input.prerequisiteLessonIds
     );
@@ -188,12 +192,27 @@ export class CurriculumService {
           status: ContentStatus.DRAFT,
           version: lesson.version + 1,
           parentVersion: { connect: { id: lesson.id } },
+          ...(input.curriculumAchievementId !== undefined
+            ? { curriculumAchievement: { connect: { id: input.curriculumAchievementId } } }
+            : lesson.curriculumAchievementId
+              ? { curriculumAchievement: { connect: { id: lesson.curriculumAchievementId } } }
+              : {}),
         },
         input.prerequisiteLessonIds ?? lesson.prerequisites.map((p) => p.prerequisiteLessonId)
       );
     }
 
-    return this.repo.updateLesson(id, input, input.prerequisiteLessonIds);
+    const { curriculumAchievementId, ...rest } = input;
+    return this.repo.updateLesson(
+      id,
+      {
+        ...rest,
+        ...(curriculumAchievementId !== undefined
+          ? { curriculumAchievement: { connect: { id: curriculumAchievementId } } }
+          : {}),
+      },
+      input.prerequisiteLessonIds
+    );
   }
 
   async updateLessonStatus(id: string, targetStatus: ContentStatus): Promise<Lesson> {
@@ -227,7 +246,7 @@ export class CurriculumService {
     await this.validatePrerequisites(targetPrerequisiteIds);
 
     if (targetPrerequisiteIds.includes(lessonId)) {
-      throw new AppError("Pelajaran tidak dapat menjadi prasyarat untuk dirinya sendiri", 400, "BAD_REQUEST");
+      throw new BadRequestError("Pelajaran tidak dapat menjadi prasyarat untuk dirinya sendiri");
     }
 
     const allLinks = await this.repo.getPrerequisitesGraph();
@@ -250,7 +269,7 @@ export class CurriculumService {
       while (stack.length > 0) {
         const curr = stack.pop()!;
         if (curr === lessonId) {
-          throw new AppError("Terdeteksi siklus prasyarat antar-pelajaran (circular prerequisite dependency)", 400, "BAD_REQUEST");
+          throw new BadRequestError("Terdeteksi siklus prasyarat antar-pelajaran (circular prerequisite dependency)");
         }
         if (!visited.has(curr)) {
           visited.add(curr);

@@ -278,4 +278,80 @@ describe("Curriculum Module (Feature 003)", () => {
       expect(detailUnlocked.questionItems[0].promptText).toBe("Soal Rahasia Pelajaran 2");
     });
   });
+
+  describe("5. Feature 010 — Tautan Capaian Pembelajaran (FR-008a, gate C3)", () => {
+    it("membuat pelajaran dengan curriculumAchievementId tertaut", async () => {
+      const achievement = await mockPrisma.curriculumAchievement.create({
+        data: {
+          educationStage: EducationStage.SD,
+          phase: CurriculumPhase.FASE_B,
+          subjectCode: "MATH_SD",
+          element: "Bilangan",
+          achievementText: "Kutipan",
+          sourceDocument: "Dok",
+          sourceUrl: "https://kurikulum.kemdikbud.go.id/x",
+          retrievedAt: new Date(),
+        },
+      });
+      const subject = await service.createSubject({
+        code: "MATH_SD2",
+        name: "Matematika SD",
+        educationStage: EducationStage.SD,
+        phase: CurriculumPhase.FASE_B,
+      });
+      const unit = await service.createUnit({ subjectId: subject.id, title: "Unit 1", orderIndex: 1 });
+
+      const lesson = await service.createLesson({
+        unitId: unit.id,
+        title: "Pelajaran Bertaut CP",
+        summary: "Ringkasan",
+        learningObjective: "Tujuan",
+        educationStage: EducationStage.SD,
+        phase: CurriculumPhase.FASE_B,
+        difficultyLevel: DifficultyLevel.BEGINNER,
+        estimatedDurationMinutes: 20,
+        orderIndex: 1,
+        curriculumAchievementId: achievement.id,
+      });
+
+      const fetched = await service.getLesson(lesson.id);
+      expect((fetched as any).curriculumAchievementId).toBe(achievement.id);
+    });
+
+    it("menautkan curriculumAchievementId lewat updateLesson pada pelajaran DRAFT", async () => {
+      const achievement = await mockPrisma.curriculumAchievement.create({
+        data: {
+          educationStage: EducationStage.SD,
+          phase: CurriculumPhase.FASE_B,
+          subjectCode: "MATH_SD",
+          element: "Aljabar",
+          achievementText: "Kutipan lain",
+          sourceDocument: "Dok",
+          sourceUrl: "https://kurikulum.kemdikbud.go.id/y",
+          retrievedAt: new Date(),
+        },
+      });
+      const subject = await service.createSubject({
+        code: "MATH_SD3",
+        name: "Matematika SD",
+        educationStage: EducationStage.SD,
+        phase: CurriculumPhase.FASE_B,
+      });
+      const unit = await service.createUnit({ subjectId: subject.id, title: "Unit 1", orderIndex: 1 });
+      const lesson = await service.createLesson({
+        unitId: unit.id,
+        title: "Pelajaran Tanpa CP",
+        summary: "Ringkasan",
+        learningObjective: "Tujuan",
+        educationStage: EducationStage.SD,
+        phase: CurriculumPhase.FASE_B,
+        difficultyLevel: DifficultyLevel.BEGINNER,
+        estimatedDurationMinutes: 20,
+        orderIndex: 1,
+      });
+
+      const updated = await service.updateLesson(lesson.id, { curriculumAchievementId: achievement.id });
+      expect((updated as any).curriculumAchievementId).toBe(achievement.id);
+    });
+  });
 });

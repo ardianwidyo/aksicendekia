@@ -2,9 +2,11 @@ import fastify, { FastifyInstance, FastifyRequest, FastifyReply } from "fastify"
 import fastifyJwt from "@fastify/jwt";
 import fastifyCookie from "@fastify/cookie";
 import fastifyRateLimit from "@fastify/rate-limit";
+import fastifyMultipart from "@fastify/multipart";
 import { ZodError } from "zod";
 import { PrismaClient } from "@prisma/client";
 import { AppError } from "./common/errors/app-error.js";
+import { assertProductionPreviewGuards } from "./common/env/production-guard.js";
 import { authenticateHook } from "./middleware/authenticate.hook.js";
 import { consentGateHook } from "./middleware/consent-gate.hook.js";
 import { ConsoleEmailService } from "./common/email/console-email.service.js";
@@ -64,6 +66,13 @@ import { GuestSyncRepository } from "./modules/sync/guest-sync.repository.js";
 import { GuestSyncService } from "./modules/sync/guest-sync.service.js";
 import { registerGuestSyncRoutes } from "./modules/sync/guest-sync.controller.js";
 
+import { ContentBlockRepository } from "./modules/content-blocks/content-block.repository.js";
+import { ContentBlockService } from "./modules/content-blocks/content-block.service.js";
+import { MediaAssetService } from "./modules/content-blocks/media-asset.service.js";
+import { CurriculumAchievementService } from "./modules/content-blocks/curriculum-achievement.service.js";
+import { PublishService } from "./modules/content-blocks/publish.service.js";
+import { registerContentBlockRoutes } from "./modules/content-blocks/content-block.controller.js";
+
 declare module "fastify" {
   interface FastifyInstance {
     authenticate: (request: FastifyRequest, reply: FastifyReply) => Promise<void>;
@@ -72,6 +81,8 @@ declare module "fastify" {
 }
 
 export function buildApp(prisma: PrismaClient, jwtSecret: string = "secret-super-rahasia-aksicendekia-2026"): FastifyInstance {
+  assertProductionPreviewGuards();
+
   const app = fastify({ logger: false });
 
   // Register plugins
@@ -80,6 +91,9 @@ export function buildApp(prisma: PrismaClient, jwtSecret: string = "secret-super
   app.register(fastifyRateLimit, {
     max: 100,
     timeWindow: "1 minute",
+  });
+  app.register(fastifyMultipart, {
+    limits: { fileSize: 20 * 1024 * 1024 },
   });
 
   // Decorate custom hooks
@@ -145,6 +159,12 @@ export function buildApp(prisma: PrismaClient, jwtSecret: string = "secret-super
   const guestSyncRepo = new GuestSyncRepository(prisma);
   const guestSyncService = new GuestSyncService(guestSyncRepo);
 
+  const contentBlockRepo = new ContentBlockRepository(prisma);
+  const contentBlockService = new ContentBlockService(contentBlockRepo);
+  const mediaAssetService = new MediaAssetService(contentBlockRepo);
+  const curriculumAchievementService = new CurriculumAchievementService(contentBlockRepo);
+  const publishService = new PublishService(contentBlockRepo);
+
   // Register routes
   registerAuthRoutes(app, authService);
   registerStudentRoutes(app, studentService, prisma);
@@ -162,6 +182,7 @@ export function buildApp(prisma: PrismaClient, jwtSecret: string = "secret-super
   registerPaymentRoutes(app, paymentService);
   registerPublicContentRoutes(app, prisma);
   registerGuestSyncRoutes(app, guestSyncService);
+  registerContentBlockRoutes(app, contentBlockService, mediaAssetService, curriculumAchievementService, publishService);
 
   // Weekly Report Generation Route
   app.post("/api/v1/reports/weekly/generate", { preHandler: [app.authenticate] }, async (_req, reply) => {

@@ -8,7 +8,9 @@ import {
   ProgressBar,
   Card,
   Modal,
-  Toast
+  Toast,
+  DragDropGroupingQuestion,
+  NumberLinePlacementQuestion
 } from '@aksicendekia/ui';
 import { apiFetch } from '@/lib/api-fetch';
 
@@ -17,13 +19,31 @@ interface Option {
   text: string;
 }
 
+interface DragDropItem {
+  id: string;
+  label: string;
+  illustrationAssetId?: string | null;
+}
+
+interface DragDropGroup {
+  id: string;
+  label: string;
+}
+
 interface QuestionDTO {
   id: string;
-  type: 'MULTIPLE_CHOICE' | 'SHORT_ANSWER' | 'MATCHING_PAIRS';
+  type: 'MULTIPLE_CHOICE' | 'SHORT_ANSWER' | 'MATCHING_PAIRS' | 'DRAG_DROP_GROUPING' | 'NUMBER_LINE';
   prompt: string;
   options?: Option[];
   matchingItemsLeft?: string[];
   matchingItemsRight?: string[];
+  dragDropItems?: DragDropItem[];
+  dragDropGroups?: DragDropGroup[];
+  requireAllPlaced?: boolean;
+  numberLineMin?: number;
+  numberLineMax?: number;
+  numberLineStep?: number;
+  numberLineMarkers?: number[];
   availableHintsCount: number;
 }
 
@@ -52,7 +72,9 @@ export default function ActiveSessionClient() {
   const [selectedOptionId, setSelectedOptionId] = useState<string>('');
   const [shortAnswerText, setShortAnswerText] = useState<string>('');
   const [matchingPairs, setMatchingPairs] = useState<Record<string, string>>({});
-  
+  const [dragDropPlacements, setDragDropPlacements] = useState<Record<string, string>>({});
+  const [numberLineValue, setNumberLineValue] = useState<number | null>(null);
+
   const [feedback, setFeedback] = useState<FeedbackState | null>(null);
   const [activeHint, setActiveHint] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -116,6 +138,11 @@ export default function ActiveSessionClient() {
       answerPayload = { type: 'SHORT_ANSWER', text: shortAnswerText };
     } else if (qType === 'MATCHING_PAIRS') {
       answerPayload = { type: 'MATCHING_PAIRS', pairs: matchingPairs };
+    } else if (qType === 'DRAG_DROP_GROUPING') {
+      answerPayload = { type: 'DRAG_DROP_GROUPING', placements: dragDropPlacements };
+    } else if (qType === 'NUMBER_LINE') {
+      if (numberLineValue === null) return;
+      answerPayload = { type: 'NUMBER_LINE', value: numberLineValue };
     }
 
     setIsSubmitting(true);
@@ -161,6 +188,8 @@ export default function ActiveSessionClient() {
       setSelectedOptionId('');
       setShortAnswerText('');
       setMatchingPairs({});
+      setDragDropPlacements({});
+      setNumberLineValue(null);
       setFeedback(null);
       setActiveHint(null);
       setIdempotencyKey(crypto.randomUUID());
@@ -311,6 +340,34 @@ export default function ActiveSessionClient() {
               </div>
             </div>
           )}
+
+          {q.type === 'DRAG_DROP_GROUPING' && q.dragDropItems && q.dragDropGroups && (
+            <div className="mt-6">
+              <DragDropGroupingQuestion
+                items={q.dragDropItems}
+                groups={q.dragDropGroups}
+                placements={dragDropPlacements}
+                onPlacementsChange={setDragDropPlacements}
+                disabled={feedback?.isSubmitted}
+                correctMapping={feedback?.isSubmitted ? feedback.correctAnswer?.correctMapping : undefined}
+              />
+            </div>
+          )}
+
+          {q.type === 'NUMBER_LINE' && (
+            <div className="mt-6">
+              <NumberLinePlacementQuestion
+                min={q.numberLineMin ?? 0}
+                max={q.numberLineMax ?? 10}
+                step={q.numberLineStep ?? 1}
+                markers={q.numberLineMarkers}
+                value={numberLineValue}
+                onChange={setNumberLineValue}
+                disabled={feedback?.isSubmitted}
+                targetValue={feedback?.isSubmitted ? feedback.correctAnswer?.targetValue : undefined}
+              />
+            </div>
+          )}
         </Card>
 
         {/* Feedback Container */}
@@ -349,7 +406,10 @@ export default function ActiveSessionClient() {
               (q.type === 'SHORT_ANSWER' && !shortAnswerText.trim()) ||
               (q.type === 'MATCHING_PAIRS' &&
                 (!q.matchingItemsLeft ||
-                  q.matchingItemsLeft.some((item) => !matchingPairs[item])))
+                  q.matchingItemsLeft.some((item) => !matchingPairs[item]))) ||
+              (q.type === 'DRAG_DROP_GROUPING' &&
+                (!q.dragDropItems || q.dragDropItems.some((item) => !dragDropPlacements[item.id]))) ||
+              (q.type === 'NUMBER_LINE' && numberLineValue === null)
             }
             className="w-full py-4 text-lg bg-blue-600 hover:bg-blue-700 font-bold disabled:opacity-50 disabled:cursor-not-allowed"
           >

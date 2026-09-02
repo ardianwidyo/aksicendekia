@@ -32,6 +32,15 @@ describe('RichTextBlock — safe subset only', () => {
   });
 });
 
+describe('RichTextBlock — additional safe-subset elements', () => {
+  it('renders a level-1 heading, italic, inline code, and blank-line spacing', () => {
+    wrap(<RichTextBlock markdown={'# Judul Utama\n\nTeks *miring* dan `kode`.'} />);
+    expect(screen.getByRole('heading', { level: 3, name: 'Judul Utama' })).toBeInTheDocument();
+    expect(screen.getByText('miring').tagName).toBe('EM');
+    expect(screen.getByText('kode').tagName).toBe('CODE');
+  });
+});
+
 describe('IllustrationBlock — fallback on load error (FR-015)', () => {
   it('swaps to a text fallback when the image errors', () => {
     wrap(
@@ -58,14 +67,14 @@ describe('InteractiveWidgetBlock — graceful fallback (FR-009)', () => {
     expect(screen.getByRole('note')).toBeInTheDocument();
   });
 
-  it('renders the real widget for valid params', () => {
+  it('renders the real widget for valid params (lazy-loaded — T087)', async () => {
     wrap(
       <InteractiveWidgetBlock
         widgetType="NUMBER_LINE_EXPLORER"
         params={{ min: 0, max: 10, step: 1, initial: 2 }}
       />,
     );
-    expect(screen.getByRole('slider')).toBeInTheDocument();
+    expect(await screen.findByRole('slider')).toBeInTheDocument();
   });
 });
 
@@ -105,6 +114,7 @@ describe('LessonContentRenderer', () => {
   it('fires onBlockInteract when a widget is used', async () => {
     const onBlockInteract = vi.fn();
     wrap(<LessonContentRenderer blocks={blocks} onBlockInteract={onBlockInteract} />);
+    await screen.findAllByRole('button', { name: /^Bagian \d+$/ });
     const parts = screen.getAllByRole('button', { name: /^Bagian \d+$/ });
     await userEvent.click(parts[0]);
     expect(onBlockInteract).toHaveBeenCalledWith('b3');
@@ -112,6 +122,65 @@ describe('LessonContentRenderer', () => {
 
   it('has no axe violations', async () => {
     const { container } = wrap(<LessonContentRenderer blocks={blocks} />);
+    // Let the lazy-loaded widget chunk (FRACTION_BAR_BUILDER) resolve before scanning.
+    await screen.findAllByRole('button', { name: /^Bagian \d+$/ });
     expect(await axe(container)).toHaveNoViolations();
+  });
+
+  it('renders a VIDEO block (slot exists for v1 even though seed lessons use ANIMATION)', () => {
+    wrap(
+      <LessonContentRenderer
+        blocks={[
+          {
+            id: 'v1',
+            blockType: 'VIDEO',
+            payload: {
+              title: 'Video contoh',
+              videoUrl: '/assets/lessons/example.mp4',
+              captionUrl: '/assets/lessons/example.vtt',
+              transcriptText: 'Transkrip video contoh.',
+              fallbackImageUrl: '/assets/lessons/fallback.svg',
+            },
+          },
+        ]}
+      />,
+    );
+    expect(screen.getByLabelText('Video contoh')).toBeInTheDocument();
+  });
+
+  it('passes through optional caption/fallback fields when authored', async () => {
+    wrap(
+      <LessonContentRenderer
+        blocks={[
+          {
+            id: 'i1',
+            blockType: 'ILLUSTRATION',
+            payload: {
+              imageUrl: '/x.svg',
+              altText: 'Ilustrasi',
+              caption: 'Keterangan gambar',
+              fallbackText: 'Penjelasan cadangan',
+            },
+          },
+          {
+            id: 'w1',
+            blockType: 'INTERACTIVE_WIDGET',
+            payload: {
+              widget: { widgetType: 'GHOST_WIDGET', params: {} },
+              fallbackText: 'Widget cadangan teks',
+            },
+          },
+        ]}
+      />,
+    );
+    expect(screen.getByText('Keterangan gambar')).toBeInTheDocument();
+    expect(await screen.findByText('Widget cadangan teks')).toBeInTheDocument();
+  });
+
+  it('renders nothing for an unrecognized blockType instead of throwing', () => {
+    const { container } = wrap(
+      <LessonContentRenderer blocks={[{ id: 'x1', blockType: 'SOMETHING_NEW' as never, payload: {} }]} />,
+    );
+    expect(container.querySelector('section')).toBeInTheDocument();
   });
 });

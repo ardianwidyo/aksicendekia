@@ -1,17 +1,10 @@
-import type { ComponentType } from 'react';
+import { lazy, type ComponentType, type LazyExoticComponent } from 'react';
 import { WIDGET_PARAMS_SCHEMAS, WIDGET_CATALOG, type WidgetTypeId } from '@aksicendekia/content-kit';
 
 /** Minimal structural view of a Zod schema — avoids a direct `zod` dep in packages/ui. */
 export interface ParamsSchema {
   safeParse: (value: unknown) => { success: boolean; data?: unknown; error?: unknown };
 }
-import { StepRevealExplainer } from './StepRevealExplainer';
-import { ParameterExplorer } from './ParameterExplorer';
-import { NumberLineExplorer } from './NumberLineExplorer';
-import { FractionBarBuilder } from './FractionBarBuilder';
-import { ImageHotspot } from './ImageHotspot';
-import { SortIntoGroups } from './SortIntoGroups';
-import { AnimatedWorkedExample } from './AnimatedWorkedExample';
 
 export interface InteractiveWidgetProps<TParams = unknown> {
   params: TParams;
@@ -22,18 +15,27 @@ export interface InteractiveWidgetProps<TParams = unknown> {
 export interface WidgetRegistryEntry {
   id: WidgetTypeId;
   paramsSchema: ParamsSchema;
-  component: ComponentType<InteractiveWidgetProps<never>>;
+  component: LazyExoticComponent<ComponentType<InteractiveWidgetProps<never>>>;
   supportStatus: 'SUPPORTED' | 'DEPRECATED' | 'REMOVED';
 }
 
-const COMPONENTS: Record<WidgetTypeId, ComponentType<InteractiveWidgetProps<never>>> = {
-  STEP_REVEAL: StepRevealExplainer as ComponentType<InteractiveWidgetProps<never>>,
-  PARAMETER_EXPLORER: ParameterExplorer as ComponentType<InteractiveWidgetProps<never>>,
-  NUMBER_LINE_EXPLORER: NumberLineExplorer as ComponentType<InteractiveWidgetProps<never>>,
-  FRACTION_BAR_BUILDER: FractionBarBuilder as ComponentType<InteractiveWidgetProps<never>>,
-  IMAGE_HOTSPOT: ImageHotspot as ComponentType<InteractiveWidgetProps<never>>,
-  SORT_INTO_GROUPS: SortIntoGroups as ComponentType<InteractiveWidgetProps<never>>,
-  ANIMATED_WORKED_EXAMPLE: AnimatedWorkedExample as ComponentType<InteractiveWidgetProps<never>>,
+/**
+ * Feature 010 / T087 (SC-004, SC-006) — every widget is its own `React.lazy` chunk so a
+ * lesson only ships the JS for the widget types it actually uses, not all 7. Plain
+ * `React.lazy` (not `next/dynamic`) is deliberate: packages/ui has no dependency on
+ * Next.js elsewhere, and webpack code-splits a dynamic `import()` the same way either
+ * API does — InteractiveWidgetBlock wraps the render in <Suspense> with a SkeletonState.
+ */
+const COMPONENTS: Record<WidgetTypeId, LazyExoticComponent<ComponentType<InteractiveWidgetProps<never>>>> = {
+  STEP_REVEAL: lazy(() => import('./StepRevealExplainer').then((m) => ({ default: m.StepRevealExplainer }))) as never,
+  PARAMETER_EXPLORER: lazy(() => import('./ParameterExplorer').then((m) => ({ default: m.ParameterExplorer }))) as never,
+  NUMBER_LINE_EXPLORER: lazy(() => import('./NumberLineExplorer').then((m) => ({ default: m.NumberLineExplorer }))) as never,
+  FRACTION_BAR_BUILDER: lazy(() => import('./FractionBarBuilder').then((m) => ({ default: m.FractionBarBuilder }))) as never,
+  IMAGE_HOTSPOT: lazy(() => import('./ImageHotspot').then((m) => ({ default: m.ImageHotspot }))) as never,
+  SORT_INTO_GROUPS: lazy(() => import('./SortIntoGroups').then((m) => ({ default: m.SortIntoGroups }))) as never,
+  ANIMATED_WORKED_EXAMPLE: lazy(() =>
+    import('./AnimatedWorkedExample').then((m) => ({ default: m.AnimatedWorkedExample })),
+  ) as never,
 };
 
 export const WIDGET_REGISTRY: Readonly<Record<string, WidgetRegistryEntry>> = Object.fromEntries(

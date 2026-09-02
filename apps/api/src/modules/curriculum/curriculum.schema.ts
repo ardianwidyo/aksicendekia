@@ -33,6 +33,8 @@ export const createLessonSchema = z.object({
   estimatedDurationMinutes: z.number().int().min(1).max(300),
   orderIndex: z.number().int().min(1),
   prerequisiteLessonIds: z.array(z.string().uuid()).optional(),
+  // Feature 010 — link to the official curriculum-achievement quote (FR-008a, gate C3).
+  curriculumAchievementId: z.string().uuid().optional(),
 });
 
 export const updateLessonSchema = createLessonSchema.partial().omit({ unitId: true });

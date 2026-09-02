@@ -278,6 +278,7 @@ model Lesson {
   listing                 LessonListing @default(LISTED)
   supersededByLessonId    String?       @map("superseded_by_lesson_id")
   curriculumAchievementId String?       @map("curriculum_achievement_id")
+  reviewerNote            String?       @map("reviewer_note")
 
   unit            Unit                    @relation(fields: [unitId], references: [id], onDelete: Cascade)
   parentVersion   Lesson?                 @relation("LessonVersions", fields: [parentVersionId], references: [id], onDelete: SetNull)

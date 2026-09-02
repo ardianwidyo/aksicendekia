@@ -7,8 +7,6 @@ import { BookOpen, Sparkles, Clock, Target, ArrowLeft, Play, Award, ArrowUpRight
 import Link from 'next/link';
 import { useGuestProgress } from '@/lib/context/guest-progress-context';
 
-import { getGuestLessonFallback, getInteractiveLesson } from '@/lib/guest-lessons';
-
 /** Map a content-kit / public-API block into the renderer's RenderableBlock. */
 function toRenderableBlocks(raw: any[]): RenderableBlock[] {
   if (!Array.isArray(raw)) return [];
@@ -45,14 +43,19 @@ export default function LessonDetailClient() {
         const res = await fetch(`http://localhost:4000/api/v1/public/lessons/${lessonId}`);
         if (res.ok) {
           setLesson(await res.json());
-        } else {
-          setLesson(getInteractiveLesson(lessonId) ?? getGuestLessonFallback(lessonId, gradeLevel));
+          setLoading(false);
+          return;
         }
       } catch {
-        setLesson(getInteractiveLesson(lessonId) ?? getGuestLessonFallback(lessonId, gradeLevel));
-      } finally {
-        setLoading(false);
+        // fall through to the local content-kit fallback below
       }
+
+      // T088 (SC-004/SC-006): the local lesson catalog (content-kit's 12 lessons +
+      // legacy guest fixtures) is only imported here, on demand, so the initial
+      // page bundle doesn't carry it when the public API answers successfully.
+      const { getInteractiveLesson, getGuestLessonFallback } = await import('@/lib/guest-lessons');
+      setLesson(getInteractiveLesson(lessonId) ?? getGuestLessonFallback(lessonId, gradeLevel));
+      setLoading(false);
     }
 
     if (lessonId) {

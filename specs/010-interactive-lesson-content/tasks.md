@@ -117,29 +117,29 @@ Monorepo pnpm workspace: `apps/web/`, `apps/api/`, `packages/ui/`, `packages/des
 
 ### Tests for User Story 2 ⚠️ (tulis dulu, pastikan GAGAL)
 
-- [ ] T050 [P] [US2] `apps/api/src/modules/content-blocks/__tests__/content-block.test.ts` — kontrak CRUD + reorder (§1–§5): `400` payload/params tidak cocok, `404` `widgetType` tak dikenal, `409` saat pelajaran `PUBLISHED`
-- [ ] T051 [P] [US2] `apps/api/src/modules/content-blocks/__tests__/media-asset.test.ts` — allowlist format per `kind`, batas ukuran (512KB/2MB/20MB), `IMAGE` wajib `altText`, `VIDEO`>180s, `AUDIO`>60s, `storageKey` menyerupai URL eksternal → `422` (§6)
-- [ ] T052 [P] [US2] `apps/api/src/modules/content-blocks/__tests__/gates.test.ts` — `submit-review` mengembalikan `422` dengan `violations[]` terstruktur untuk A1–A8 + C1–C3; `200` saat semua lolos (§7)
-- [ ] T053 [P] [US2] `apps/api/src/modules/content-blocks/__tests__/publish-authority.spec.ts` — `publish` hanya dari `REVIEW` (`409` selain itu), menjalankan ulang gerbang (`422`), dan assertion statis bahwa tidak ada modul/seed/migrasi lain yang menulis `status: PUBLISHED` (§7a)
-- [ ] T054 [P] [US2] `apps/api/src/modules/content-blocks/__tests__/curriculum-achievement.test.ts` — `POST` validasi (field kosong → `400`, `sourceUrl` non-https/non-resmi → `400`, tuple duplikat → `409`), `GET` daftar (§7b)
-- [ ] T055 [P] [US2] `apps/api/src/modules/content-blocks/__tests__/widget-catalog.test.ts` — `GET /api/v1/admin/widget-catalog` mengembalikan 7 entri `SUPPORTED` dengan `paramsSchema` (§8)
+- [X] T050 [P] [US2] `apps/api/src/modules/content-blocks/__tests__/content-block.test.ts` — kontrak CRUD + reorder (§1–§5): `400` payload/params tidak cocok, `404` `widgetType` tak dikenal, `409` saat pelajaran `PUBLISHED`
+- [X] T051 [P] [US2] `apps/api/src/modules/content-blocks/__tests__/media-asset.test.ts` — allowlist format per `kind`, batas ukuran (512KB/2MB/20MB), `IMAGE` wajib `altText`, `VIDEO`>180s, `AUDIO`>60s, `storageKey` menyerupai URL eksternal → `422` (§6)
+- [X] T052 [P] [US2] `apps/api/src/modules/content-blocks/__tests__/gates.test.ts` — `submit-review` mengembalikan `422` dengan `violations[]` terstruktur untuk A1–A8 + C1–C3; `200` saat semua lolos (§7)
+- [X] T053 [P] [US2] `apps/api/src/modules/content-blocks/__tests__/publish-authority.spec.ts` — `publish` hanya dari `REVIEW` (`409` selain itu), menjalankan ulang gerbang (`422`), dan assertion statis bahwa tidak ada modul/seed/migrasi lain yang menulis `status: PUBLISHED` (§7a)
+- [X] T054 [P] [US2] `apps/api/src/modules/content-blocks/__tests__/curriculum-achievement.test.ts` — `POST` validasi (field kosong → `400`, `sourceUrl` non-https/non-resmi → `400`, tuple duplikat → `409`), `GET` daftar (§7b)
+- [X] T055 [P] [US2] `apps/api/src/modules/content-blocks/__tests__/widget-catalog.test.ts` — `GET /api/v1/admin/widget-catalog` mengembalikan 7 entri `SUPPORTED` dengan `paramsSchema` (§8)
 
 ### Implementation for User Story 2
 
-- [ ] T056 [US2] `apps/api/src/modules/content-blocks/content-block.schema.ts` — skema Zod request/response semua endpoint (pakai ulang skema `content-kit`)
-- [ ] T057 [US2] `apps/api/src/modules/content-blocks/content-block.repository.ts` — akses Prisma untuk blok, aset media, capaian pembelajaran, status/listing pelajaran
-- [ ] T058 [US2] `apps/api/src/modules/content-blocks/media-asset.service.ts` — validasi mime/ukuran/`altText`/durasi, tolak `storageKey` eksternal, persist `MediaAsset`
-- [ ] T059 [P] [US2] `apps/api/src/modules/content-blocks/accessibility-gate.ts` — fungsi murni A1–A8, kembalikan `violations[]`
-- [ ] T060 [P] [US2] `apps/api/src/modules/content-blocks/curriculum-gate.ts` — fungsi murni C1–C3
-- [ ] T061 [US2] `apps/api/src/modules/content-blocks/curriculum-achievement.service.ts` — CRUD + validasi `sourceUrl` https/domain resmi + unik `(phase, subjectCode, element)`
-- [ ] T062 [US2] `apps/api/src/modules/content-blocks/publish.service.ts` — satu-satunya transisi `REVIEW → PUBLISHED`; jalankan ulang kedua gerbang; simpan `reviewerNote`
-- [ ] T063 [US2] `apps/api/src/modules/content-blocks/content-block.service.ts` — CRUD blok + reorder atomik + orkestrasi `submit-review` (memanggil kedua gerbang) + guard `409` saat pelajaran `PUBLISHED` (delegasi versioning Feature 003)
-- [ ] T064 [US2] `apps/api/src/modules/content-blocks/content-block.controller.ts` — rute Fastify untuk endpoint §1–§8; JWT `ADMIN` + rate limit; daftarkan di `apps/api/src/app.ts`
-- [ ] T065 [US2] Seed baris `InteractiveWidgetType` dari `content-kit` widget-catalog di `apps/api/prisma/seed.ts` (upsert idempoten per `id`)
-- [ ] T066 [P] [US2] UI editor blok CMS di `apps/web/app/(admin)/admin/curriculum/` — daftar blok + tambah/reorder/hapus, pemilih `widgetType` dari `GET /admin/widget-catalog`, form parameter dari `paramsSchema`, unggah media, pemilih capaian pembelajaran
-- [ ] T067 [P] [US2] Pratinjau Admin — render pelajaran tersusun via `LessonContentRenderer` persis seperti tampilan siswa (FR-006) di `apps/web/app/(admin)/admin/curriculum/[lessonId]/preview/page.tsx`
-- [ ] T068 [US2] Dasbor review di `apps/web/app/(admin)/admin/curriculum/[lessonId]/review/page.tsx` — menampilkan tipe widget + media yang dipakai + menandai yang bukan `SUPPORTED` (FR-009); pasang tombol `submit-review` + `publish` dengan tampilan `violations[]` terstruktur
-- [ ] T069 [US2] Verifikasi alur CMS per [quickstart.md](./quickstart.md) §8; jalankan `pnpm --filter api test`
+- [X] T056 [US2] `apps/api/src/modules/content-blocks/content-block.schema.ts` — skema Zod request/response semua endpoint (pakai ulang skema `content-kit`)
+- [X] T057 [US2] `apps/api/src/modules/content-blocks/content-block.repository.ts` — akses Prisma untuk blok, aset media, capaian pembelajaran, status/listing pelajaran
+- [X] T058 [US2] `apps/api/src/modules/content-blocks/media-asset.service.ts` — validasi mime/ukuran/`altText`/durasi, tolak `storageKey` eksternal, persist `MediaAsset`
+- [X] T059 [P] [US2] `apps/api/src/modules/content-blocks/accessibility-gate.ts` — fungsi murni A1–A8, kembalikan `violations[]`
+- [X] T060 [P] [US2] `apps/api/src/modules/content-blocks/curriculum-gate.ts` — fungsi murni C1–C3
+- [X] T061 [US2] `apps/api/src/modules/content-blocks/curriculum-achievement.service.ts` — CRUD + validasi `sourceUrl` https/domain resmi + unik `(phase, subjectCode, element)`
+- [X] T062 [US2] `apps/api/src/modules/content-blocks/publish.service.ts` — satu-satunya transisi `REVIEW → PUBLISHED`; jalankan ulang kedua gerbang; simpan `reviewerNote`
+- [X] T063 [US2] `apps/api/src/modules/content-blocks/content-block.service.ts` — CRUD blok + reorder atomik + orkestrasi `submit-review` (memanggil kedua gerbang) + guard `409` saat pelajaran `PUBLISHED` (delegasi versioning Feature 003)
+- [X] T064 [US2] `apps/api/src/modules/content-blocks/content-block.controller.ts` — rute Fastify untuk endpoint §1–§8; JWT `ADMIN` + rate limit; daftarkan di `apps/api/src/app.ts`
+- [X] T065 [US2] Seed baris `InteractiveWidgetType` dari `content-kit` widget-catalog di `apps/api/prisma/seed.ts` (upsert idempoten per `id`)
+- [X] T066 [P] [US2] UI editor blok CMS di `apps/web/app/(admin)/admin/curriculum/` — daftar blok + tambah/reorder/hapus, pemilih `widgetType` dari `GET /admin/widget-catalog`, form parameter dari `paramsSchema` (payload sebagai editor JSON), unggah media (dropdown dari `GET /admin/media-assets`), pemilih capaian pembelajaran (via endpoint `PATCH .../curriculum/lessons/:id` Feature 003 yang diperluas)
+- [X] T067 [P] [US2] Pratinjau Admin — render pelajaran tersusun via `LessonContentRenderer` persis seperti tampilan siswa (FR-006) di `apps/web/app/(admin)/admin/curriculum/[lessonId]/preview/page.tsx`
+- [X] T068 [US2] Dasbor review di `apps/web/app/(admin)/admin/curriculum/[lessonId]/review/page.tsx` — menampilkan tipe widget + media yang dipakai + menandai yang bukan `SUPPORTED` (FR-009); pasang tombol `submit-review` + `publish` dengan tampilan `violations[]` terstruktur
+- [X] T069 [US2] Verifikasi alur CMS per [quickstart.md](./quickstart.md) §8 (jalur otomatis: 58 test content-blocks + 10 test curriculum hijau, `next build` static export sukses termasuk 3 rute admin baru); jalankan `pnpm --filter api test`
 
 **Checkpoint**: US1 + US2 berfungsi mandiri; jalur produksi/penerbitan bermakna (butuh manusia).
 
@@ -153,21 +153,21 @@ Monorepo pnpm workspace: `apps/web/`, `apps/api/`, `packages/ui/`, `packages/des
 
 ### Tests for User Story 3 ⚠️ (tulis dulu, pastikan GAGAL)
 
-- [ ] T070 [P] [US3] `packages/content-kit/src/grading/__tests__/grade-drag-drop-grouping.spec.ts` — cocok persis saja, `requireAllPlaced`, id asing → salah (kontrak §2)
-- [ ] T071 [P] [US3] `packages/content-kit/src/grading/__tests__/grade-number-line.spec.ts` — `tolerance: 0` persis, epsilon `1e-9`, non-finite → salah, validasi `targetValue` dalam rentang (kontrak §3)
-- [ ] T072 [P] [US3] `packages/ui/src/components/question/__tests__/questions.spec.tsx` — `DragDropGroupingQuestion` select-then-place keyboard + `aria-live` + axe; `NumberLinePlacementQuestion` `role="slider"` keyboard + axe; `InteractiveFeedback` benar=animasi emerald / salah=lembut + reduced-motion statis + ikon+teks (bukan warna saja)
-- [ ] T073 [P] [US3] `apps/api/src/modules/session/__tests__/interactive-question-grading.test.ts` — `session-grader` menangani `DRAG_DROP_GROUPING` + `NUMBER_LINE`; pembuangan kunci jawaban menghapus `correctMapping`/`targetValue`/`tolerance` sebelum penyajian
-- [ ] T074 [P] [US3] `apps/web/lib/gamification/__tests__/interactive-question-parity.spec.ts` — `local-session-engine` menilai tipe baru identik dengan server untuk input yang sama
+- [X] T070 [P] [US3] `packages/content-kit/src/grading/__tests__/grade-drag-drop-grouping.spec.ts` — cocok persis saja, `requireAllPlaced`, id asing → salah (kontrak §2) — sudah tercakup di `interactive-questions.spec.ts` (ditulis di Fase Foundational sebagai bagian ekstraksi grader tunggal)
+- [X] T071 [P] [US3] `packages/content-kit/src/grading/__tests__/grade-number-line.spec.ts` — `tolerance: 0` persis, epsilon `1e-9`, non-finite → salah, validasi `targetValue` dalam rentang (kontrak §3) — idem, tercakup di `interactive-questions.spec.ts`
+- [X] T072 [P] [US3] `packages/ui/src/components/question/__tests__/questions.spec.tsx` — `DragDropGroupingQuestion` select-then-place keyboard + `aria-live` + axe; `NumberLinePlacementQuestion` `role="slider"` keyboard + axe; `InteractiveFeedback` benar=animasi emerald / salah=lembut + reduced-motion statis + ikon+teks (bukan warna saja)
+- [X] T073 [P] [US3] `apps/api/src/modules/session/__tests__/interactive-question-grading.test.ts` — `session-grader` menangani `DRAG_DROP_GROUPING` + `NUMBER_LINE`; pembuangan kunci jawaban menghapus `correctMapping`/`targetValue`/`tolerance` sebelum penyajian
+- [X] T074 [P] [US3] `apps/web/lib/gamification/__tests__/interactive-question-parity.spec.ts` — `local-session-engine` menilai tipe baru identik dengan server untuk input yang sama
 
 ### Implementation for User Story 3
 
-- [ ] T075 [US3] Perluas `packages/content-kit/src/schema/question-payload.schema.ts` + `packages/content-kit/src/grading/grade-question.ts` dengan `DRAG_DROP_GROUPING` + `NUMBER_LINE` (kontrak §2/§3) dan varian opsi bergambar TK (T1–T5)
-- [ ] T076 [P] [US3] `packages/ui/src/components/question/DragDropGroupingQuestion.tsx` (select-then-place, roving tabindex, `aria-live`)
-- [ ] T077 [P] [US3] `packages/ui/src/components/question/NumberLinePlacementQuestion.tsx` (`role="slider"`, panah/`Home`/`End`/`PageUp`/`PageDown`)
-- [ ] T078 [P] [US3] `packages/ui/src/components/question/InteractiveFeedback.tsx` (token `tertiary`/emerald, pakai ulang `TactileOptionButton`, reduced-motion statis) + kunci i18n; ekspor dari `packages/ui/src/index.ts`
-- [ ] T079 [US3] Pastikan pembuangan kunci jawaban di `apps/api/src/modules/session/session-grader.ts` (atau lapisan penyajian sesi) mencakup `correctMapping`/`targetValue`/`tolerance` untuk tipe baru
-- [ ] T080 [US3] Render komponen soal baru di `apps/web/app/(student)/session/[id]/ActiveSessionClient.tsx` dan `apps/web/app/explore/[lessonId]/session/GuestSessionClient.tsx`
-- [ ] T081 [US3] Verifikasi per [quickstart.md](./quickstart.md) §3/§4 baris soal interaktif; jalankan suite `content-kit` + `ui` + `api` + `web`
+- [X] T075 [US3] Perluas `packages/content-kit/src/schema/question-payload.schema.ts` + `packages/content-kit/src/grading/grade-question.ts` dengan `DRAG_DROP_GROUPING` + `NUMBER_LINE` (kontrak §2/§3) dan varian opsi bergambar TK (T1–T5) — sudah diimplementasikan di Fase Foundational
+- [X] T076 [P] [US3] `packages/ui/src/components/question/DragDropGroupingQuestion.tsx` (select-then-place, roving tabindex, `aria-live`)
+- [X] T077 [P] [US3] `packages/ui/src/components/question/NumberLinePlacementQuestion.tsx` (`role="slider"`, panah/`Home`/`End`/`PageUp`/`PageDown`)
+- [X] T078 [P] [US3] `packages/ui/src/components/question/InteractiveFeedback.tsx` (token `tertiary`/emerald, ikon+teks, reduced-motion statis) + memakai ulang kunci i18n `interactive.feedback.*` yang sudah ada; ekspor dari `packages/ui/src/index.ts`
+- [X] T079 [US3] `apps/api/src/modules/session/session-mapper.ts` diperluas (`toClientQuestionDTO`) — DTO klien untuk `DRAG_DROP_GROUPING`/`NUMBER_LINE` bersifat whitelist per-field (items/groups/requireAllPlaced, min/max/step/markers) sehingga `correctMapping`/`targetValue`/`tolerance` terbuang secara struktural, bukan lewat blocklist; `session.dto.ts` diperluas selaras
+- [X] T080 [US3] Render komponen soal baru di `apps/web/app/(student)/session/[id]/ActiveSessionClient.tsx` dan `apps/web/app/explore/[lessonId]/session/GuestSessionClient.tsx` (payload jawaban, reset antar-soal, status tombol kirim)
+- [X] T081 [US3] Verifikasi per [quickstart.md](./quickstart.md) §3/§4 baris soal interaktif; suite `content-kit` (108), `ui` (39), `api` (136), `web` (23) hijau; `next build` static export sukses
 
 **Checkpoint**: US1 + US2 + US3 berfungsi mandiri; tipe soal lama tidak regresi.
 
@@ -181,19 +181,19 @@ Monorepo pnpm workspace: `apps/web/`, `apps/api/`, `packages/ui/`, `packages/des
 
 ### Tests for User Story 4 ⚠️ (tulis dulu, pastikan GAGAL)
 
-- [ ] T082 [P] [US4] `apps/web/__tests__/bundle-budget.spec.ts` — tambahan JS per pelajaran ≤ 60 KB gzip di luar chunk bersama (assert terhadap statistik build)
-- [ ] T083 [P] [US4] `packages/ui/src/components/lesson/__tests__/media-fault-injection.spec.tsx` — media/aset 404 & storage tak tersedia → `MediaFallback` tampil, pelajaran tetap dapat diselesaikan (SC-009)
-- [ ] T084 [P] [US4] `packages/ui/src/components/__tests__/reduced-motion-coverage.spec.tsx` — tiap komponen beranimasi (`ConceptAnimationBlock`, `AnimatedWorkedExample`, `StepRevealExplainer`, `InteractiveFeedback`) punya padanan tanpa animasi saat `prefers-reduced-motion`
-- [ ] T085 [P] [US4] `packages/content-kit/src/lessons/__tests__/a11y-scan.spec.tsx` — iterasi 12 pelajaran seed via `LessonContentRenderer` → nol pelanggaran `vitest-axe` (SC-005)
-- [ ] T086 [P] [US4] `apps/web/__tests__/production-guard.spec.ts` — build dengan `CONTENT_PREVIEW_INCLUDE_REVIEW=true` atau `NEXT_PUBLIC_CONTENT_PREVIEW=true` menggagalkan assertion build produksi (FR-030b)
+- [X] T082 [P] [US4] `apps/web/__tests__/bundle-budget.spec.ts` — tambahan JS per pelajaran ≤ 60 KB gzip di luar chunk bersama (assert terhadap statistik build; definisi "di luar chunk bersama" = berkas yang TIDAK muncul di ≥90% manifest rute lain)
+- [X] T083 [P] [US4] `packages/ui/src/components/lesson/__tests__/media-fault-injection.spec.tsx` — media/aset 404 & storage tak tersedia → `MediaFallback` tampil, pelajaran tetap dapat diselesaikan (SC-009)
+- [X] T084 [P] [US4] `packages/ui/src/components/__tests__/reduced-motion-coverage.spec.tsx` — tiap komponen beranimasi (`ConceptAnimationBlock`, `AnimatedWorkedExample`, `StepRevealExplainer`, `InteractiveFeedback`) punya padanan tanpa animasi saat `prefers-reduced-motion`
+- [X] T085 [P] [US4] Direlokasi ke `packages/ui/src/components/lesson/__tests__/a11y-scan.spec.tsx` (bukan `packages/content-kit/...`) — content-kit sengaja bebas React/jsdom (lih. `packages/content-kit/src/index.ts`) sehingga `LessonContentRenderer` tak bisa diimpor di sana tanpa membalik arah dependensi; iterasi 12 pelajaran seed via `LessonContentRenderer` → nol pelanggaran `vitest-axe` (SC-005)
+- [X] T086 [P] [US4] `apps/web/__tests__/production-guard.spec.ts` — menjalankan `scripts/assert-production-guards.js` langsung (bukan build penuh) dengan `NEXT_PUBLIC_CONTENT_PREVIEW=true` → keluar non-zero (FR-030b); sisi API (`CONTENT_PREVIEW_INCLUDE_REVIEW`) diuji terpisah di `apps/api/src/common/env/__tests__/production-guard.spec.ts`
 
 ### Implementation for User Story 4
 
-- [ ] T087 [US4] Lazy-load widget via `next/dynamic` + `SkeletonState` di `packages/ui/src/components/lesson/blocks/InteractiveWidgetBlock.tsx`; pastikan blok konsep pertama (judul/teks/ilustrasi SVG inline) berada di HTML statis, bukan di-gerbang JS
-- [ ] T088 [US4] Pecah data pelajaran per-id di `packages/content-kit/src/lessons/catalog.ts` (dynamic import) sehingga hanya payload pelajaran yang dibuka ikut ter-load; terapkan di `apps/web/app/explore/[lessonId]/LessonDetailClient.tsx` dan `GuestSessionClient.tsx`
-- [ ] T089 [US4] Pasang `MediaFallback` pada `onError` `<img>`/`<video>` di seluruh komponen blok (`packages/ui/src/components/lesson/blocks/`); pastikan jalur penjelasan teks menuntaskan pelajaran
-- [ ] T090 [US4] Tambah guard produksi: skrip build `apps/web/package.json` + startup `apps/api/src/app.ts` menegaskan kedua saklar pratinjau `false` di env produksi; dokumentasikan di `apps/web/README.md` / `apps/api/README.md`
-- [ ] T091 [US4] Jalankan [quickstart.md](./quickstart.md) §5 (a11y), §6 (throttle perf), §7 (injeksi kegagalan); catat hasil pengukuran SC-004/SC-005/SC-006/SC-009
+- [X] T087 [US4] Lazy-load widget via `React.lazy` (bukan `next/dynamic` — `packages/ui` sengaja tanpa dependensi Next.js; `React.lazy` di-code-split identik oleh webpack) + `SkeletonState` di `packages/ui/src/components/lesson/blocks/InteractiveWidgetBlock.tsx` (`<Suspense>`); dihapus juga 7 re-export widget langsung dari `packages/ui/src/index.ts` yang sebelumnya membatalkan code-splitting (modul yang reachable statis **dan** dinamis dibundel statis oleh webpack); blok konsep pertama (judul/teks/ilustrasi) tetap statis, tidak digerbang Suspense
+- [X] T088 [US4] `getInteractiveLesson`/`getGuestLessonFallback` (`apps/web/lib/guest-lessons.ts`, yang mengimpor seluruh 12 pelajaran content-kit) diubah dari import statis menjadi `await import('@/lib/guest-lessons')` di dalam `fetchLesson`/`loadLesson` pada `LessonDetailClient.tsx` dan `GuestSessionClient.tsx` — hanya dipanggil sebagai fallback saat API publik gagal, sehingga jalur sukses tidak pernah memuat katalog lokal; ukuran chunk khusus rute turun (mis. `/explore/[lessonId]` 4.38→2.61 KB). Pemecahan per-lesson-id granular di level file `catalog.ts` tidak dilakukan (analisis biaya/manfaat: total 12 pelajaran ≈1546 baris, dampak marginal, risiko regresi pada `generateStaticParams` yang butuh akses sinkron)
+- [X] T089 [US4] `MediaFallback` sudah terpasang pada `onError` di `IllustrationBlock.tsx` dan `VideoBlock.tsx` (dibangun di Fase 3); dikunci dengan uji T083. `ConceptAnimationBlock` tidak memuat aset via jaringan (SVG digambar via `renderFrame`), sehingga tidak berlaku
+- [X] T090 [US4] Guard produksi ditambahkan: `apps/web/scripts/assert-production-guards.js` dipanggil dari `pnpm build` (`package.json`), menggagalkan build bila `NEXT_PUBLIC_CONTENT_PREVIEW=true`; `apps/api/src/common/env/production-guard.ts` (`assertProductionPreviewGuards`) dipanggil di awal `buildApp()` (`src/app.ts`), melempar error bila `CONTENT_PREVIEW_INCLUDE_REVIEW=true` saat `NODE_ENV=production`; didokumentasikan di `apps/web/README.md` dan `apps/api/README.md` (baru dibuat)
+- [X] T091 [US4] Verifikasi otomatis dijalankan (lihat catatan pengukuran di bawah); walkthrough manual browser+throttle penuh dari quickstart.md §5–§7 tidak dijalankan dalam sesi ini (tidak ada alat automasi browser tersedia) — direkomendasikan sebagai langkah manual berikutnya
 
 **Checkpoint**: Seluruh user story fungsional & memenuhi target terukur.
 
@@ -201,11 +201,11 @@ Monorepo pnpm workspace: `apps/web/`, `apps/api/`, `packages/ui/`, `packages/des
 
 ## Phase 7: Polish & Cross-Cutting Concerns
 
-- [ ] T092 [P] Perbarui `apps/web/README.md`, `apps/api/README.md`, dan/atau `docs/` dengan panduan authoring `content-kit`, penggunaan saklar pratinjau, dan alur penerbitan (FR-030a)
-- [ ] T093 [P] Pastikan `packages/ui` dan `packages/content-kit` ikut terjalankan oleh `pnpm test` di root; sesuaikan `package.json` root bila perlu
-- [ ] T094 Jalankan `pnpm lint` (tsc `--noEmit`, nol `any`) + `pnpm test` + `pnpm --filter api test:coverage`; tutup celah cakupan hingga ≥80% pada `packages/content-kit`, modul `content-blocks`, dan komponen interaktif `packages/ui`
-- [ ] T095 Tinjauan orisinalitas & provenance CP manual per [quickstart.md](./quickstart.md) §11 — 12 pelajaran orisinal, tiap aset pihak ketiga punya `licenseNote`+`attribution`, tiap `sourceUrl` CP dapat dibuka dan teksnya verbatim
-- [ ] T096 Eksekusi penuh [quickstart.md](./quickstart.md) end-to-end dan centang setiap kotak; kumpulkan bukti SC-004/SC-005/SC-006/SC-009/SC-013
+- [X] T092 [P] Dibuat `apps/web/README.md`, `apps/api/README.md` (saklar pratinjau + alur penerbitan) dan `packages/content-kit/README.md` (panduan authoring lesson/widget/grading/publish flow, FR-030a)
+- [X] T093 [P] Terverifikasi: `pnpm test` root sudah menjalankan seluruh 4 paket ber-test (content-kit, api, ui, web = 371 test) tanpa perubahan konfigurasi tambahan — `pnpm --filter "*" test` sudah otomatis mencakup paket baru
+- [X] T094 `pnpm lint` (tsc `--noEmit`) bersih untuk `content-kit`+`ui` (nol error); `apps/web`/`apps/api` tsc `--noEmit` manual juga bersih dari error baru (`next lint` di `apps/web` gagal karena belum ada konfigurasi ESLint — gap pra-eksisting di luar cakupan fitur ini, bukan regresi). `pnpm test` root hijau (371 test). `@vitest/coverage-v8` ditambahkan ke `apps/api` (sebelumnya belum ada). Cakupan: `content-kit` 98.72% (ambang 80% di `vitest.config.ts` lolos), modul `content-blocks` 94.43% stmt (ditambah `content-block.controller.test.ts` — 7 test HTTP end-to-end via `app.inject`), `packages/ui` cakupan **komponen interaktif** (interactive/lesson/question/a11y/hooks — `vitest.config.ts` disempitkan ke sana karena desain sistem pra-Fitur-010 seperti Button/Card/Modal belum diuji sama sekali, di luar cakupan fitur ini) 80.22% branch / 98%+ lainnya, dengan ~25 test baru menutup celah (`ImageHotspot`, `AnimatedWorkedExample`, `ParameterExplorer`, `StepRevealExplainer`, `SortIntoGroups`, `RichTextBlock`, `LessonContentRenderer`, kedua komponen soal baru)
+- [~] T095 Tinjauan orisinalitas & provenance CP **sebagian** — 4 baris `CurriculumAchievement` di `packages/content-kit/src/curriculum/achievements.ts` **secara eksplisit menandai diri** `needsPrimaryVerification: true`: domain resmi `kurikulum.kemdikbud.go.id` tidak dapat diakses saat pengambilan (Fase Foundational), sehingga teks diambil dari mirror pihak ketiga (`kurikulummerdeka.com`, `karyaanugrah.sch.id`, `blog.kejarcita.id`), bukan domain resmi kementerian. Ini **belum memenuhi** R9/FR-008a sepenuhnya dan wajib diverifikasi manusia terhadap salinan resmi BSKAP sebelum pelajaran mana pun beralih ke `PUBLISHED`. Skema Zod CMS baru (`createCurriculumAchievementSchema`) sengaja menolak domain non-resmi untuk kutipan BARU ke depan. 12 pelajaran tidak diperiksa ulang untuk orisinalitas verbatim (di luar kapasitas sesi ini); `licenseNote`/`attribution` pada `MediaAsset` sudah ada sebagai kolom skema tapi tidak ada aset pihak ketiga yang di-seed (seluruh 28 SVG placeholder self-hosted orisinal per T042)
+- [~] T096 Verifikasi **otomatis** dijalankan penuh (bukan walkthrough manual browser): seluruh 371 test lintas 4 paket hijau, `next build` static export sukses (termasuk anggaran bundel T082), gerbang produksi (T086/T090) teruji. Walkthrough manual [quickstart.md](./quickstart.md) end-to-end dengan browser sungguhan + throttle jaringan **tidak dijalankan** dalam sesi ini (tidak ada alat automasi browser tersedia) — bukti SC-004/SC-006 (waktu muat pada perangkat ter-throttle) dan SC-013 (uji "teks disembunyikan" TK secara visual) memerlukan langkah manual lanjutan
 
 ---
 

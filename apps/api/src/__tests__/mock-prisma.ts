@@ -18,6 +18,8 @@ export function createMockPrismaClient(): PrismaClient {
   const studentLessonProgress: any[] = [];
   const lessonContentBlocks: any[] = [];
   const curriculumAchievements: any[] = [];
+  const mediaAssets: any[] = [];
+  const interactiveWidgetTypes: any[] = [];
 
   // Accept both `status: "PUBLISHED"` and `status: { in: [...] }`.
   const statusMatches = (value: any, filter: any): boolean => {
@@ -28,6 +30,30 @@ export function createMockPrismaClient(): PrismaClient {
   const listingMatches = (value: any, filter: any): boolean => {
     if (filter === undefined) return true;
     return (value ?? "LISTED") === filter;
+  };
+
+  // Supports the tiny subset of Prisma numeric filters/ops this mock's callers use.
+  const matchesNumberFilter = (value: number, filter: any): boolean => {
+    if (filter === undefined) return true;
+    if (typeof filter === "number") return value === filter;
+    if (filter.gte !== undefined && !(value >= filter.gte)) return false;
+    if (filter.gt !== undefined && !(value > filter.gt)) return false;
+    if (filter.lte !== undefined && !(value <= filter.lte)) return false;
+    if (filter.lt !== undefined && !(value < filter.lt)) return false;
+    return true;
+  };
+
+  const applyNumericFieldOps = (item: any, data: Record<string, any>): void => {
+    for (const [key, value] of Object.entries(data)) {
+      if (value && typeof value === "object" && !Array.isArray(value) && !(value instanceof Date)) {
+        if ("increment" in value) item[key] = (item[key] ?? 0) + value.increment;
+        else if ("decrement" in value) item[key] = (item[key] ?? 0) - value.decrement;
+        else item[key] = value;
+      } else {
+        item[key] = value;
+      }
+    }
+    item.updatedAt = new Date();
   };
 
   const mockPrisma = {
@@ -360,6 +386,8 @@ export function createMockPrismaClient(): PrismaClient {
         return {
           ...l,
           prerequisites: prereqs.map((p) => ({ prerequisiteLessonId: p.prerequisiteLessonId })),
+          curriculumAchievement:
+            curriculumAchievements.find((c) => c.id === l.curriculumAchievementId) ?? null,
           questionItems: qItems.map((q) => ({
             ...q,
             hints: questionHints.filter((h) => h.questionItemId === q.id),
@@ -419,6 +447,10 @@ export function createMockPrismaClient(): PrismaClient {
           status: data.status || "DRAFT",
           version: data.version || 1,
           parentVersionId: data.parentVersion?.connect?.id || data.parentVersionId || null,
+          listing: data.listing || "LISTED",
+          supersededByLessonId: data.supersededByLessonId ?? null,
+          curriculumAchievementId: data.curriculumAchievement?.connect?.id ?? data.curriculumAchievementId ?? null,
+          reviewerNote: data.reviewerNote ?? null,
           createdAt: new Date(),
           updatedAt: new Date(),
         };
@@ -428,7 +460,13 @@ export function createMockPrismaClient(): PrismaClient {
       update: async ({ where, data }: { where: { id: string }; data: any }) => {
         const item = lessons.find((l) => l.id === where.id);
         if (!item) throw new Error("Lesson not found");
-        Object.assign(item, data, { updatedAt: new Date() });
+        const { curriculumAchievement, ...rest } = data;
+        Object.assign(item, rest, { updatedAt: new Date() });
+        if (curriculumAchievement?.connect?.id !== undefined) {
+          item.curriculumAchievementId = curriculumAchievement.connect.id;
+        } else if (curriculumAchievement?.disconnect) {
+          item.curriculumAchievementId = null;
+        }
         return item;
       },
       delete: async ({ where }: { where: { id: string } }) => {
@@ -469,10 +507,33 @@ export function createMockPrismaClient(): PrismaClient {
         if (where?.status !== undefined) res = res.filter((b) => statusMatches(b.status, where.status));
         return res.sort((a, b) => a.orderIndex - b.orderIndex);
       },
+      findUnique: async ({ where }: { where: { id: string } }) =>
+        lessonContentBlocks.find((b) => b.id === where.id) || null,
       create: async ({ data }: { data: any }) => {
         const item = { id: data.id || randomUUID(), status: data.status || "DRAFT", ...data };
         lessonContentBlocks.push(item);
         return item;
+      },
+      update: async ({ where, data }: { where: { id: string }; data: any }) => {
+        const item = lessonContentBlocks.find((b) => b.id === where.id);
+        if (!item) throw new Error("LessonContentBlock not found");
+        applyNumericFieldOps(item, data);
+        return item;
+      },
+      updateMany: async ({ where, data }: { where?: any; data: any }) => {
+        let count = 0;
+        for (const item of lessonContentBlocks) {
+          if (where?.lessonId !== undefined && item.lessonId !== where.lessonId) continue;
+          if (!matchesNumberFilter(item.orderIndex, where?.orderIndex)) continue;
+          applyNumericFieldOps(item, data);
+          count++;
+        }
+        return { count };
+      },
+      delete: async ({ where }: { where: { id: string } }) => {
+        const idx = lessonContentBlocks.findIndex((b) => b.id === where.id);
+        if (idx === -1) throw new Error("LessonContentBlock not found");
+        return lessonContentBlocks.splice(idx, 1)[0];
       },
       deleteMany: async ({ where }: { where?: any }) => {
         let count = 0;
@@ -489,7 +550,19 @@ export function createMockPrismaClient(): PrismaClient {
     curriculumAchievement: {
       findUnique: async ({ where }: { where: { id: string } }) =>
         curriculumAchievements.find((c) => c.id === where.id) || null,
+      findFirst: async ({ where }: { where?: any }) =>
+        curriculumAchievements.find(
+          (c) =>
+            (!where?.phase || c.phase === where.phase) &&
+            (!where?.subjectCode || c.subjectCode === where.subjectCode) &&
+            (!where?.element || c.element === where.element),
+        ) || null,
       findMany: async () => [...curriculumAchievements],
+      create: async ({ data }: { data: any }) => {
+        const item = { id: data.id || randomUUID(), createdAt: new Date(), updatedAt: new Date(), ...data };
+        curriculumAchievements.push(item);
+        return item;
+      },
       upsert: async ({ where, create, update }: { where: { id: string }; create: any; update: any }) => {
         const existing = curriculumAchievements.find((c) => c.id === where.id);
         if (existing) {
@@ -504,6 +577,45 @@ export function createMockPrismaClient(): PrismaClient {
         let res = [...curriculumAchievements];
         if (where?.id?.in) res = res.filter((c) => where.id.in.includes(c.id));
         return res.length;
+      },
+    },
+
+    mediaAsset: {
+      findUnique: async ({ where }: { where: { id?: string; storageKey?: string } }) => {
+        if (where.id) return mediaAssets.find((a) => a.id === where.id) || null;
+        if (where.storageKey) return mediaAssets.find((a) => a.storageKey === where.storageKey) || null;
+        return null;
+      },
+      findMany: async () => [...mediaAssets],
+      create: async ({ data }: { data: any }) => {
+        const item = {
+          id: randomUUID(),
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          widthPx: null,
+          heightPx: null,
+          durationSeconds: null,
+          altText: null,
+          licenseNote: null,
+          attribution: null,
+          ...data,
+        };
+        mediaAssets.push(item);
+        return item;
+      },
+    },
+
+    interactiveWidgetType: {
+      findMany: async () => [...interactiveWidgetTypes],
+      upsert: async ({ where, create, update }: { where: { id: string }; create: any; update: any }) => {
+        const existing = interactiveWidgetTypes.find((w) => w.id === where.id);
+        if (existing) {
+          Object.assign(existing, update);
+          return existing;
+        }
+        const item = { id: where.id, ...create };
+        interactiveWidgetTypes.push(item);
+        return item;
       },
     },
 
