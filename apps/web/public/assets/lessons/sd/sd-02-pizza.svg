@@ -1,7 +1,31 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 200" role="img" aria-label="sd 02 pizza">
-  <rect width="320" height="200" rx="16" fill="#dbeafe"/>
-  <rect x="8" y="8" width="304" height="184" rx="12" fill="none" stroke="#2563eb" stroke-width="2" stroke-dasharray="6 6"/>
-  <circle cx="160" cy="78" r="26" fill="#2563eb" opacity="0.15"/>
-  <text x="160" y="118" text-anchor="middle" font-family="system-ui,sans-serif" font-size="15" fill="#2563eb">sd 02 pizza</text>
-  <text x="160" y="140" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9" fill="#2563eb" opacity="0.7">placeholder — Feature 010</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 200" role="img" aria-label="Pizza bulat dibagi empat sama besar, satu potong berwarna berbeda menandakan seperempat">
+  <rect width="320" height="200" rx="16" fill="#fff7ea"/>
+
+  <!-- pizza crust -->
+  <circle cx="160" cy="100" r="72" fill="#f0b25b" stroke="#c9862c" stroke-width="4"/>
+
+  <!-- 3 plain quarters (cheese) -->
+  <path d="M 160 100 L 160 28 A 72 72 0 0 1 232 100 Z" fill="#ffe6a3" stroke="#c9862c" stroke-width="2"/>
+  <path d="M 160 100 L 232 100 A 72 72 0 0 1 160 172 Z" fill="#ffe6a3" stroke="#c9862c" stroke-width="2"/>
+  <path d="M 160 100 L 160 172 A 72 72 0 0 1 88 100 Z" fill="#ffe6a3" stroke="#c9862c" stroke-width="2"/>
+
+  <!-- 1 highlighted quarter = 1/4 -->
+  <path d="M 160 100 L 88 100 A 72 72 0 0 1 160 28 Z" fill="#2170e4" stroke="#0058be" stroke-width="2"/>
+
+  <!-- pepperoni on the plain quarters -->
+  <circle cx="200" cy="65" r="6" fill="#c9862c"/>
+  <circle cx="205" cy="130" r="6" fill="#c9862c"/>
+  <circle cx="175" cy="150" r="6" fill="#c9862c"/>
+  <circle cx="115" cy="130" r="6" fill="#c9862c"/>
+  <circle cx="215" cy="100" r="6" fill="#c9862c"/>
+
+  <!-- crust slice lines -->
+  <line x1="160" y1="28" x2="160" y2="172" stroke="#c9862c" stroke-width="2"/>
+  <line x1="88" y1="100" x2="232" y2="100" stroke="#c9862c" stroke-width="2"/>
+
+  <!-- label pointing at the highlighted slice -->
+  <rect x="18" y="16" width="66" height="30" rx="8" fill="#ffffff" stroke="#0058be" stroke-width="1.5"/>
+  <text x="51" y="36" text-anchor="middle" font-family="system-ui,sans-serif" font-size="16" font-weight="700" fill="#0058be">1/4</text>
+
+  <text x="160" y="190" text-anchor="middle" font-family="system-ui,sans-serif" font-size="11" fill="#5a4a2c">1 dari 4 potong sama besar diarsir biru</text>
 </svg>

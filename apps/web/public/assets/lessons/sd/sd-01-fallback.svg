@@ -1,7 +1,57 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 200" role="img" aria-label="sd 01 fallback">
-  <rect width="320" height="200" rx="16" fill="#dbeafe"/>
-  <rect x="8" y="8" width="304" height="184" rx="12" fill="none" stroke="#2563eb" stroke-width="2" stroke-dasharray="6 6"/>
-  <circle cx="160" cy="78" r="26" fill="#2563eb" opacity="0.15"/>
-  <text x="160" y="118" text-anchor="middle" font-family="system-ui,sans-serif" font-size="15" fill="#2563eb">sd 01 fallback</text>
-  <text x="160" y="140" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9" fill="#2563eb" opacity="0.7">placeholder — Feature 010</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 200" role="img" aria-label="Nilai tempat bilangan 3.482 diuraikan menjadi ribuan, ratusan, puluhan, dan satuan">
+  <rect width="320" height="200" rx="16" fill="#eef3fc"/>
+
+  <text x="160" y="34" text-anchor="middle" font-family="system-ui,sans-serif" font-size="22" font-weight="700" fill="#0058be">3.482</text>
+
+  <!-- Ribuan -->
+  <g transform="translate(20,54)">
+    <rect width="62" height="112" rx="10" fill="#ffffff" stroke="#c7d7f2" stroke-width="1.5"/>
+    <rect x="17" y="14" width="28" height="28" rx="3" fill="#0058be"/>
+    <rect x="21" y="10" width="28" height="28" rx="3" fill="#2170e4"/>
+    <text x="31" y="66" text-anchor="middle" font-family="system-ui,sans-serif" font-size="12" font-weight="700" fill="#0058be">&#215; 3</text>
+    <text x="31" y="86" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#41474e">Ribuan</text>
+    <text x="31" y="100" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9" fill="#74777f">(3.000)</text>
+  </g>
+
+  <!-- Ratusan -->
+  <g transform="translate(97,54)">
+    <rect width="62" height="112" rx="10" fill="#ffffff" stroke="#c7d7f2" stroke-width="1.5"/>
+    <g transform="translate(15,12)">
+      <rect width="32" height="32" fill="none" stroke="#2170e4" stroke-width="1.5"/>
+      <line x1="0" y1="10.7" x2="32" y2="10.7" stroke="#2170e4" stroke-width="1"/>
+      <line x1="0" y1="21.3" x2="32" y2="21.3" stroke="#2170e4" stroke-width="1"/>
+      <line x1="10.7" y1="0" x2="10.7" y2="32" stroke="#2170e4" stroke-width="1"/>
+      <line x1="21.3" y1="0" x2="21.3" y2="32" stroke="#2170e4" stroke-width="1"/>
+    </g>
+    <text x="31" y="66" text-anchor="middle" font-family="system-ui,sans-serif" font-size="12" font-weight="700" fill="#0058be">&#215; 4</text>
+    <text x="31" y="86" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#41474e">Ratusan</text>
+    <text x="31" y="100" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9" fill="#74777f">(400)</text>
+  </g>
+
+  <!-- Puluhan -->
+  <g transform="translate(174,54)">
+    <rect width="62" height="112" rx="10" fill="#ffffff" stroke="#c7d7f2" stroke-width="1.5"/>
+    <g transform="translate(24,10)">
+      <rect width="10" height="34" rx="2" fill="#2170e4"/>
+      <line x1="0" y1="3.4" x2="10" y2="3.4" stroke="#eef3fc" stroke-width="1"/>
+      <line x1="0" y1="10.2" x2="10" y2="10.2" stroke="#eef3fc" stroke-width="1"/>
+      <line x1="0" y1="17" x2="10" y2="17" stroke="#eef3fc" stroke-width="1"/>
+      <line x1="0" y1="23.8" x2="10" y2="23.8" stroke="#eef3fc" stroke-width="1"/>
+      <line x1="0" y1="30.6" x2="10" y2="30.6" stroke="#eef3fc" stroke-width="1"/>
+    </g>
+    <text x="31" y="66" text-anchor="middle" font-family="system-ui,sans-serif" font-size="12" font-weight="700" fill="#0058be">&#215; 8</text>
+    <text x="31" y="86" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#41474e">Puluhan</text>
+    <text x="31" y="100" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9" fill="#74777f">(80)</text>
+  </g>
+
+  <!-- Satuan -->
+  <g transform="translate(251,54)">
+    <rect width="62" height="112" rx="10" fill="#ffffff" stroke="#c7d7f2" stroke-width="1.5"/>
+    <rect x="21" y="18" width="10" height="10" rx="2" fill="#2170e4"/>
+    <text x="31" y="66" text-anchor="middle" font-family="system-ui,sans-serif" font-size="12" font-weight="700" fill="#0058be">&#215; 2</text>
+    <text x="31" y="86" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#41474e">Satuan</text>
+    <text x="31" y="100" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9" fill="#74777f">(2)</text>
+  </g>
+
+  <text x="160" y="184" text-anchor="middle" font-family="system-ui,sans-serif" font-size="11" fill="#41474e">3.000 + 400 + 80 + 2 = 3.482</text>
 </svg>
