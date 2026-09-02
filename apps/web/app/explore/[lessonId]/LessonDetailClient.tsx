@@ -7,14 +7,27 @@ import { BookOpen, Sparkles, Clock, Target, ArrowLeft, Play, Award, ArrowUpRight
 import Link from 'next/link';
 import { useGuestProgress } from '@/lib/context/guest-progress-context';
 
-/** Map a content-kit / public-API block into the renderer's RenderableBlock. */
-function toRenderableBlocks(raw: any[]): RenderableBlock[] {
+/**
+ * Map a content-kit / public-API block into the renderer's RenderableBlock.
+ *
+ * Two shapes reach here: the public API folds `mediaStorageKey`/`imageUrl` etc.
+ * INTO `block.payload` at seed time (see apps/api/prisma/seed-interactive-content.ts
+ * blockPayload()); the local Guest Mode fallback (content-kit's raw
+ * LessonBlockInput) carries those same fields at the TOP LEVEL of the block,
+ * sibling to `payload`, never inside it. Check both so guest fallback lessons
+ * resolve their media the same way API-backed ones do.
+ */
+export function toRenderableBlocks(raw: any[]): RenderableBlock[] {
   if (!Array.isArray(raw)) return [];
   return raw.map((b, i) => {
     const src = b.payload ?? b;
     const payload: Record<string, unknown> = { ...src };
-    if (src.mediaStorageKey && !payload.imageUrl) payload.imageUrl = `/${src.mediaStorageKey}`;
-    if (src.fallbackStorageKey) payload.fallbackImageUrl = `/${src.fallbackStorageKey}`;
+    const mediaKey = src.mediaStorageKey ?? b.mediaStorageKey;
+    const fallbackKey = src.fallbackStorageKey ?? b.fallbackStorageKey;
+    const captionKey = src.captionStorageKey ?? b.captionStorageKey;
+    if (mediaKey && !payload.imageUrl) payload.imageUrl = `/${mediaKey}`;
+    if (fallbackKey && !payload.fallbackImageUrl) payload.fallbackImageUrl = `/${fallbackKey}`;
+    if (captionKey && !payload.captionUrl) payload.captionUrl = `/${captionKey}`;
     if (b.altText && !payload.altText) payload.altText = b.altText;
     if (b.transcriptText && !payload.transcriptText) payload.transcriptText = b.transcriptText;
     return {
