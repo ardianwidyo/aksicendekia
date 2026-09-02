@@ -6,6 +6,7 @@ import { BookOpen, CheckCircle, ArrowRight, Sparkles, Clock } from 'lucide-react
 import Link from 'next/link';
 import { useGuestProgress } from '../../lib/context/guest-progress-context';
 import { listExploreLessons } from '../../lib/guest-lessons';
+import { filterStageOptions } from '../../lib/focus';
 
 interface LessonSummary {
   id: string;
@@ -78,6 +79,15 @@ export default function ExplorePage() {
   const { state } = useGuestProgress();
   const [subjects, setSubjects] = useState<SubjectSummary[]>([]);
   const [loading, setLoading] = useState(true);
+  const visibleStages = filterStageOptions(STAGES);
+
+  // Focus mode (FR-002): if the active stage was filtered out, snap to an
+  // in-focus one so the catalog never fetches an off-focus jenjang.
+  useEffect(() => {
+    if (visibleStages.length > 0 && !visibleStages.some((s) => s.id === gradeLevel)) {
+      setGradeLevel(visibleStages[0].id as any);
+    }
+  }, [gradeLevel, visibleStages, setGradeLevel]);
 
   useEffect(() => {
     async function fetchSubjects() {
@@ -118,9 +128,12 @@ export default function ExplorePage() {
           </p>
         </div>
 
-        {/* Level Selector Tabs */}
-        <div className="flex flex-wrap gap-1.5 p-1 bg-surface-container rounded-2xl border border-outline/15">
-          {STAGES.map((s) => {
+        {/* Level Selector Tabs — hidden entirely when focus mode leaves one stage (FR-002) */}
+        <div
+          className="flex flex-wrap gap-1.5 p-1 bg-surface-container rounded-2xl border border-outline/15"
+          hidden={visibleStages.length <= 1}
+        >
+          {visibleStages.map((s) => {
             const active = gradeLevel === s.id;
             return (
               <button

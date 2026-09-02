@@ -213,5 +213,13 @@
       "showHint": "Lihat petunjuk",
       "showExplanation": "Lihat pembahasan"
     }
+  },
+  "focus": {
+    "title": "Hanya tersedia untuk Matematika SD",
+    "dashboardBody": "Mode fokus sedang aktif, jadi hanya data siswa jenjang SD mata pelajaran Matematika yang ditampilkan. Data jenjang lain akan muncul kembali saat mode fokus dimatikan.",
+    "missionMapBody": "Peta misi hanya menampilkan materi Matematika SD selama mode fokus aktif.",
+    "leaderboardBody": "Papan peringkat hanya menghitung materi Matematika SD selama mode fokus aktif.",
+    "achievementsBody": "Pencapaian hanya dihitung dari materi Matematika SD selama mode fokus aktif.",
+    "catalogBody": "Katalog dibatasi pada Matematika SD selama mode fokus aktif."
   }
 }

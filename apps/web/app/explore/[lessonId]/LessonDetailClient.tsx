@@ -6,6 +6,7 @@ import { Card, Button, useTheme, LessonContentRenderer, type RenderableBlock } f
 import { BookOpen, Sparkles, Clock, Target, ArrowLeft, Play, Award, ArrowUpRight } from 'lucide-react';
 import Link from 'next/link';
 import { useGuestProgress } from '@/lib/context/guest-progress-context';
+import { isWebStageInFocus, isSubjectInFocus, focusRedirectPath } from '@/lib/focus';
 
 /**
  * Map a content-kit / public-API block into the renderer's RenderableBlock.
@@ -76,13 +77,28 @@ export default function LessonDetailClient() {
     }
   }, [lessonId, gradeLevel]);
 
+  // Feature 011 (FR-005, R3): every lesson id stays in generateStaticParams so
+  // old links never 404, but an out-of-focus lesson bounces to the catalog once
+  // its metadata has loaded rather than rendering off-focus content.
+  const [redirecting, setRedirecting] = useState(false);
+  useEffect(() => {
+    if (!lesson) return;
+    const stageOk = isWebStageInFocus(String(lesson.educationStage ?? ''));
+    const subjectCode = lesson.subjectCode ?? lesson.subject?.code;
+    const subjectOk = subjectCode ? isSubjectInFocus(String(subjectCode)) : true;
+    if (!stageOk || !subjectOk) {
+      setRedirecting(true);
+      router.replace(focusRedirectPath());
+    }
+  }, [lesson, router]);
+
   const isCompleted = state?.curriculumProgress.completedLessonIds.includes(lessonId) || false;
   const bestScore = state?.curriculumProgress.lessonScores[lessonId]?.bestScore;
 
-  if (loading) {
+  if (loading || redirecting) {
     return (
       <div className="text-center py-16 text-on-surface-variant text-sm">
-        Memuat detail pelajaran...
+        {redirecting ? 'Mengalihkan ke katalog Matematika SD…' : 'Memuat detail pelajaran...'}
       </div>
     );
   }

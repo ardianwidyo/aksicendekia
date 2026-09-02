@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button, Card, ProgressBar, Modal } from '@aksicendekia/ui';
 import { apiFetch } from '../../../lib/api-fetch';
+import { FocusScopeNotice } from '../../../components/FocusScopeNotice';
 
 interface Badge {
   badgeId: string;
@@ -171,6 +172,7 @@ export default function AchievementsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-amber-100 via-sky-50 to-emerald-50 p-4 md:p-8 font-sans">
       <div className="max-w-4xl mx-auto space-y-6">
+        <FocusScopeNotice variant="achievementsBody" className="mb-2" />
         
         {/* Banner Streak Harian */}
         <Card className="p-6 bg-gradient-to-r from-amber-500 to-rose-500 text-white rounded-3xl shadow-xl flex flex-col md:flex-row items-center justify-between gap-4 border-4 border-amber-300">

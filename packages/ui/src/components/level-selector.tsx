@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import { GradeLevel, GRADE_LEVELS } from '@aksicendekia/design-tokens';
+import { isStageInFocus } from '@aksicendekia/content-kit';
 import { Baby, Sparkles, Compass, Atom, Check } from 'lucide-react';
 import { useTheme } from '../providers/theme-provider';
 import { useI18n } from '../providers/i18n-provider';
@@ -36,7 +37,12 @@ export const LevelSelector: React.FC<LevelSelectorProps> = ({
     }
   };
 
-  const levels: GradeLevel[] = ['tk', 'sd', 'smp', 'sma'];
+  // Feature 011 (FR-001..FR-002): under focus mode only the in-focus stage(s)
+  // are offered. `isStageInFocus` is the identity function when focus is off,
+  // so disabling focus mode restores every stage with no code change here.
+  const levels: GradeLevel[] = (['tk', 'sd', 'smp', 'sma'] as const).filter((lvl) =>
+    isStageInFocus(lvl.toUpperCase() as 'TK' | 'SD' | 'SMP' | 'SMA'),
+  );
 
   const containerLayout =
     variant === 'grid'

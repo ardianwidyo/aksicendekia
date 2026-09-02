@@ -96,19 +96,19 @@ Existing monorepo, no new top-level structure: `packages/content-kit/src/`, `pac
 
 **Independent Test**: Run the app with focus enabled, walk every nav as guest/student/parent/teacher — confirm zero links off-focus and every surface still opens. Flip `NEXT_PUBLIC_FOCUS_ENABLED=false` — confirm full restoration.
 
-- [ ] T031 [P] [US1] Write failing test: `sidebar.tsx`, `level-selector.tsx`, `topbar.tsx` list only SD + Matematika when focus is enabled — `packages/ui/src/components/__tests__/nav-focus-filter.spec.tsx`
-- [ ] T032 [US1] Apply focus filtering in `packages/ui/src/components/sidebar.tsx`, `level-selector.tsx`, `topbar.tsx` (depends on T031, T013)
-- [ ] T033 [P] [US1] Write failing test for the `apps/web/lib/focus.ts` route/redirect adaptor — `apps/web/lib/__tests__/focus.spec.ts`
-- [ ] T034 [US1] Implement `apps/web/lib/focus.ts`, wrapping content-kit's `focus-config` for web routes (depends on T033)
-- [ ] T035 [US1] Filter stage/subject options in `apps/web/app/page.tsx` and `apps/web/app/explore/page.tsx` using `focus.ts` (depends on T034, FR-002)
-- [ ] T036 [US1] Render a friendly client-side redirect to `/explore` for out-of-focus lessons in `apps/web/app/explore/[lessonId]/page.tsx`, keeping every id in `generateStaticParams` (depends on T034, FR-005, R3)
-- [ ] T037 [P] [US1] Write failing test: `GET /api/v1/public/subjects` returns `{subjects: []}` with `200` (not an error) for an out-of-focus stage — extend `apps/api/src/modules/sync/__tests__/public-content.test.ts`
-- [ ] T038 [US1] Apply focus filtering to the subjects/units/lessons queries in `public-content.service.ts` (depends on T029, T037)
-- [ ] T039 [P] [US1] Write failing test: parent/teacher dashboards render an i18n empty state, not a crash, when focus filters out all non-SD data — new tests under `apps/web/app/(parent)/__tests__/` and `apps/web/app/(teacher)/__tests__/`
-- [ ] T040 [US1] Add empty-state handling to `apps/web/app/(parent)/parent-dashboard/page.tsx`, `children/page.tsx`, `apps/web/app/(teacher)/teacher-dashboard/page.tsx`, `classes/page.tsx` (depends on T039, FR-006)
-- [ ] T041 [US1] Add empty-state/graceful handling to `apps/web/app/(student)/mission-map/page.tsx`, `leaderboard/page.tsx`, `achievements/page.tsx`, sourced from Matematika SD only
-- [ ] T042 [P] [US1] Write failing test: setting `NEXT_PUBLIC_FOCUS_ENABLED=false` restores all stages/subjects with no code change — `apps/web/__tests__/focus-toggle.spec.ts`
-- [ ] T043 [US1] Make T042 pass; fix any surface that silently assumes focus is always on (SC-009)
+- [X] T031 [P] [US1] Write failing test: `sidebar.tsx`, `level-selector.tsx`, `topbar.tsx` list only SD + Matematika when focus is enabled — `packages/ui/src/components/__tests__/nav-focus-filter.spec.tsx`
+- [X] T032 [US1] Apply focus filtering in `packages/ui/src/components/sidebar.tsx`, `level-selector.tsx`, `topbar.tsx` (depends on T031, T013)
+- [X] T033 [P] [US1] Write failing test for the `apps/web/lib/focus.ts` route/redirect adaptor — `apps/web/lib/__tests__/focus.spec.ts`
+- [X] T034 [US1] Implement `apps/web/lib/focus.ts`, wrapping content-kit's `focus-config` for web routes (depends on T033)
+- [X] T035 [US1] Filter stage/subject options in `apps/web/app/page.tsx` and `apps/web/app/explore/page.tsx` using `focus.ts` (depends on T034, FR-002) — `explore/page.tsx` renders `filterStageOptions(STAGES)`, hides the stage tab-bar when one stage remains, and snaps `gradeLevel` to an in-focus stage if the active one was filtered out. `page.tsx` (home) carries no stage/subject picker, so nothing to filter there.
+- [X] T036 [US1] Render a friendly client-side redirect to `/explore` for out-of-focus lessons in `apps/web/app/explore/[lessonId]/page.tsx`, keeping every id in `generateStaticParams` (depends on T034, FR-005, R3)
+- [X] T037 [P] [US1] ~~Write failing test: `GET /api/v1/public/subjects` returns `{subjects: []}` with `200`…~~ — already delivered in the T029 commit: `public-content.test.ts` has a full "focus mode filtering (Feature 011 / FR-002)" describe block (out-of-focus stage -> `{subjects: []}` + 200, SD still returns, units hidden, toggle-off restores, lesson-detail 404 for out-of-focus stage). Re-verified green (11/11).
+- [X] T038 [US1] ~~Apply focus filtering to the subjects/units/lessons queries in `public-content.service.ts`~~ — already applied in T029: `getPublicSubjects` / `getPublicUnitLessons` / `getPublicLessonDetail` each filter through `isLessonInFocus` / `isStageInFocus` / `isSubjectInFocus`.
+- [X] T039 [P] [US1] Write failing test: parent/teacher dashboards render an i18n empty state, not a crash, when focus filters out all non-SD data — new tests under `apps/web/app/(parent)/__tests__/` and `apps/web/app/(teacher)/__tests__/`
+- [X] T040 [US1] Add empty-state handling to `apps/web/app/(parent)/parent-dashboard/page.tsx`, `children/page.tsx`, `apps/web/app/(teacher)/teacher-dashboard/page.tsx`, `classes/page.tsx` (depends on T039, FR-006)
+- [X] T041 [US1] Add empty-state/graceful handling to `apps/web/app/(student)/mission-map/page.tsx`, `leaderboard/page.tsx`, `achievements/page.tsx`, sourced from Matematika SD only
+- [X] T042 [P] [US1] Write failing test: setting `NEXT_PUBLIC_FOCUS_ENABLED=false` restores all stages/subjects with no code change — `apps/web/__tests__/focus-toggle.spec.ts`
+- [X] T043 [US1] Make T042 pass; fix any surface that silently assumes focus is always on (SC-009)
 
 **Checkpoint**: US1 is independently functional and testable.
 

@@ -13,6 +13,7 @@ import {
   Alert,
 } from '@aksicendekia/ui';
 import { apiFetch } from '../../../lib/api-fetch';
+import { FocusScopeNotice } from '../../../components/FocusScopeNotice';
 
 export default function ParentChildrenPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -101,6 +102,7 @@ export default function ParentChildrenPage() {
   return (
     <ProfessionalShell userRole="parent" userName="Orang Tua Wali">
       <div className="max-w-5xl mx-auto space-y-6 py-6 px-4">
+        <FocusScopeNotice className="mb-2" />
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-bold text-primary tracking-tight">

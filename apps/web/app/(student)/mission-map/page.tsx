@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button, Card, ProgressBar, Alert, Select } from '@aksicendekia/ui';
 import { apiFetch } from '../../../lib/api-fetch';
+import { FocusScopeNotice } from '../../../components/FocusScopeNotice';
 
 interface MissionNode {
   lessonId: string;
@@ -125,6 +126,7 @@ export default function MissionMapPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-sky-100 via-amber-50 to-emerald-50 p-4 md:p-8 font-sans">
       <div className="max-w-4xl mx-auto space-y-6">
+        <FocusScopeNotice variant="missionMapBody" className="mb-2" />
         {/* Error Alert */}
         {error && (
           <Alert variant="error" title="Perhatian">

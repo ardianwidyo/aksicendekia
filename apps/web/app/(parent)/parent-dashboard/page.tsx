@@ -14,6 +14,7 @@ import {
   Badge,
 } from '@aksicendekia/ui';
 import { apiFetch } from '../../../lib/api-fetch';
+import { FocusScopeNotice } from '../../../components/FocusScopeNotice';
 
 interface ChildSummary {
   studentId: string;
@@ -141,6 +142,7 @@ export default function ParentDashboardPage() {
   return (
     <ProfessionalShell userRole="parent" userName="Orang Tua Budi">
       <div className="max-w-6xl mx-auto space-y-6 py-6 px-4">
+        <FocusScopeNotice className="mb-2" />
         {/* Page Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
