@@ -29,10 +29,10 @@ Existing monorepo, no new top-level structure: `packages/content-kit/src/`, `pac
 
 **Purpose**: Scaffolding the new source locations and build-time configuration this feature needs before any story-level work begins.
 
-- [ ] T001 Create skeleton barrel files for the new source locations: `packages/content-kit/src/lessons/sd/index.ts`, `packages/content-kit/src/lessons/archetypes/index.ts`, `packages/content-kit/src/focus/index.ts`, `packages/ui/src/components/illustration/index.ts`, `packages/ui/src/components/layout/index.ts`
-- [ ] T002 [P] Add `apps/web/.env.example` with `NEXT_PUBLIC_FOCUS_ENABLED=true` (contracts/focus-config.md — build-time source)
-- [ ] T003 [P] Add `FOCUS_ENABLED=true` to `apps/api/.env.example`
-- [ ] T004 [P] Add `tsx` as a root devDependency and a `verify:video-embeds` script in `package.json` for `scripts/verify-video-embeds.ts`
+- [X] T001 ~~Create skeleton barrel files~~ — adapted: `lessons/sd/`, `lessons/archetypes/`, `focus/`, `illustration/`, `layout/` are created on demand by their first real file (T016/T018/T027/T045 etc.) rather than as empty placeholder `index.ts` files, per the coding-style rule against speculative/dead files. `lessons/sd.ts` (existing) is deliberately **not** touched here — T070 replaces it atomically to avoid a `sd.ts`/`sd/` module-resolution collision.
+- [X] T002 [P] Add `apps/web/.env.example` with `NEXT_PUBLIC_FOCUS_ENABLED=true` (contracts/focus-config.md — build-time source)
+- [X] T003 [P] Add `FOCUS_ENABLED=true` to `apps/api/.env.example`
+- [X] T004 [P] Add `tsx` as a root devDependency and a `verify:video-embeds` script in `package.json` for `scripts/verify-video-embeds.ts`
 
 ---
 
@@ -44,47 +44,47 @@ Existing monorepo, no new top-level structure: `packages/content-kit/src/`, `pac
 
 ### Data layer
 
-- [ ] T005 Add `gradeLevel Int?` (+ index), `VideoProvider` enum, `VideoEmbed` model, and `LessonContentBlock.videoEmbedId` to `apps/api/prisma/schema.prisma` (data-model.md §1–§2 — additive, nullable, no backfill)
-- [ ] T006 Generate the Prisma migration for T005 in `apps/api/prisma/migrations/`
-- [ ] T007 [P] Add the `VideoEmbedRef` Zod schema (externalId as an 11-char id, not a URL) in `packages/content-kit/src/schema/video-embed.schema.ts` and extend `packages/content-kit/src/schema/__tests__/schemas.spec.ts`
-- [ ] T008 [P] Extend `InteractiveLesson`/`LessonBlockInput` types with `gradeLevel`, `archetype`, `videoEmbed` in `packages/content-kit/src/lessons/types.ts`
+- [X] T005 Add `gradeLevel Int?` (+ index), `VideoProvider` enum, `VideoEmbed` model, and `LessonContentBlock.videoEmbedId` to `apps/api/prisma/schema.prisma` (data-model.md §1–§2 — additive, nullable, no backfill)
+- [X] T006 ~~Generate the Prisma migration~~ — adapted: this repo has never used tracked `prisma migrate` (no `prisma/migrations/` folder exists, no CI applies one); its real convention is `prisma db push`. Ran `prisma db push` against the dev DB instead — schema in sync, Prisma Client regenerated, zero data loss (additive only).
+- [X] T007 [P] Add the `VideoEmbedRef` Zod schema (externalId as an 11-char id, not a URL) in `packages/content-kit/src/schema/video-embed.schema.ts` and extend `packages/content-kit/src/schema/__tests__/schemas.spec.ts`
+- [X] T008 [P] Extend `InteractiveLesson`/`LessonBlockInput` types with `gradeLevel`, `archetype`, `videoEmbed` in `packages/content-kit/src/lessons/types.ts`
 
 ### Curriculum achievements (R2 — load-bearing risk: 60 lessons hang off these 15 rows)
 
-- [ ] T009 Add the missing `FASE_A` and `FASE_C` members to the `CurriculumPhase` union type in `packages/content-kit/src/curriculum/achievements.ts` (currently only `FOUNDATION | FASE_B | FASE_D | FASE_E` — blocks every SD row outside Fase B)
-- [ ] T010 Add 14 new `CurriculumAchievement` rows (Fase A/B/C × the 5 Matematika elements: Bilangan, Aljabar, Pengukuran, Geometri, Analisis Data dan Peluang) to `packages/content-kit/src/curriculum/achievements.ts`, sourced from SK BSKAP 032/2024 **verbatim** with `sourceUrl`/`retrievedAt`/`needsPrimaryVerification: true` (depends on T009, FR-032)
-- [ ] T011 [P] Extend `packages/content-kit/src/curriculum/__tests__/achievements-provenance.spec.ts` to assert 15 SD rows spanning Fase A/B/C × 5 elements, each with a non-empty `sourceUrl` and `retrievedAt`
+- [X] T009 Add the missing `FASE_A` and `FASE_C` members to the `CurriculumPhase` union type in `packages/content-kit/src/curriculum/achievements.ts` (currently only `FOUNDATION | FASE_B | FASE_D | FASE_E` — blocks every SD row outside Fase B)
+- [X] T010 Add 14 new `CurriculumAchievement` rows (Fase A/B/C × the 5 Matematika elements: Bilangan, Aljabar, Pengukuran, Geometri, Analisis Data dan Peluang) to `packages/content-kit/src/curriculum/achievements.ts`, sourced from SK BSKAP 032/2024 **verbatim** with `sourceUrl`/`retrievedAt`/`needsPrimaryVerification: true` (depends on T009, FR-032)
+- [X] T011 [P] Extend `packages/content-kit/src/curriculum/__tests__/achievements-provenance.spec.ts` to assert 15 SD rows spanning Fase A/B/C × 5 elements, each with a non-empty `sourceUrl` and `retrievedAt`
 
 ### Focus configuration (contracts/focus-config.md)
 
-- [ ] T012 [P] Write failing tests for `FocusConfig` guarantees G1–G4 (identity when disabled, no I/O, static-export safe) in `packages/content-kit/src/focus/__tests__/focus-config.spec.ts`
-- [ ] T013 Implement `FocusConfig`, `getFocusConfig`, `isStageInFocus`, `isSubjectInFocus`, `isLessonInFocus`, `filterLessonsForFocus`, `focusRedirectTarget` in `packages/content-kit/src/focus/focus-config.ts` (depends on T012)
-- [ ] T014 Export the focus module from `packages/content-kit/src/index.ts` (depends on T013)
+- [X] T012 [P] Write failing tests for `FocusConfig` guarantees G1–G4 (identity when disabled, no I/O, static-export safe) in `packages/content-kit/src/focus/__tests__/focus-config.spec.ts`
+- [X] T013 Implement `FocusConfig`, `getFocusConfig`, `isStageInFocus`, `isSubjectInFocus`, `isLessonInFocus`, `filterLessonsForFocus`, `focusRedirectTarget` in `packages/content-kit/src/focus/focus-config.ts` (depends on T012)
+- [X] T014 Export the focus module from `packages/content-kit/src/index.ts` (depends on T013)
 
 ### Video embed facade (contracts/video-embed.md)
 
-- [ ] T015 [P] Write failing tests for video registry lookup in `packages/content-kit/src/lessons/__tests__/video-registry.spec.ts`
-- [ ] T016 Implement `packages/content-kit/src/lessons/video-registry.ts` (`getVideoEmbed(id)`, depends on T007, T015)
-- [ ] T017 [P] Write failing tests for `EmbeddedVideoBlock` — zero iframe/network before click, `youtube-nocookie.com` URL composed from `externalId` after click, keyboard-operable, ≥44×44px — in `packages/ui/src/components/lesson/blocks/__tests__/EmbeddedVideoBlock.spec.tsx`
-- [ ] T018 Implement `EmbeddedVideoBlock.tsx` (State 1 poster/play, State 2 iframe) in `packages/ui/src/components/lesson/blocks/EmbeddedVideoBlock.tsx` (depends on T017)
-- [ ] T019 Wire `EmbeddedVideoBlock` into `packages/ui/src/components/lesson/LessonContentRenderer.tsx` for `VIDEO` blocks carrying `videoEmbedId` (self-hosted `VideoBlock` keeps serving `mediaAssetId`)
-- [ ] T020 Export `EmbeddedVideoBlock` from `packages/ui/src/index.ts`
-- [ ] T021 [P] Implement `scripts/verify-video-embeds.ts` — CI-only oEmbed link-rot check, non-zero exit on failure, updates `verifiedAt` (R7, FR-016d — never run from the browser)
+- [X] T015 [P] Write failing tests for video registry lookup in `packages/content-kit/src/lessons/__tests__/video-registry.spec.ts`
+- [X] T016 Implement `packages/content-kit/src/lessons/video-registry.ts` (`getVideoEmbed(id)`, depends on T007, T015)
+- [X] T017 [P] Write failing tests for `EmbeddedVideoBlock` — zero iframe/network before click, `youtube-nocookie.com` URL composed from `externalId` after click, keyboard-operable, ≥44×44px — in `packages/ui/src/components/lesson/blocks/__tests__/EmbeddedVideoBlock.spec.tsx`
+- [X] T018 Implement `EmbeddedVideoBlock.tsx` (State 1 poster/play, State 2 iframe) in `packages/ui/src/components/lesson/blocks/EmbeddedVideoBlock.tsx` (depends on T017)
+- [X] T019 Wire `EmbeddedVideoBlock` into `packages/ui/src/components/lesson/LessonContentRenderer.tsx` for `VIDEO` blocks carrying `videoEmbedId` (self-hosted `VideoBlock` keeps serving `mediaAssetId`)
+- [X] T020 Export `EmbeddedVideoBlock` from `packages/ui/src/index.ts`
+- [X] T021 [P] Implement `scripts/verify-video-embeds.ts` — CI-only oEmbed link-rot check, non-zero exit on failure, updates `verifiedAt` (R7, FR-016d — never run from the browser)
 
 ### Responsive shared primitives (clarify session 2026-09-02: FR-040…FR-045)
 
-- [ ] T022 [P] Write failing tests for `usePlacementInput` — tap, drag, and keyboard all drive one select-then-place state machine — in `packages/ui/src/components/interactive/__tests__/usePlacementInput.spec.ts`
-- [ ] T023 Implement `usePlacementInput.ts` in `packages/ui/src/components/interactive/usePlacementInput.ts` (depends on T022)
-- [ ] T024 [P] Write failing tests for `ScrollableWide` — zero page-level horizontal scroll, inner scroll works — in `packages/ui/src/components/layout/__tests__/ScrollableWide.spec.tsx`
-- [ ] T025 Implement `ScrollableWide.tsx` in `packages/ui/src/components/layout/ScrollableWide.tsx` (depends on T024, FR-041)
-- [ ] T026 [P] Implement the `viewports.ts` test helper (320/375/768/1280 + a portrait assertion) in `packages/ui/src/test-utils/viewports.ts` (SC-013)
-- [ ] T027 [P] Implement 10 viewBox-responsive illustration primitives (design tokens, `title`/`desc`, `prefers-reduced-motion`-aware) in `packages/ui/src/components/illustration/{PlaceValueBlocks,NumberLineStrip,FractionShape,ArrayGrid,ShapeFigure,BarChartMini,ClockFace,MoneyStack,PatternRow,MeasureRuler}.tsx`
-- [ ] T028 Export the illustration primitives from `packages/ui/src/index.ts` (depends on T027)
+- [X] T022 [P] Write failing tests for `usePlacementInput` — tap, drag, and keyboard all drive one select-then-place state machine — in `packages/ui/src/components/interactive/__tests__/usePlacementInput.spec.ts`
+- [X] T023 Implement `usePlacementInput.ts` in `packages/ui/src/components/interactive/usePlacementInput.ts` (depends on T022)
+- [X] T024 [P] Write failing tests for `ScrollableWide` — zero page-level horizontal scroll, inner scroll works — in `packages/ui/src/components/layout/__tests__/ScrollableWide.spec.tsx`
+- [X] T025 Implement `ScrollableWide.tsx` in `packages/ui/src/components/layout/ScrollableWide.tsx` (depends on T024, FR-041)
+- [X] T026 [P] Implement the `viewports.ts` test helper (320/375/768/1280 + a portrait assertion) in `packages/ui/src/test-utils/viewports.ts` (SC-013)
+- [X] T027 [P] Implement 10 viewBox-responsive illustration primitives (design tokens, `title`/`desc`, `prefers-reduced-motion`-aware) in `packages/ui/src/components/illustration/{PlaceValueBlocks,NumberLineStrip,FractionShape,ArrayGrid,ShapeFigure,BarChartMini,ClockFace,MoneyStack,PatternRow,MeasureRuler}.tsx`
+- [X] T028 Export the illustration primitives from `packages/ui/src/index.ts` (depends on T027)
 
 ### API service layer (plan.md's Constitution II debt: fold in, don't extend)
 
-- [ ] T029 Create `apps/api/src/modules/sync/public-content.service.ts`, moving the Prisma queries out of `public-content.controller.ts`, with focus filtering applied via T013
-- [ ] T030 Extend `apps/api/src/modules/curriculum/curriculum.service.ts` with focus-aware and gradeLevel-aware query helpers (used by the US2 coverage endpoint)
+- [X] T029 Create `apps/api/src/modules/sync/public-content.service.ts`, moving the Prisma queries out of `public-content.controller.ts`, with focus filtering applied via T013
+- [ ] T030 ~~Extend curriculum.service.ts with focus-aware/gradeLevel-aware helpers~~ — deferred to T079 (US2): building these in isolation now, before the coverage endpoint that is their only consumer exists, means guessing their shape (YAGNI risk). `curriculum.service.ts` also carries 40+ pre-existing, unrelated `tsc` errors (confirmed via a stash/restore diff: 44 without Feature 011's schema changes, 43 with — proving they predate this feature) that make blind edits there riskier than necessary before its real consumer is defined. `isStageInFocus`/`isSubjectInFocus`/`filterLessonsForFocus` (T013) are already exported and ready for T079 to call directly.
 
 **Checkpoint**: Foundation ready — user stories below can proceed in priority order or in parallel.
 

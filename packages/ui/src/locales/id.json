@@ -201,6 +201,12 @@
     "media": {
       "fallbackNote": "Media tidak dapat dimuat. Berikut penjelasan singkatnya."
     },
+    "embeddedVideo": {
+      "play": "Putar {title}",
+      "duration": "Durasi {duration}",
+      "publisher": "Sumber: {publisher}",
+      "transcriptLabel": "Transkrip"
+    },
     "feedback": {
       "correct": "Tepat sekali!",
       "incorrect": "Belum tepat, coba lagi ya.",

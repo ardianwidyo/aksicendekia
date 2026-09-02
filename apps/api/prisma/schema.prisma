@@ -225,6 +225,11 @@ enum LessonListing {
   HIDDEN_LEGACY
 }
 
+// Feature 011 — third-party video embed exception (Constitution VI v1.2.0)
+enum VideoProvider {
+  YOUTUBE
+}
+
 model Subject {
   id             String          @id @default(uuid())
   code           String          @unique
@@ -280,6 +285,12 @@ model Lesson {
   curriculumAchievementId String?       @map("curriculum_achievement_id")
   reviewerNote            String?       @map("reviewer_note")
 
+  // Feature 011 — kelas 1-6 axis (data-model.md §1). Nullable: only SD lessons
+  // carry it. Must stay consistent with `phase` (1,2->FASE_A; 3,4->FASE_B;
+  // 5,6->FASE_C) — enforced by Zod at the authoring boundary, not by a DB
+  // constraint, so non-SD rows are never forced through this check.
+  gradeLevel Int? @map("grade_level")
+
   unit            Unit                    @relation(fields: [unitId], references: [id], onDelete: Cascade)
   parentVersion   Lesson?                 @relation("LessonVersions", fields: [parentVersionId], references: [id], onDelete: SetNull)
   childVersions   Lesson[]                @relation("LessonVersions")
@@ -295,6 +306,7 @@ model Lesson {
   supersedes            Lesson[]               @relation("LessonSupersede")
   curriculumAchievement CurriculumAchievement? @relation(fields: [curriculumAchievementId], references: [id], onDelete: Restrict)
 
+  @@index([educationStage, gradeLevel, status])
   @@map("lessons")
 }
 
@@ -322,6 +334,30 @@ model MediaAsset {
   @@map("media_assets")
 }
 
+// Feature 011 — registry of embedded third-party (YouTube) videos, gated by
+// the Constitution VI v1.2.0 exception (contracts/video-embed.md). Storing
+// `externalId` (not a full URL) is deliberate: the nocookie URL is composed
+// by the component, so no caller can bypass the privacy-mode variant.
+model VideoEmbed {
+  id                String        @id
+  provider          VideoProvider
+  externalId        String        @map("external_id")
+  title             String
+  publisherName     String        @map("publisher_name")
+  durationSeconds   Int?          @map("duration_seconds")
+  posterStorageKey  String        @map("poster_storage_key")
+  transcriptText    String        @map("transcript_text")
+  verifiedAt        DateTime      @map("verified_at")
+  reviewedBy        String?       @map("reviewed_by")
+  reviewNote        String?       @map("review_note")
+  createdAt         DateTime      @default(now()) @map("created_at")
+  updatedAt         DateTime      @updatedAt @map("updated_at")
+
+  contentBlocks LessonContentBlock[]
+
+  @@map("video_embeds")
+}
+
 model LessonContentBlock {
   id               String           @id @default(uuid())
   lessonId         String           @map("lesson_id")
@@ -339,11 +375,18 @@ model LessonContentBlock {
   createdAt        DateTime         @default(now()) @map("created_at")
   updatedAt        DateTime         @updatedAt @map("updated_at")
 
+  // Feature 011 — set for VIDEO blocks that embed a third-party video instead
+  // of serving a self-hosted MediaAsset. A block uses at most one of
+  // `mediaAssetId` (self-hosted) or `videoEmbedId` (embedded) — enforced by
+  // Zod at the authoring boundary (video-embed.schema.ts).
+  videoEmbedId String? @map("video_embed_id")
+
   lesson         Lesson      @relation(fields: [lessonId], references: [id], onDelete: Cascade)
   mediaAsset     MediaAsset? @relation("BlockMedia", fields: [mediaAssetId], references: [id], onDelete: SetNull)
   captionAsset   MediaAsset? @relation("BlockCaption", fields: [captionAssetId], references: [id], onDelete: SetNull)
   fallbackAsset  MediaAsset? @relation("BlockFallback", fields: [fallbackAssetId], references: [id], onDelete: SetNull)
   narrationAsset MediaAsset? @relation("BlockNarration", fields: [narrationAssetId], references: [id], onDelete: SetNull)
+  videoEmbed     VideoEmbed? @relation(fields: [videoEmbedId], references: [id], onDelete: SetNull)
 
   @@unique([lessonId, orderIndex])
   @@index([lessonId, status])

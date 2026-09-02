@@ -18,6 +18,7 @@ export function createMockPrismaClient(): PrismaClient {
   const studentLessonProgress: any[] = [];
   const lessonContentBlocks: any[] = [];
   const curriculumAchievements: any[] = [];
+  const videoEmbeds: any[] = [];
   const mediaAssets: any[] = [];
   const interactiveWidgetTypes: any[] = [];
 
@@ -544,6 +545,18 @@ export function createMockPrismaClient(): PrismaClient {
           }
         }
         return { count };
+      },
+    },
+
+    // Feature 011 — third-party video embed registry (Constitution VI v1.2.0).
+    videoEmbed: {
+      findUnique: async ({ where }: { where: { id: string } }) =>
+        videoEmbeds.find((v) => v.id === where.id) || null,
+      findMany: async () => [...videoEmbeds],
+      create: async ({ data }: { data: any }) => {
+        const item = { createdAt: new Date(), updatedAt: new Date(), ...data };
+        videoEmbeds.push(item);
+        return item;
       },
     },
 

@@ -13,6 +13,7 @@
     "verify:video-embeds": "tsx scripts/verify-video-embeds.ts"
   },
   "devDependencies": {
+    "@aksicendekia/content-kit": "workspace:*",
     "tsx": "^4.23.0",
     "typescript": "^5.4.0"
   }

@@ -98,6 +98,12 @@
     "media": {
       "fallbackNote": "Media could not load. Here is a short explanation."
     },
+    "embeddedVideo": {
+      "play": "Play {title}",
+      "duration": "Duration {duration}",
+      "publisher": "Source: {publisher}",
+      "transcriptLabel": "Transcript"
+    },
     "feedback": {
       "correct": "Exactly right!",
       "incorrect": "Not quite, try again.",
