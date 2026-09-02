@@ -9,9 +9,11 @@
     "build:pages": "pnpm --filter \"@aksicendekia/*\" build && pnpm --filter web pages:build",
     "build:tokens": "pnpm --filter @aksicendekia/design-tokens build",
     "lint": "pnpm --filter \"*\" lint",
-    "test": "pnpm --filter \"*\" test"
+    "test": "pnpm --filter \"*\" test",
+    "verify:video-embeds": "tsx scripts/verify-video-embeds.ts"
   },
   "devDependencies": {
+    "tsx": "^4.23.0",
     "typescript": "^5.4.0"
   }
 }
