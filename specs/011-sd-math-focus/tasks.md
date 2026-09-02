@@ -122,26 +122,26 @@ Existing monorepo, no new top-level structure: `packages/content-kit/src/`, `pac
 
 ### Archetype factories (FR-037 — the cost control for 60 lessons; one factory per topic family, math correctness proven once per family)
 
-- [ ] T044 [P] [US2] Write failing tests for the `place-value` archetype (math correctness + O1–O12 guarantees) — `packages/content-kit/src/lessons/archetypes/__tests__/place-value.spec.ts`
-- [ ] T045 [US2] Implement `makePlaceValueLesson` in `packages/content-kit/src/lessons/archetypes/place-value.ts` (depends on T044)
-- [ ] T046 [P] [US2] Write failing tests for the `number-line` archetype — `packages/content-kit/src/lessons/archetypes/__tests__/number-line.spec.ts`
-- [ ] T047 [US2] Implement `makeNumberLineLesson` in `packages/content-kit/src/lessons/archetypes/number-line.ts` (depends on T046)
-- [ ] T048 [P] [US2] Write failing tests for the `fractions` archetype — `packages/content-kit/src/lessons/archetypes/__tests__/fractions.spec.ts`
-- [ ] T049 [US2] Implement `makeFractionsLesson` in `packages/content-kit/src/lessons/archetypes/fractions.ts` (depends on T048)
-- [ ] T050 [P] [US2] Write failing tests for the `operations` archetype — `packages/content-kit/src/lessons/archetypes/__tests__/operations.spec.ts`
-- [ ] T051 [US2] Implement `makeOperationsLesson` in `packages/content-kit/src/lessons/archetypes/operations.ts` (depends on T050)
-- [ ] T052 [P] [US2] Write failing tests for the `measurement` archetype — `packages/content-kit/src/lessons/archetypes/__tests__/measurement.spec.ts`
-- [ ] T053 [US2] Implement `makeMeasurementLesson` in `packages/content-kit/src/lessons/archetypes/measurement.ts` (depends on T052)
-- [ ] T054 [P] [US2] Write failing tests for the `geometry` archetype — `packages/content-kit/src/lessons/archetypes/__tests__/geometry.spec.ts`
-- [ ] T055 [US2] Implement `makeGeometryLesson` in `packages/content-kit/src/lessons/archetypes/geometry.ts` (depends on T054)
-- [ ] T056 [P] [US2] Write failing tests for the `data-chart` archetype — `packages/content-kit/src/lessons/archetypes/__tests__/data-chart.spec.ts`
-- [ ] T057 [US2] Implement `makeDataChartLesson` in `packages/content-kit/src/lessons/archetypes/data-chart.ts` (depends on T056)
-- [ ] T058 [P] [US2] Write failing tests for the `time` archetype — `packages/content-kit/src/lessons/archetypes/__tests__/time.spec.ts`
-- [ ] T059 [US2] Implement `makeTimeLesson` in `packages/content-kit/src/lessons/archetypes/time.ts` (depends on T058)
-- [ ] T060 [P] [US2] Write failing tests for the `money` archetype — `packages/content-kit/src/lessons/archetypes/__tests__/money.spec.ts`
-- [ ] T061 [US2] Implement `makeMoneyLesson` in `packages/content-kit/src/lessons/archetypes/money.ts` (depends on T060)
-- [ ] T062 [P] [US2] Write failing tests for the `patterns` archetype — `packages/content-kit/src/lessons/archetypes/__tests__/patterns.spec.ts`
-- [ ] T063 [US2] Implement `makePatternsLesson` in `packages/content-kit/src/lessons/archetypes/patterns.ts` (depends on T062)
+- [X] T044 [P] [US2] Write failing tests for the `place-value` archetype (math correctness + O1–O12 guarantees) — `packages/content-kit/src/lessons/archetypes/__tests__/place-value.spec.ts`
+- [X] T045 [US2] Implement `makePlaceValueLesson` in `packages/content-kit/src/lessons/archetypes/place-value.ts` (depends on T044)
+- [X] T046 [P] [US2] Write failing tests for the `number-line` archetype — `packages/content-kit/src/lessons/archetypes/__tests__/number-line.spec.ts`
+- [X] T047 [US2] Implement `makeNumberLineLesson` in `packages/content-kit/src/lessons/archetypes/number-line.ts` (depends on T046)
+- [X] T048 [P] [US2] Write failing tests for the `fractions` archetype — `packages/content-kit/src/lessons/archetypes/__tests__/fractions.spec.ts`
+- [X] T049 [US2] Implement `makeFractionsLesson` in `packages/content-kit/src/lessons/archetypes/fractions.ts` (depends on T048)
+- [X] T050 [P] [US2] Write failing tests for the `operations` archetype — `packages/content-kit/src/lessons/archetypes/__tests__/operations.spec.ts`
+- [X] T051 [US2] Implement `makeOperationsLesson` in `packages/content-kit/src/lessons/archetypes/operations.ts` (depends on T050)
+- [X] T052 [P] [US2] Write failing tests for the `measurement` archetype — `packages/content-kit/src/lessons/archetypes/__tests__/measurement.spec.ts`
+- [X] T053 [US2] Implement `makeMeasurementLesson` in `packages/content-kit/src/lessons/archetypes/measurement.ts` (depends on T052)
+- [X] T054 [P] [US2] Write failing tests for the `geometry` archetype — `packages/content-kit/src/lessons/archetypes/__tests__/geometry.spec.ts`
+- [X] T055 [US2] Implement `makeGeometryLesson` in `packages/content-kit/src/lessons/archetypes/geometry.ts` (depends on T054)
+- [X] T056 [P] [US2] Write failing tests for the `data-chart` archetype — `packages/content-kit/src/lessons/archetypes/__tests__/data-chart.spec.ts`
+- [X] T057 [US2] Implement `makeDataChartLesson` in `packages/content-kit/src/lessons/archetypes/data-chart.ts` (depends on T056)
+- [X] T058 [P] [US2] Write failing tests for the `time` archetype — `packages/content-kit/src/lessons/archetypes/__tests__/time.spec.ts`
+- [X] T059 [US2] Implement `makeTimeLesson` in `packages/content-kit/src/lessons/archetypes/time.ts` (depends on T058)
+- [X] T060 [P] [US2] Write failing tests for the `money` archetype — `packages/content-kit/src/lessons/archetypes/__tests__/money.spec.ts`
+- [X] T061 [US2] Implement `makeMoneyLesson` in `packages/content-kit/src/lessons/archetypes/money.ts` (depends on T060)
+- [X] T062 [P] [US2] Write failing tests for the `patterns` archetype — `packages/content-kit/src/lessons/archetypes/__tests__/patterns.spec.ts`
+- [X] T063 [US2] Implement `makePatternsLesson` in `packages/content-kit/src/lessons/archetypes/patterns.ts` (depends on T062)
 
 ### Per-grade catalog (data, not code — see contracts/lesson-authoring.md)
 
