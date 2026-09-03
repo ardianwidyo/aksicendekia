@@ -11,9 +11,10 @@ import {
   useTheme,
   DragDropGroupingQuestion,
   NumberLinePlacementQuestion,
+  InteractiveFeedback,
   ListenButton,
 } from '@aksicendekia/ui';
-import { Sparkles, HelpCircle, CheckCircle, XCircle, ArrowRight, RotateCcw, Award } from 'lucide-react';
+import { Sparkles, HelpCircle, ArrowRight, RotateCcw, Award } from 'lucide-react';
 import { LocalSessionEngine } from '@/lib/gamification/local-session-engine';
 import { useGuestProgress } from '@/lib/context/guest-progress-context';
 import { GuestSessionAnswerRecord } from '@/lib/gamification/guest-progress.schema';
@@ -186,7 +187,7 @@ export default function GuestSessionClient() {
                 let state: 'default' | 'selected' | 'correct' | 'incorrect' = isSelected ? 'selected' : 'default';
 
                 if (isAnswerChecked) {
-                  if (opt.id === currentQuestion.contentPayload.correct_option_id) {
+                  if ((opt.id === (currentQuestion.contentPayload.correct_option_id ?? currentQuestion.contentPayload.correctOptionId))) {
                     state = 'correct';
                   } else if (isSelected && !isCurrentCorrect) {
                     state = 'incorrect';
@@ -217,8 +218,8 @@ export default function GuestSessionClient() {
                 className={
                   isAnswerChecked
                     ? isCurrentCorrect
-                      ? 'border-emerald-500 bg-emerald-500/10 text-emerald-800 dark:text-emerald-300'
-                      : 'border-rose-500 bg-rose-500/10 text-rose-800 dark:text-rose-300'
+                      ? 'border-emerald-500 bg-emerald-50 text-emerald-900'
+                      : 'border-rose-500 bg-rose-50 text-rose-900'
                     : ''
                 }
               />
@@ -274,28 +275,16 @@ export default function GuestSessionClient() {
           </div>
         )}
 
-        {/* Feedback Area After Checking Answer */}
+        {/* Feedback Area After Checking Answer — shared, contrast-safe component */}
         {isAnswerChecked && (
-          <div
-            className={`p-4 rounded-2xl border flex items-start gap-3 transition-all ${
-              isCurrentCorrect
-                ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-900 dark:text-emerald-200'
-                : 'bg-rose-500/10 border-rose-500/30 text-rose-900 dark:text-rose-200'
-            }`}
-          >
-            {isCurrentCorrect ? (
-              <CheckCircle className="w-6 h-6 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
-            ) : (
-              <XCircle className="w-6 h-6 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
+          <div className="space-y-1">
+            <InteractiveFeedback
+              state={isCurrentCorrect ? 'correct' : 'incorrect'}
+              explanation={explanation || undefined}
+            />
+            {isCurrentCorrect && (
+              <p className="text-xs font-bold text-emerald-700 text-right">+10 XP 🎉</p>
             )}
-            <div className="space-y-1">
-              <h4 className="text-sm font-bold">
-                {isCurrentCorrect ? 'Jawaban Kamu Benar! 🎉 (+10 XP)' : 'Kurang Tepat! Tetap Semangat!'}
-              </h4>
-              {explanation && (
-                <p className="text-xs leading-relaxed opacity-90">{explanation}</p>
-              )}
-            </div>
           </div>
         )}
 

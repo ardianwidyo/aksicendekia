@@ -29,13 +29,16 @@ export const InteractiveFeedback: React.FC<InteractiveFeedbackProps> = ({
 
   const isCorrect = state === 'correct';
 
+  // Solid, high-contrast surfaces — the app's design tokens are not
+  // `prefers-color-scheme`-aware, so `dark:` variants here would render light
+  // text on a light card. Fixed emerald/rose scales stay AA in both.
   return (
     <div
       role="status"
-      className={`p-4 rounded-2xl border flex items-start gap-3 ${
+      className={`p-4 rounded-2xl border-2 flex items-start gap-3 ${
         isCorrect
-          ? 'bg-tertiary-container/20 border-tertiary-container text-on-surface'
-          : 'bg-error-container/20 border-error-container text-on-surface'
+          ? 'bg-emerald-50 border-emerald-400 text-emerald-950'
+          : 'bg-rose-50 border-rose-400 text-rose-950'
       }`}
     >
       <div
@@ -43,21 +46,25 @@ export const InteractiveFeedback: React.FC<InteractiveFeedbackProps> = ({
         aria-hidden
       >
         {isCorrect ? (
-          <CheckCircle2 className="w-6 h-6 text-tertiary" />
+          <CheckCircle2 className="w-6 h-6 text-emerald-600" />
         ) : (
-          <XCircle className="w-6 h-6 text-error" />
+          <XCircle className="w-6 h-6 text-rose-600" />
         )}
       </div>
-      <div className="space-y-2 flex-1">
-        <h4 className="text-sm font-bold">
+      <div className="space-y-1.5 flex-1">
+        <h4 className={`text-sm font-bold ${isCorrect ? 'text-emerald-900' : 'text-rose-900'}`}>
           {isCorrect ? t('interactive.feedback.correct') : t('interactive.feedback.incorrect')}
         </h4>
-        {explanation && <p className="text-sm leading-relaxed opacity-90">{explanation}</p>}
+        {explanation && (
+          <p className={`text-sm leading-relaxed ${isCorrect ? 'text-emerald-800' : 'text-rose-800'}`}>
+            {explanation}
+          </p>
+        )}
         {!isCorrect && onRequestHint && (
           <button
             type="button"
             onClick={onRequestHint}
-            className="text-xs font-semibold text-error underline underline-offset-2 min-h-[44px]"
+            className="text-xs font-semibold text-rose-700 underline underline-offset-2 min-h-[44px]"
           >
             {t('interactive.feedback.showHint')}
           </button>
