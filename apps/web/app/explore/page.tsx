@@ -104,6 +104,9 @@ export default function ExplorePage() {
   const { state } = useGuestProgress();
   const [subjects, setSubjects] = useState<SubjectSummary[]>([]);
   const [loading, setLoading] = useState(true);
+  // Feature 011 — which kelas is open per subject; avoids one long vertical
+  // stack of every grade (painful to scroll on a phone).
+  const [activeUnit, setActiveUnit] = useState<Record<string, string>>({});
   const visibleStages = filterStageOptions(STAGES);
 
   // Focus mode (FR-002): if the active stage was filtered out, snap to an
@@ -191,7 +194,13 @@ export default function ExplorePage() {
         </Card>
       ) : (
         <div className="space-y-8">
-          {subjects.map((subject) => (
+          {subjects.map((subject) => {
+            const hasGradeTabs = subject.units.length > 1;
+            const activeUnitId = activeUnit[subject.id] ?? subject.units[0]?.id;
+            const shownUnits = hasGradeTabs
+              ? subject.units.filter((u) => u.id === activeUnitId)
+              : subject.units;
+            return (
             <div key={subject.id} className="space-y-4">
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold">
@@ -202,8 +211,39 @@ export default function ExplorePage() {
                 </h2>
               </div>
 
+              {/* Kelas selector — one tap to switch grade, no scrolling a 6-grade stack. */}
+              {hasGradeTabs && (
+                <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
+                  {subject.units.map((unit) => {
+                    const active = unit.id === activeUnitId;
+                    const done =
+                      unit.lessons.length > 0 &&
+                      unit.lessons.every((l) => completedLessonIds.includes(l.id));
+                    return (
+                      <button
+                        key={unit.id}
+                        type="button"
+                        aria-pressed={active}
+                        onClick={() =>
+                          setActiveUnit((prev) => ({ ...prev, [subject.id]: unit.id }))
+                        }
+                        className={`shrink-0 min-h-[44px] px-4 rounded-xl text-sm font-bold border transition-colors inline-flex items-center gap-1.5 ${
+                          active
+                            ? 'bg-primary text-on-primary border-primary shadow-sm'
+                            : 'bg-surface text-on-surface-variant border-outline/20 hover:border-primary/40'
+                        }`}
+                      >
+                        {unit.title}
+                        {done && <CheckCircle className="w-3.5 h-3.5 shrink-0" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
               <div className="grid grid-cols-1 gap-4">
-                {subject.units.map((unit, unitIndex) => {
+                {shownUnits.map((unit) => {
+                  const unitIndex = subject.units.findIndex((u) => u.id === unit.id);
                   const unitDone =
                     unit.lessons.length > 0 &&
                     unit.lessons.every((l) => completedLessonIds.includes(l.id));
@@ -274,20 +314,31 @@ export default function ExplorePage() {
                     </div>
 
                     {unitDone && nextUnit && (
-                      <a
-                        href={`#${nextUnit.id}`}
-                        className="flex items-center justify-center gap-2 mt-1 min-h-[44px] rounded-xl bg-primary/10 text-primary text-sm font-bold hover:bg-primary/15 transition-colors"
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (hasGradeTabs) {
+                            setActiveUnit((prev) => ({ ...prev, [subject.id]: nextUnit.id }));
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                          } else {
+                            document
+                              .getElementById(nextUnit.id)
+                              ?.scrollIntoView({ behavior: 'smooth' });
+                          }
+                        }}
+                        className="flex w-full items-center justify-center gap-2 mt-1 min-h-[44px] rounded-xl bg-primary/10 text-primary text-sm font-bold hover:bg-primary/15 transition-colors"
                       >
                         Lanjut ke {nextUnit.title}
                         <ArrowRight className="w-4 h-4" />
-                      </a>
+                      </button>
                     )}
                   </Card>
                   );
                 })}
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
