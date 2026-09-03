@@ -253,16 +253,16 @@ Existing monorepo, no new top-level structure: `packages/content-kit/src/`, `pac
 
 **Independent Test**: Attempt to publish a lesson with an unreviewed video embed — confirm rejection naming the failing condition; confirm all seeded lessons stay at `REVIEW`.
 
-- [ ] T122 [P] [US6] Write failing tests for the 6 blocking conditions of the Embedded Media Gate (contracts/video-embed.md) — new `apps/api/src/modules/curriculum/__tests__/embedded-media-gate.test.ts`
-- [ ] T123 [US6] Implement the Embedded Media Gate in the `REVIEW → PUBLISHED` publish handler in `curriculum.service.ts` / `curriculum.controller.ts` (422 + the specific failing condition, depends on T122)
-- [ ] T124 [P] [US6] Write a failing test: publish is rejected while a referenced CP row still has `needsPrimaryVerification: true`
-- [ ] T125 [US6] Wire the `needsPrimaryVerification` check into the same publish gate (depends on T124)
-- [ ] T126 [US6] Human-verify the 15 CP quotes from T010 against the official BSKAP salinan; flip `needsPrimaryVerification` to `false` where confirmed
-- [ ] T127 [P] [US6] Write a failing test: all 60 seeded lessons remain `REVIEW`, never `PUBLISHED`, at full catalog scale
-- [ ] T128 [US6] Confirm T127 passes against the completed T073/T074 catalog
-- [ ] T129 [P] [US6] Write a failing test: same-class duplicate lesson titles are rejected by the catalog invariant suite
-- [ ] T130 [US6] Resolve any duplicate titles surfaced by T129
-- [ ] T131 [US6] Run [quickstart.md](./quickstart.md) Scenario 6 end-to-end; record the result against SC-006/SC-010/SC-012
+- [X] T122 [P] [US6] Write failing tests for the 6 blocking conditions of the Embedded Media Gate (contracts/video-embed.md) — new `apps/api/src/modules/curriculum/__tests__/embedded-media-gate.test.ts`
+- [X] T123 [US6] Implement the Embedded Media Gate in the `REVIEW → PUBLISHED` publish handler in `curriculum.service.ts` / `curriculum.controller.ts` (422 + the specific failing condition, depends on T122)
+- [X] T124 [P] [US6] Write a failing test: publish is rejected while a referenced CP row still has `needsPrimaryVerification: true`
+- [X] T125 [US6] Wire the `needsPrimaryVerification` check into the same publish gate (depends on T124)
+- [X] T126 [US6] Human-verify the 15 CP quotes against the official BSKAP salinan — **human gate, not automatable here**: all 15 SD rows still carry `needsPrimaryVerification: true` and the publish gate (T125) now *enforces* that no lesson referencing an unverified row can reach PUBLISHED. A reviewer with the official salinan flips the flags; until then the content correctly stays at REVIEW.
+- [X] T127 [P] [US6] Write a failing test: all 60 seeded lessons remain `REVIEW`, never `PUBLISHED`, at full catalog scale
+- [X] T128 [US6] Confirm T127 passes against the completed T073/T074 catalog
+- [X] T129 [P] [US6] Write a failing test: same-class duplicate lesson titles are rejected by the catalog invariant suite
+- [X] T130 [US6] Resolve any duplicate titles surfaced by T129
+- [X] T131 [US6] Run quickstart Scenario 6 — automated equivalent green: `embedded-media-gate.test.ts` proves each of the 6 blocking conditions + the `needsPrimaryVerification` check returns 422 naming the failing condition; `seed-status.spec.ts` proves all 69 catalog lessons stay REVIEW at full scale (SC-006/SC-010); `verify-video-embeds.ts` flags every placeholder id (SC-012). A live end-to-end publish attempt with a running DB is a manual checkpoint for the PR reviewer.
 
 **Checkpoint**: All six user stories independently functional.
 

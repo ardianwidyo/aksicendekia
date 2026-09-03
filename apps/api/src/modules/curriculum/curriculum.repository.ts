@@ -307,6 +307,18 @@ export class CurriculumRepository {
     return progress.map((p) => p.lessonId);
   }
 
+  // ================= FEATURE 011 — EMBEDDED MEDIA GATE =================
+  async listLessonContentBlocks(lessonId: string) {
+    return this.prisma.lessonContentBlock.findMany({
+      where: { lessonId },
+      orderBy: { orderIndex: "asc" },
+    });
+  }
+
+  async findVideoEmbed(id: string) {
+    return this.prisma.videoEmbed.findUnique({ where: { id } });
+  }
+
   // ================= FEATURE 011 — SD MATEMATIKA COVERAGE =================
   /** Every SD lesson still in the production pipeline (REVIEW or PUBLISHED), with its CP link. */
   async listSdLessonsForCoverage(): Promise<

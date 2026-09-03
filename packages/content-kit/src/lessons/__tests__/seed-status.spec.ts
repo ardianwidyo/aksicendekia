@@ -20,6 +20,14 @@ describe('seed status guard', () => {
     expect(sd.some((l) => (l.status as string) === 'PUBLISHED')).toBe(false);
   });
 
+  it('US6/T127 — every one of the 69 catalog lessons is REVIEW at full scale (never PUBLISHED)', () => {
+    expect(INTERACTIVE_LESSONS.length).toBe(69);
+    const notReview = INTERACTIVE_LESSONS.filter((l) => l.status !== 'REVIEW');
+    expect(notReview.map((l) => `${l.id}:${l.status}`)).toEqual([]);
+    // the type itself makes 'PUBLISHED' unassignable; assert it at runtime too
+    expect(INTERACTIVE_LESSONS.some((l) => (l.status as string) === 'PUBLISHED')).toBe(false);
+  });
+
   it('the InteractiveLesson type only permits DRAFT | REVIEW', () => {
     // compile-time guarantee mirrored at runtime: assigning "PUBLISHED" is a type error.
     const statuses = new Set(INTERACTIVE_LESSONS.map((l) => l.status));

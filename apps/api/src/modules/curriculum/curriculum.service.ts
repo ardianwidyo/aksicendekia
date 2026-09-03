@@ -2,7 +2,7 @@ import { Subject, Unit, Lesson, QuestionItem, ContentStatus, EducationStage, Que
 import { getAchievementById } from "@aksicendekia/content-kit";
 import { CurriculumRepository } from "./curriculum.repository.js";
 import { CsvImportService, CsvImportReport } from "./csv-import.service.js";
-import { BadRequestError, NotFoundError, ConflictError } from "../../common/errors/app-error.js";
+import { BadRequestError, NotFoundError, ConflictError, UnprocessableEntityError } from "../../common/errors/app-error.js";
 import {
   CreateSubjectInput,
   UpdateSubjectInput,
@@ -265,12 +265,95 @@ export class CurriculumService {
   async updateLessonStatus(id: string, targetStatus: ContentStatus): Promise<Lesson> {
     const lesson = await this.getLesson(id);
 
+    // Feature 011 / T123+T125 — the Embedded Media Gate + CP primary-verification
+    // check run on every REVIEW -> PUBLISHED transition (contracts/video-embed.md).
+    if (targetStatus === ContentStatus.PUBLISHED) {
+      await this.assertLessonPublishable(id);
+    }
+
     if (targetStatus === ContentStatus.PUBLISHED && lesson.parentVersionId) {
       // Transition previous version to ARCHIVED
       await this.repo.updateLesson(lesson.parentVersionId, { status: ContentStatus.ARCHIVED });
     }
 
     return this.repo.updateLesson(id, { status: targetStatus });
+  }
+
+  /**
+   * Feature 011 — the Embedded Media Gate (Konstitusi VI v1.2.0, 6 kondisi
+   * pemblokir) plus the FR-032 CP primary-verification check. Throws a 422 that
+   * names every failing condition. Conditions 2 & 4 (initial-render network
+   * scan / identity params) are render-time facts enforced by
+   * EmbeddedVideoBlock.spec.tsx + no-premature-network.spec.tsx, not
+   * re-checkable from persisted data — the remaining four are checked here.
+   */
+  async assertLessonPublishable(id: string): Promise<void> {
+    const lesson = await this.getLesson(id);
+    const blocks = await this.repo.listLessonContentBlocks(id);
+    const reasons: string[] = [];
+
+    const videoBlocks = blocks.filter((b) => b.blockType === "VIDEO");
+    const embedBlocks = videoBlocks.filter((b) => (b as { videoEmbedId?: string | null }).videoEmbedId);
+    const hasAnimation = blocks.some((b) => b.blockType === "ANIMATION");
+
+    if (embedBlocks.length > 0 && !hasAnimation) {
+      reasons.push(
+        "Kondisi 1: pelajaran punya blok video sematan tetapi tidak ada blok ANIMATION self-hosted (Konstitusi VI butir 1).",
+      );
+    }
+
+    for (const b of videoBlocks) {
+      const row = b as { id: string; videoEmbedId?: string | null; mediaAssetId?: string | null };
+      if (row.videoEmbedId && row.mediaAssetId) {
+        reasons.push(
+          `Kondisi 6: blok VIDEO ${row.id} punya videoEmbedId sekaligus berkas video self-hosted (Konstitusi VI butir 6).`,
+        );
+      }
+    }
+
+    for (const b of embedBlocks) {
+      const embedId = (b as { videoEmbedId: string }).videoEmbedId;
+      const ref = await this.repo.findVideoEmbed(embedId);
+      if (!ref) {
+        reasons.push(`Kondisi 5: sematan "${embedId}" tidak ada di registri VideoEmbed.`);
+        continue;
+      }
+      if (ref.provider !== "YOUTUBE" || !/^[A-Za-z0-9_-]{11}$/.test(ref.externalId)) {
+        reasons.push(
+          `Kondisi 3: sematan "${ref.id}" tidak menyusun URL varian youtube-nocookie.com yang sah (Konstitusi VI butir 3).`,
+        );
+      }
+      if (!ref.reviewedBy) {
+        reasons.push(
+          `Kondisi 5: sematan "${ref.id}" belum ditinjau manusia (reviewedBy kosong) (Konstitusi VI butir 5).`,
+        );
+      }
+      const freshnessDays = 180;
+      const ageDays = ref.verifiedAt
+        ? (Date.now() - new Date(ref.verifiedAt).getTime()) / 86_400_000
+        : Number.POSITIVE_INFINITY;
+      if (ageDays > freshnessDays) {
+        reasons.push(
+          `Kondisi 5: sematan "${ref.id}" verifiedAt lebih lama dari ${freshnessDays} hari — jalankan verify:video-embeds (Konstitusi VI butir 5).`,
+        );
+      }
+    }
+
+    // T125 (FR-032) — CP quote must be human-verified against the BSKAP salinan.
+    const cp = lesson.curriculumAchievementId
+      ? getAchievementById(lesson.curriculumAchievementId)
+      : undefined;
+    if (cp?.needsPrimaryVerification) {
+      reasons.push(
+        `Baris CP "${cp.id}" masih needsPrimaryVerification: true — kutipan CP belum dikonfirmasi terhadap salinan resmi BSKAP (FR-032).`,
+      );
+    }
+
+    if (reasons.length > 0) {
+      throw new UnprocessableEntityError(
+        `Pelajaran tidak dapat berpindah REVIEW -> PUBLISHED:\n- ${reasons.join("\n- ")}`,
+      );
+    }
   }
 
   async deleteLesson(id: string): Promise<Lesson> {

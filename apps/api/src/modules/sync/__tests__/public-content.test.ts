@@ -457,7 +457,7 @@ describe("Public Content API — guest vs registered payload parity (Feature 011
     app = buildApp(mockPrisma);
 
     source = kit.SD_LESSONS.find((l: any) => l.id === "sd-mtk-k4-04");
-    const ref = kit.getVideoEmbed(`yt-${source.id}`);
+    const ref = kit.getVideoEmbed(`yt-${source.id}`)!;
 
     await mockPrisma.curriculumAchievement.upsert({
       where: { id: source.curriculumAchievementId },
