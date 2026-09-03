@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Play } from 'lucide-react';
-import { toNoCookieEmbedUrl } from '@aksicendekia/content-kit';
+import { Play, Clapperboard } from 'lucide-react';
+import { toNoCookieEmbedUrl, isPlaceholderVideoId } from '@aksicendekia/content-kit';
 import { useI18n } from '../../../providers/i18n-provider';
 
 export interface EmbeddedVideoBlockProps {
@@ -46,6 +46,35 @@ export const EmbeddedVideoBlock: React.FC<EmbeddedVideoBlockProps> = ({
   const { t } = useI18n();
   const [activated, setActivated] = useState(false);
   const activate = (): void => setActivated(true);
+
+  // Feature 011 — an authoring-placeholder id would load a broken YouTube
+  // player ("Error 153"). Until a curated video is wired (T095), show a calm
+  // "coming soon" state: poster + transcript, no play button, no iframe.
+  const isPlaceholder = isPlaceholderVideoId(externalId);
+  if (isPlaceholder) {
+    return (
+      <figure className="my-2 space-y-2">
+        <div className="relative overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-800">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={posterImageUrl} alt="" aria-hidden className="aspect-video w-full object-cover opacity-60" />
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 p-4 text-center">
+            <Clapperboard className="h-8 w-8 text-slate-500" aria-hidden />
+            <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+              {t('interactive.embeddedVideo.comingSoon') || 'Video pembelajaran akan segera tersedia'}
+            </p>
+            <p className="text-xs text-slate-500">
+              {publisherName}
+              {durationSeconds ? ` · ${formatDuration(durationSeconds)}` : ''}
+            </p>
+          </div>
+        </div>
+        <figcaption className="sr-only">
+          {t('interactive.embeddedVideo.transcriptLabel')}: {transcriptText}
+        </figcaption>
+        <p className="text-sm text-slate-600 dark:text-slate-300">{transcriptText}</p>
+      </figure>
+    );
+  }
 
   return (
     <figure className="my-2 space-y-2">

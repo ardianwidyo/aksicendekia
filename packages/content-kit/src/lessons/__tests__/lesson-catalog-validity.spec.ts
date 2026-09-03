@@ -205,6 +205,23 @@ describe('SD Matematika catalog — the 9 invariants (data-model.md §4)', () =>
     expect(new Set(SD_VIDEO_REFS.map((r) => r.id)).size).toBe(60);
   });
 
+  it('every SD ILLUSTRATION block renders a real parametric primitive (not just a placeholder SVG)', () => {
+    const PRIMITIVES = new Set([
+      'PlaceValueBlocks', 'NumberLineStrip', 'FractionShape', 'ArrayGrid', 'ShapeFigure',
+      'BarChartMini', 'ClockFace', 'MoneyStack', 'PatternRow', 'MeasureRuler',
+    ]);
+    for (const l of SD_LESSONS_VIEW) {
+      for (const b of l.contentBlocks) {
+        if (b.blockType !== 'ILLUSTRATION') continue;
+        expect(b.illustrationPrimitive, `${l.id} ILLUSTRATION has no primitive`).toBeDefined();
+        expect(PRIMITIVES.has(b.illustrationPrimitive!.name), `${l.id} bad primitive ${b.illustrationPrimitive!.name}`).toBe(true);
+        expect(Object.keys(b.illustrationPrimitive!.props).length).toBeGreaterThan(0);
+        // the static SVG remains as the load-failure fallback
+        expect(b.mediaStorageKey).toMatch(/^assets\/lessons\/sd\//);
+      }
+    }
+  });
+
   it('US3/T087 — 100% of media blocks carry a non-empty text equivalent', () => {
     for (const l of SD_LESSONS_VIEW) {
       for (const b of l.contentBlocks) {

@@ -22,19 +22,19 @@ const PUBLIC_ROOT = join(process.cwd(), 'apps', 'web', 'public');
 type Kind = 'media' | 'fallback' | 'poster';
 
 function svgFor(key: string, kind: Kind): string {
-  const label = key.split('/').pop()!.replace(/\.svg$/, '');
+  const slug = key.split('/').pop()!.replace(/\.svg$/, '');
   const bg = kind === 'poster' ? '#0f172a' : kind === 'fallback' ? '#f1f5f9' : '#e0e7ff';
-  const fg = kind === 'poster' ? '#e2e8f0' : '#1e293b';
   const accent = kind === 'poster' ? '#38bdf8' : '#6366f1';
   const heading =
-    kind === 'poster' ? 'Pratinjau video' : kind === 'fallback' ? 'Gambar cadangan' : 'Ilustrasi materi';
+    kind === 'poster' ? 'Video pembelajaran' : kind === 'fallback' ? 'Gambar cadangan' : 'Ilustrasi materi';
+  // No developer slug on the artwork — this file is only ever shown to a
+  // student if the primitive/media fails to load; keep it clean.
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-labelledby="t d" preserveAspectRatio="xMidYMid meet">
-  <title id="t">${heading}: ${label}</title>
-  <desc id="d">Placeholder self-hosted ${kind} untuk pelajaran Matematika SD (${label}). Diganti dengan gambar final pada tahap produksi media.</desc>
+  <title id="t">${heading}</title>
+  <desc id="d">Placeholder self-hosted ${kind} untuk pelajaran Matematika SD. Diganti dengan gambar final pada tahap produksi media. (${slug})</desc>
   <rect width="320" height="180" fill="${bg}"/>
   <rect x="8" y="8" width="304" height="164" rx="12" fill="none" stroke="${accent}" stroke-width="2"/>
   ${kind === 'poster' ? '<circle cx="160" cy="90" r="26" fill="none" stroke="' + accent + '" stroke-width="3"/><path d="M152 78 152 102 174 90 Z" fill="' + accent + '"/>' : '<path d="M40 132 L104 84 L150 116 L200 68 L280 128" fill="none" stroke="' + accent + '" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>'}
-  <text x="160" y="156" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" fill="${fg}">${label}</text>
 </svg>
 `;
 }

@@ -31,6 +31,10 @@ export function toRenderableBlocks(raw: any[]): RenderableBlock[] {
     if (captionKey && !payload.captionUrl) payload.captionUrl = `/${captionKey}`;
     if (b.altText && !payload.altText) payload.altText = b.altText;
     if (b.transcriptText && !payload.transcriptText) payload.transcriptText = b.transcriptText;
+    // Feature 011 — parametric illustration primitive (top-level on the raw
+    // content-kit block, or already folded into payload by the API/seed).
+    const primitive = src.illustrationPrimitive ?? b.illustrationPrimitive;
+    if (primitive && !payload.illustrationPrimitive) payload.illustrationPrimitive = primitive;
     return {
       id: b.id ?? `b${i}`,
       blockType: b.blockType,

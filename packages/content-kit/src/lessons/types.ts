@@ -1,5 +1,24 @@
 import type { CurriculumPhase, EducationStage } from '../curriculum/achievements.js';
 
+/** Names of the 10 viewBox-responsive illustration primitives in `packages/ui`. */
+export type IllustrationPrimitiveName =
+  | 'PlaceValueBlocks'
+  | 'NumberLineStrip'
+  | 'FractionShape'
+  | 'ArrayGrid'
+  | 'ShapeFigure'
+  | 'BarChartMini'
+  | 'ClockFace'
+  | 'MoneyStack'
+  | 'PatternRow'
+  | 'MeasureRuler';
+
+/** A parametric illustration rendered by a primitive component, not a static SVG file. */
+export interface IllustrationPrimitiveRef {
+  name: IllustrationPrimitiveName;
+  props: Record<string, unknown>;
+}
+
 /** Authoring shape for one content block (asset ids are relative storage keys). */
 export interface LessonBlockInput {
   blockType: 'RICH_TEXT' | 'ILLUSTRATION' | 'ANIMATION' | 'VIDEO' | 'INTERACTIVE_WIDGET';
@@ -10,6 +29,13 @@ export interface LessonBlockInput {
   captionStorageKey?: string;
   fallbackStorageKey?: string;
   narrationText?: string;
+  /**
+   * Feature 011 — an ILLUSTRATION block renders this parametric primitive
+   * (from `packages/ui/src/components/illustration/`) instead of a static SVG,
+   * so the concept visual actually depicts the number/shape/array it describes.
+   * `mediaStorageKey` stays as the load-failure fallback.
+   */
+  illustrationPrimitive?: IllustrationPrimitiveRef;
   /**
    * Feature 011 — set on VIDEO blocks that embed a third-party video instead
    * of serving a self-hosted asset. Resolves via `getVideoEmbed` in

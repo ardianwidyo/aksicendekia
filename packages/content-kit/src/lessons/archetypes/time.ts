@@ -52,6 +52,7 @@ export function makeTimeLesson(spec: TimeLessonSpec): InteractiveLesson {
     animationTranscript: `Animasi menggerakkan jarum jam ke posisi pukul ${hhmm(t0.h, t0.m)} sambil menjelaskan arti jarum pendek dan panjang.`,
     illustrationCaption: `Muka jam analog menunjukkan pukul ${hhmm(t0.h, t0.m)}.`,
     illustrationAlt: `Gambar jam dinding dengan jarum pendek di angka ${idNum(t0.h % 12 || 12)} dan jarum panjang menunjuk ${idNum(t0.m)} menit.`,
+    illustrationPrimitive: { name: 'ClockFace', props: { title: `Pukul ${hhmm(t0.h, t0.m)}`, hour: t0.h, minute: t0.m } },
     widgetType: 'IMAGE_HOTSPOT',
     widgetParams: {
       mediaAssetId: assetKey(grade, `${spec.id}-clock`),

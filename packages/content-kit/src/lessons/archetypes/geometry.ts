@@ -29,6 +29,25 @@ export interface GeometryLessonSpec extends ArchetypeSpecBase {
   };
 }
 
+type NamedShape = 'segitiga' | 'segiempat' | 'segibanyak' | 'lingkaran' | 'kubus' | 'balok' | 'kerucut' | 'bola';
+
+/** Map an authoring shape name to the closest `ShapeFigure` primitive shape. */
+function toNamedShape(name: string): NamedShape {
+  const n = name.toLowerCase();
+  if (n.includes('lingkaran')) return 'lingkaran';
+  if (n.includes('segitiga') && (n.includes('prisma') || n.includes('limas'))) return 'balok';
+  if (n.includes('segitiga')) return 'segitiga';
+  if (n.includes('kubus')) return 'kubus';
+  if (n.includes('balok') || n.includes('limas') || n.includes('prisma')) return 'balok';
+  if (n.includes('kerucut')) return 'kerucut';
+  if (n.includes('bola')) return 'bola';
+  if (n.includes('segi ') || n.includes('segibanyak') || n.includes('segi lima') || n.includes('segi enam')) {
+    return 'segibanyak';
+  }
+  // persegi, persegi panjang, jajar genjang, trapesium, belah ketupat, ...
+  return 'segiempat';
+}
+
 export function makeGeometryLesson(spec: GeometryLessonSpec): InteractiveLesson {
   const { gradeLevel: grade } = spec;
   const { shapes } = spec.params;
@@ -49,6 +68,7 @@ export function makeGeometryLesson(spec: GeometryLessonSpec): InteractiveLesson 
     animationTranscript: `Animasi menyorot ${idNum(s0.sides)} sisi dan ${idNum(s0.vertices)} titik sudut pada ${s0.name}.`,
     illustrationCaption: `Kumpulan bangun datar: ${shapes.map((s) => s.name).join(', ')}.`,
     illustrationAlt: `Gambar ${shapes.length} bangun datar berbeda diberi nama: ${shapes.map((s) => s.name).join(', ')}.`,
+    illustrationPrimitive: { name: 'ShapeFigure', props: { title: s0.name, shape: toNamedShape(s0.name) } },
     widgetType: 'IMAGE_HOTSPOT',
     widgetParams: {
       mediaAssetId: assetKey(grade, `${spec.id}-hotspots`),

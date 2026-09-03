@@ -53,6 +53,7 @@ function blockPayload(block: LessonBlockInput): Record<string, unknown> {
     ...(block.mediaStorageKey ? { mediaStorageKey: block.mediaStorageKey, imageUrl: `/${block.mediaStorageKey}` } : {}),
     ...(block.captionStorageKey ? { captionStorageKey: block.captionStorageKey } : {}),
     ...(block.fallbackStorageKey ? { fallbackStorageKey: block.fallbackStorageKey } : {}),
+    ...(block.illustrationPrimitive ? { illustrationPrimitive: block.illustrationPrimitive } : {}),
   };
 }
 

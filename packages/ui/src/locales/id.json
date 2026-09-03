@@ -205,7 +205,8 @@
       "play": "Putar {title}",
       "duration": "Durasi {duration}",
       "publisher": "Sumber: {publisher}",
-      "transcriptLabel": "Transkrip"
+      "transcriptLabel": "Transkrip",
+      "comingSoon": "Video pembelajaran akan segera tersedia"
     },
     "feedback": {
       "correct": "Tepat sekali!",

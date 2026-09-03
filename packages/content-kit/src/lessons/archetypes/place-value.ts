@@ -78,7 +78,29 @@ export function makePlaceValueLesson(spec: PlaceValueLessonSpec): InteractiveLes
       grade,
       slug: `${spec.id}-blocks`,
       caption: `Blok nilai tempat menyusun ${idNum(at(numbers, 1))}.`,
-      altText: `Gambar blok nilai tempat (ratusan, puluhan, satuan) yang jumlahnya ${idNum(at(numbers, 1))}.`,
+      altText: `Gambar blok nilai tempat (ribuan, ratusan, puluhan, satuan) yang jumlahnya ${idNum(at(numbers, 1))}.`,
+      primitive:
+        String(at(numbers, 1)).length <= 4
+          ? {
+              name: 'PlaceValueBlocks',
+              props: {
+                title: `Nilai tempat ${idNum(at(numbers, 1))}`,
+                thousands: digitAt(at(numbers, 1), 3),
+                hundreds: digitAt(at(numbers, 1), 2),
+                tens: digitAt(at(numbers, 1), 1),
+                ones: digitAt(at(numbers, 1), 0),
+              },
+            }
+          : {
+              name: 'NumberLineStrip',
+              props: {
+                title: `Letak ${idNum(at(numbers, 1))}`,
+                min: 0,
+                max: 10 ** String(at(numbers, 1)).length,
+                step: 10 ** (String(at(numbers, 1)).length - 1),
+                highlightValues: [at(numbers, 1)],
+              },
+            },
     }),
     widgetBlock({
       grade,

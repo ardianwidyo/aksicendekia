@@ -54,6 +54,11 @@ export const LessonContentRenderer: React.FC<LessonContentRendererProps> = ({
                 altText={String(p.altText ?? '')}
                 caption={p.caption ? String(p.caption) : undefined}
                 fallbackText={p.fallbackText ? String(p.fallbackText) : undefined}
+                primitive={
+                  p.illustrationPrimitive as
+                    | { name: string; props: Record<string, unknown> }
+                    | undefined
+                }
               />
             );
             break;

@@ -1,8 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-labelledby="t d" preserveAspectRatio="xMidYMid meet">
-  <title id="t">Pratinjau video: sd-mtk-k6-08-poster</title>
-  <desc id="d">Placeholder self-hosted poster untuk pelajaran Matematika SD (sd-mtk-k6-08-poster). Diganti dengan gambar final pada tahap produksi media.</desc>
+  <title id="t">Video pembelajaran</title>
+  <desc id="d">Placeholder self-hosted poster untuk pelajaran Matematika SD. Diganti dengan gambar final pada tahap produksi media. (sd-mtk-k6-08-poster)</desc>
   <rect width="320" height="180" fill="#0f172a"/>
   <rect x="8" y="8" width="304" height="164" rx="12" fill="none" stroke="#38bdf8" stroke-width="2"/>
   <circle cx="160" cy="90" r="26" fill="none" stroke="#38bdf8" stroke-width="3"/><path d="M152 78 152 102 174 90 Z" fill="#38bdf8"/>
-  <text x="160" y="156" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" fill="#e2e8f0">sd-mtk-k6-08-poster</text>
 </svg>

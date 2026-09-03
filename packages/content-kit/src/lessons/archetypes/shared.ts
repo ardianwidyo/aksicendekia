@@ -1,5 +1,6 @@
 import type {
   InteractiveLesson,
+  IllustrationPrimitiveRef,
   LessonArchetypeId,
   LessonBlockInput,
   LessonQuestionInput,
@@ -273,6 +274,8 @@ export function illustrationBlock(input: {
   caption: string;
   altText: string;
   narrationText?: string;
+  /** The parametric primitive that actually depicts the concept (falls back to the SVG on load error). */
+  primitive?: IllustrationPrimitiveRef;
 }): LessonBlockInput {
   if (!input.altText.trim()) throw new Error(`O6: ilustrasi "${input.slug}" tanpa altText.`);
   return {
@@ -281,6 +284,7 @@ export function illustrationBlock(input: {
     altText: input.altText,
     mediaStorageKey: assetKey(input.grade, input.slug),
     fallbackStorageKey: fallbackKey(input.grade, input.slug),
+    ...(input.primitive ? { illustrationPrimitive: input.primitive } : {}),
     ...(isYoungGrade(input.grade)
       ? { narrationText: input.narrationText ?? input.caption }
       : input.narrationText
@@ -424,6 +428,8 @@ export function buildStandardBlocks(input: {
   animationTranscript: string;
   illustrationCaption: string;
   illustrationAlt: string;
+  /** The parametric primitive the ILLUSTRATION block renders (concrete concept visual). */
+  illustrationPrimitive?: IllustrationPrimitiveRef;
   widgetType: string;
   widgetParams: Record<string, unknown>;
   videoTranscript: string;
@@ -443,6 +449,7 @@ export function buildStandardBlocks(input: {
       slug: `${spec.id}-fig`,
       caption: input.illustrationCaption,
       altText: input.illustrationAlt,
+      primitive: input.illustrationPrimitive,
     }),
     widgetBlock({ grade, widgetType: input.widgetType, params: input.widgetParams }),
     embedVideoBlock({

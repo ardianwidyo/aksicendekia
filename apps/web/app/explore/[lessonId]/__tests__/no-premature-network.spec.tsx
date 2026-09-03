@@ -57,7 +57,45 @@ describe('guest lesson path — no third-party request before video play', () =>
     expect(fetchCallsToThirdParty()).toEqual([]);
   });
 
-  it('loads the nocookie iframe only after the play button is pressed', () => {
+  it('a real embed id loads exactly one nocookie iframe only after the play button is pressed', () => {
+    render(
+      <I18nProvider defaultLocale="id">
+        <LessonContentRenderer
+          blocks={[
+            {
+              id: 'v0',
+              blockType: 'VIDEO',
+              payload: {
+                title: 'Video Pecahan',
+                videoEmbed: {
+                  provider: 'YOUTUBE',
+                  externalId: 'dQw4w9WgXcQ',
+                  title: 'Video Pecahan',
+                  publisherName: 'Contoh Edukasi',
+                  posterUrl: '/assets/lessons/sd/kelas-4/x-poster.svg',
+                  transcriptText: 'Transkrip.',
+                  durationSeconds: 200,
+                },
+              },
+              narrationText: null,
+            } as RenderableBlock,
+          ]}
+        />
+      </I18nProvider>,
+    );
+
+    expect(document.querySelector('iframe')).toBeNull();
+    expect(fetchCallsToThirdParty()).toEqual([]);
+
+    fireEvent.click(screen.getByRole('button', { name: /putar video pecahan/i }));
+
+    const iframe = document.querySelector('iframe');
+    expect(iframe).not.toBeNull();
+    expect(iframe!.getAttribute('src')).toMatch(/youtube-nocookie\.com\/embed\//);
+    expect(fetchCallsToThirdParty()).toEqual([]);
+  });
+
+  it('the current SD lesson uses an authoring-placeholder id — it shows a "coming soon" card, never an iframe', () => {
     const lesson = getInteractiveLesson('sd-mtk-k4-04')!;
     const blocks = toRenderableBlocks(lesson.contentBlocks as unknown as any[]) as RenderableBlock[];
 
@@ -67,13 +105,9 @@ describe('guest lesson path — no third-party request before video play', () =>
       </I18nProvider>,
     );
 
-    const play = screen.getByRole("button", { name: /putar video:/i });
-    fireEvent.click(play);
-
-    const iframe = document.querySelector('iframe');
-    expect(iframe).not.toBeNull();
-    expect(iframe!.getAttribute('src')).toMatch(/youtube-nocookie\.com\/embed\//);
-    // still no scripted fetch to a third party — the iframe is the only surface
+    expect(screen.getByText(/segera tersedia/i)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /putar video/i })).not.toBeInTheDocument();
+    expect(document.querySelector('iframe')).toBeNull();
     expect(fetchCallsToThirdParty()).toEqual([]);
   });
 });

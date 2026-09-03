@@ -55,6 +55,7 @@ export function makeFractionsLesson(spec: FractionsLessonSpec): InteractiveLesso
     animationTranscript: `Animasi membagi satu bentuk menjadi ${d0} bagian sama besar dan mengarsir bagian demi bagian untuk menunjukkan pecahan.`,
     illustrationCaption: `Batang pecahan dibagi ${d0} bagian sama besar; sebagian diarsir.`,
     illustrationAlt: `Batang persegi panjang terbagi ${d0} kolom sama lebar, satu kolom berwarna berbeda menandai 1/${d0}.`,
+    illustrationPrimitive: { name: 'FractionShape', props: { title: `Pecahan 1/${d0}`, numerator: 1, denominator: d0, shape: 'bar' } },
     widgetType: 'FRACTION_BAR_BUILDER',
     widgetParams: { denominator: d0, targetFraction: { numerator: 1, denominator: d0 }, allowCompare: true },
     videoTranscript: `Video menjelaskan pecahan sebagai bagian yang sama besar dari keseluruhan serta cara membandingkannya.`,

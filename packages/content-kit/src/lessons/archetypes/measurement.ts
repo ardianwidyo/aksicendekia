@@ -54,6 +54,7 @@ export function makeMeasurementLesson(spec: MeasurementLessonSpec): InteractiveL
     animationTranscript: `Animasi mengukur ${o0.name} sepanjang ${idNum(o0.sub)} ${sub} lalu mengubahnya ke ${base} dengan ${idNum(factor)} ${sub} = 1 ${base}.`,
     illustrationCaption: `Penggaris menunjukkan ${quantity} beberapa benda dalam satuan ${sub}.`,
     illustrationAlt: `Gambar penggaris/timbangan dengan benda yang ${quantity}nya ditandai dalam ${sub}.`,
+    illustrationPrimitive: { name: 'NumberLineStrip', props: { title: `${o0.name}: ${idNum(o0.sub)} ${sub}`, min: 0, max: nlMax, step: nlMax / 10, highlightValues: [o0.sub] } },
     widgetType: 'PARAMETER_EXPLORER',
     widgetParams: {
       expressionId: 'proportional-y-kx',

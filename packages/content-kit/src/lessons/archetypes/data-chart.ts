@@ -50,6 +50,7 @@ export function makeDataChartLesson(spec: DataChartLessonSpec): InteractiveLesso
     animationTranscript: `Animasi menyusun diagram batang dari data ${cats.map((c) => `${c.name} ${c.count}`).join(', ')} lalu membaca kategori terbanyak, yaitu ${most.name}.`,
     illustrationCaption: `Diagram batang: ${cats.map((c) => `${c.name} (${c.count})`).join(', ')}.`,
     illustrationAlt: `Diagram batang dengan ${cats.length} batang; tertinggi ${most.name} bernilai ${idNum(most.count)}, terendah ${least.name} bernilai ${idNum(least.count)}.`,
+    illustrationPrimitive: { name: 'BarChartMini', props: { title: 'Diagram batang', data: cats.map((c) => ({ label: c.name, value: c.count })) } },
     widgetType: 'SORT_INTO_GROUPS',
     widgetParams: {
       items: cats.map((c, i) => ({ id: `c${i}`, label: `${c.name}: ${idNum(c.count)}` })),

@@ -47,6 +47,21 @@ export function toNoCookieEmbedUrl(externalId: string): string {
 }
 
 /**
+ * Feature 011 / T083 authoring placeholders (`externalId` derived from the
+ * lesson id, e.g. `sd-mtk-k4-0`). These are NOT real YouTube ids — the UI must
+ * render a "video menyusul" state instead of an iframe that would 404, and the
+ * CI link-rot check (scripts/verify-video-embeds.ts) flags them for replacement.
+ */
+export function isPlaceholderVideoId(externalId: string): boolean {
+  return (
+    !/^[A-Za-z0-9_-]{11}$/.test(externalId) ||
+    externalId.includes('_') ||
+    externalId.startsWith('sd-') ||
+    /-k[1-6]-/.test(externalId)
+  );
+}
+
+/**
  * The Embedded Media Gate (Constitution VI v1.2.0 §5, contracts/video-embed.md).
  * A lesson with a `VideoEmbedRef` block cannot reach `PUBLISHED` unless this
  * passes — the six constitutional conditions collapse to two checkable facts

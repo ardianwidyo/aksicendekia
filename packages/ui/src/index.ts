@@ -84,3 +84,4 @@ export * from './components/illustration/ClockFace';
 export * from './components/illustration/MoneyStack';
 export * from './components/illustration/PatternRow';
 export * from './components/illustration/MeasureRuler';
+export * from './components/illustration/IllustrationPrimitiveRenderer';

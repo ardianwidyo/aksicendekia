@@ -2,6 +2,11 @@
 
 import React, { useState } from 'react';
 import { MediaFallback } from '../MediaFallback';
+import {
+  IllustrationPrimitiveRenderer,
+  hasIllustrationPrimitive,
+  type IllustrationPrimitiveRef,
+} from '../../illustration/IllustrationPrimitiveRenderer';
 
 export interface IllustrationBlockProps {
   imageUrl: string;
@@ -9,6 +14,11 @@ export interface IllustrationBlockProps {
   caption?: string;
   /** Text explanation shown if the image fails to load (FR-015). */
   fallbackText?: string;
+  /**
+   * Feature 011 — when set, the concept is drawn by a parametric primitive
+   * (an actual number line / array / clock / …) instead of a static SVG file.
+   */
+  primitive?: IllustrationPrimitiveRef;
 }
 
 export const IllustrationBlock: React.FC<IllustrationBlockProps> = ({
@@ -16,8 +26,20 @@ export const IllustrationBlock: React.FC<IllustrationBlockProps> = ({
   altText,
   caption,
   fallbackText,
+  primitive,
 }) => {
   const [failed, setFailed] = useState(false);
+
+  if (primitive && hasIllustrationPrimitive(primitive.name)) {
+    return (
+      <figure className="my-2">
+        <IllustrationPrimitiveRenderer primitive={primitive} />
+        {caption && (
+          <figcaption className="mt-1 text-center text-sm text-slate-500">{caption}</figcaption>
+        )}
+      </figure>
+    );
+  }
 
   if (failed) {
     return <MediaFallback text={fallbackText ?? altText} />;

@@ -53,6 +53,7 @@ export function makeMoneyLesson(spec: MoneyLessonSpec): InteractiveLesson {
     animationTranscript: `Animasi membeli ${p0.item} seharga ${rp(p0.price)} dengan uang ${rp(paidWith)} dan menghitung kembalian ${rp(paidWith - p0.price)}.`,
     illustrationCaption: `Uang kertas dan koin bertuliskan berbagai nilai rupiah.`,
     illustrationAlt: `Gambar pecahan uang rupiah: lembaran dan koin dengan nilai berbeda-beda.`,
+    illustrationPrimitive: { name: 'MoneyStack', props: { title: 'Nilai uang', denominations: prices.slice(0, 4).map((p) => ({ value: p.price, count: 1 })) } },
     widgetType: 'SORT_INTO_GROUPS',
     widgetParams: {
       items: prices.map((p, i) => ({ id: `p${i}`, label: `${p.item} ${rp(p.price)}` })),

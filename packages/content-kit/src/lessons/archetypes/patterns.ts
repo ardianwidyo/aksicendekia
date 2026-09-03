@@ -51,6 +51,7 @@ export function makePatternsLesson(spec: PatternsLessonSpec): InteractiveLesson 
     animationTranscript: `Animasi menampilkan barisan ${first5.map(idNum).join(', ')} dan menyoroti bahwa tiap suku bertambah ${idNum(s0.diff)}.`,
     illustrationCaption: `Deretan gambar berulang membentuk pola dengan aturan tetap.`,
     illustrationAlt: `Gambar pola: objek berbaris dengan aturan penambahan tetap ${idNum(s0.diff)} tiap langkah.`,
+    illustrationPrimitive: { name: 'PatternRow', props: { title: 'Pola bentuk', items: ['circle', 'square', 'triangle', 'circle', 'square'], highlightIndex: 4 } },
     widgetType: 'STEP_REVEAL',
     widgetParams: {
       steps: [

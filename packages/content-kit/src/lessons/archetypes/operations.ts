@@ -48,6 +48,9 @@ export function makeOperationsLesson(spec: OperationsLessonSpec): InteractiveLes
     animationTranscript: `Animasi menyusun ${idNum(b0)} kelompok berisi ${idNum(a0)} benda dan menghitungnya menjadi ${idNum(a0 * b0)}.`,
     illustrationCaption: `Susunan ${idNum(a0)} baris x ${idNum(b0)} kolom benda.`,
     illustrationAlt: `Larik titik ${idNum(a0)} baris dan ${idNum(b0)} kolom, seluruhnya ${idNum(a0 * b0)} titik.`,
+    illustrationPrimitive: (a0 <= 12 && b0 <= 12
+      ? { name: 'ArrayGrid', props: { title: `${idNum(a0)} baris x ${idNum(b0)} kolom`, rows: a0, cols: b0 } }
+      : { name: 'NumberLineStrip', props: { title: `Hasil ${idNum(a0)} x ${idNum(b0)}`, min: 0, max: Math.ceil((a0 * b0 + 1) / 10) * 10, step: Math.max(1, Math.round((a0 * b0) / 10)), highlightValues: [a0 * b0] } }),
     widgetType: 'ANIMATED_WORKED_EXAMPLE',
     widgetParams: {
       animationId: 'count-objects',
