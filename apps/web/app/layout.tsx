@@ -23,8 +23,9 @@ const montserrat = Montserrat({
 });
 
 export const metadata: Metadata = {
-  title: 'AksiCendekia - Platform Belajar Bergamifikasi',
-  description: 'Platform belajar Kurikulum Merdeka untuk TK, SD, SMP, dan SMA',
+  title: 'AksiCendekia — Matematika SD Interaktif Kelas 1–6',
+  description:
+    'Belajar Matematika SD Kurikulum Merdeka kelas 1–6 lewat pelajaran interaktif: ilustrasi, animasi, manipulatif, dan latihan bertahap. Bisa langsung dipakai tanpa mendaftar.',
 };
 
 export default function RootLayout({
