@@ -36,7 +36,8 @@ export const NumberLinePlacementQuestion: React.FC<NumberLinePlacementQuestionPr
   targetValue,
 }) => {
   const { t } = useI18n();
-  const current = value ?? min;
+  const hasPlaced = value !== null && value !== undefined && Number.isFinite(value);
+  const current = hasPlaced ? (value as number) : (min + max) / 2;
   const isGraded = targetValue !== undefined;
 
   const update = (next: number): void => {
@@ -130,18 +131,22 @@ export const NumberLinePlacementQuestion: React.FC<NumberLinePlacementQuestionPr
           />
         )}
         <span
-          className={`absolute top-1/2 h-6 w-6 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 ${
-            isGraded
-              ? Math.abs(current - (targetValue ?? current)) < 1e-9
-                ? 'border-emerald-700 bg-emerald-500'
-                : 'border-rose-700 bg-rose-500'
-              : 'border-blue-700 bg-blue-500'
+          className={`absolute top-1/2 h-6 w-6 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 transition-opacity ${
+            !hasPlaced
+              ? 'border-slate-400 bg-white opacity-40'
+              : isGraded
+                ? Math.abs(current - (targetValue ?? current)) <= (max - min) / 200 + 1e-9
+                  ? 'border-emerald-700 bg-emerald-500'
+                  : 'border-rose-700 bg-rose-500'
+                : 'border-blue-700 bg-blue-500'
           }`}
           style={{ left: `${percent}%` }}
           aria-hidden
         />
       </div>
-      <p className="mt-4 text-center text-lg font-bold text-blue-700">{current}</p>
+      <p className="mt-4 text-center text-lg font-bold text-blue-700">
+        {hasPlaced ? current : <span className="text-slate-400">Ketuk garis untuk meletakkan jawabanmu</span>}
+      </p>
     </div>
   );
 };

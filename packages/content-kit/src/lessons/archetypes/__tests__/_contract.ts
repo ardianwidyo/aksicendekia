@@ -100,6 +100,24 @@ export function assertArchetypeContract(lesson: InteractiveLesson): void {
     }
   }
 
+  // Number-line questions must be READABLE (labelled ticks) and REACHABLE:
+  // the nearest slider step to the target must grade as correct.
+  for (const q of lesson.questions) {
+    if (q.questionType !== 'NUMBER_LINE') continue;
+    const p = q.contentPayload as {
+      min: number; max: number; step: number; targetValue: number; tolerance: number; markers?: number[];
+    };
+    expect(Array.isArray(p.markers) && p.markers.length >= 2, `${q.id} needs >= 2 markers`).toBe(true);
+    expect((p.max - p.min) / p.step, `${q.id} tick count`).toBeLessThanOrEqual(100);
+    // snap target to the nearest step, then it must be within tolerance
+    const snapped = p.min + Math.round((p.targetValue - p.min) / p.step) * p.step;
+    expect(
+      Math.abs(snapped - p.targetValue) <= p.tolerance + 1e-9,
+      `${q.id} target ${p.targetValue} unreachable at step ${p.step} (nearest ${snapped}, tol ${p.tolerance})`,
+    ).toBe(true);
+    expect(p.targetValue >= p.min && p.targetValue <= p.max, `${q.id} target in range`).toBe(true);
+  }
+
   // curriculum link is live and phase-consistent
   const cp = getAchievementById(lesson.curriculumAchievementId);
   expect(cp, `${lesson.id} curriculumAchievementId`).toBeDefined();

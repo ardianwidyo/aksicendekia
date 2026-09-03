@@ -10,6 +10,7 @@ import {
   isYoungGrade,
   mcQuestion,
   numberLineQuestion,
+  lineParamsFor,
   shortAnswerQuestion,
   toOptions,
 } from './shared.js';
@@ -66,19 +67,19 @@ export function makeOperationsLesson(spec: OperationsLessonSpec): InteractiveLes
 
   const questions: LessonQuestionInput[] = [];
 
-  // O4 — placement: the product on a 0..(max product rounded) line.
+  // O4 — placement: the product on a readable, reachable line.
   const p0 = a0 * b0;
-  const nlMax = Math.max(20, Math.ceil((p0 + 1) / 10) * 10);
+  const nl = lineParamsFor(p0);
   questions.push(
     numberLineQuestion({
       id: `${spec.id}-q1`,
       grade,
       promptText: `Letakkan hasil ${idNum(a0)} x ${idNum(b0)} pada garis bilangan.`,
-      min: 0,
-      max: nlMax,
-      step: nlMax / 10,
+      min: nl.min,
+      max: nl.max,
+      step: nl.step,
+      markers: nl.markers,
       targetValue: p0,
-      tolerance: 0,
       explanation: `${idNum(a0)} x ${idNum(b0)} = ${idNum(p0)}.`,
       hints: [`Perkalian sama dengan penjumlahan berulang.`, `${idNum(a0)} ditambahkan sebanyak ${idNum(b0)} kali.`],
       narrationText: young ? `Geser penanda ke hasil ${idNum(a0)} kali ${idNum(b0)}.` : undefined,

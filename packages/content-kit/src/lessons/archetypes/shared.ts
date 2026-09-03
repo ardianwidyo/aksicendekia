@@ -168,6 +168,45 @@ export function shortAnswerQuestion(input: {
   };
 }
 
+const NICE_STEPS = [
+  1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500, 1000, 2000, 2500, 5000, 10_000, 25_000, 50_000,
+];
+
+/**
+ * Feature 011 — pick a number-line scale a child can actually read and reach:
+ * a "nice" round step, ~10-14 intervals, `max` two steps past the target (so the
+ * answer is never at the very edge), and 5-6 labelled markers. The target need
+ * NOT land exactly on a step — the question grades with a half-step tolerance,
+ * so "close enough" counts, which is the point of placing a value on a line.
+ */
+export function lineParamsFor(
+  target: number,
+  min = 0,
+): { min: number; max: number; step: number; markers: number[] } {
+  const span = Math.max(1, Math.abs(target - min));
+  const step =
+    NICE_STEPS.find((s) => span / s >= 6 && span / s <= 20) ??
+    NICE_STEPS.find((s) => span / s >= 3 && span / s <= 40) ??
+    Math.max(1, Math.round(span / 10));
+  const max = min + (Math.ceil(span / step) + 2) * step;
+  const intervals = (max - min) / step;
+  const labelEvery = Math.max(1, Math.round(intervals / 5));
+  const markers: number[] = [];
+  for (let i = 0; i <= intervals; i += labelEvery) markers.push(min + i * step);
+  if (markers[markers.length - 1] !== max) markers.push(max);
+  return { min, max, step, markers };
+}
+
+/** Default markers for a caller-supplied range: min, ~4 evenly spaced, max. */
+function defaultMarkers(min: number, max: number, step: number): number[] {
+  const intervals = Math.round((max - min) / step);
+  const every = Math.max(1, Math.round(intervals / 5));
+  const out: number[] = [];
+  for (let i = 0; i <= intervals; i += every) out.push(Number((min + i * step).toFixed(6)));
+  if (out[out.length - 1] !== max) out.push(max);
+  return out;
+}
+
 export function numberLineQuestion(input: {
   id: string;
   grade: SdGradeLevel;
@@ -177,6 +216,8 @@ export function numberLineQuestion(input: {
   step: number;
   targetValue: number;
   tolerance?: number;
+  /** Explicit tick labels; auto-derived from the range when omitted. */
+  markers?: number[];
   explanation: string;
   hints: string[];
   narrationText?: string;
@@ -188,6 +229,13 @@ export function numberLineQuestion(input: {
   }
   if ((max - min) / step > 100) throw new Error(`soal "${id}": (max-min)/step > 100.`);
   guardYoung(input.grade, id, input.narrationText);
+  // A placement question grades on "close enough": at least half a step, so the
+  // nearest reachable tick always counts even when the target isn't on a step.
+  const tolerance = Math.max(input.tolerance ?? 0, step / 2 + 1e-9);
+  const markers =
+    input.markers && input.markers.length >= 2
+      ? input.markers
+      : defaultMarkers(min, max, step);
   return {
     id,
     questionType: 'NUMBER_LINE',
@@ -197,7 +245,8 @@ export function numberLineQuestion(input: {
       max,
       step,
       targetValue,
-      tolerance: input.tolerance ?? 0,
+      tolerance,
+      markers,
       explanation: requireExplanation(id, input.explanation),
       ...(input.narrationText ? { narrationText: input.narrationText } : {}),
     },
