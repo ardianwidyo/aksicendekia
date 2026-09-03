@@ -192,6 +192,25 @@ describe('SD Matematika catalog — the 9 invariants (data-model.md §4)', () =>
     expect(new Set(SD_VIDEO_REFS.map((r) => r.id)).size).toBe(60);
   });
 
+  it('US3/T087 — 100% of media blocks carry a non-empty text equivalent', () => {
+    for (const l of SD_LESSONS_VIEW) {
+      for (const b of l.contentBlocks) {
+        if (b.blockType === 'ILLUSTRATION') {
+          expect(b.altText?.trim().length ?? 0, `${l.id} ILLUSTRATION altText`).toBeGreaterThan(0);
+        }
+        if (b.blockType === 'ANIMATION' || b.blockType === 'VIDEO') {
+          expect(b.transcriptText?.trim().length ?? 0, `${l.id} ${b.blockType} transcript`).toBeGreaterThan(0);
+        }
+      }
+      // FR-013: exactly the four media kinds, once each minimum
+      const kinds = l.contentBlocks.map((b) => b.blockType);
+      expect(kinds.filter((k) => k === 'ILLUSTRATION').length).toBeGreaterThanOrEqual(1);
+      expect(kinds.filter((k) => k === 'ANIMATION').length).toBeGreaterThanOrEqual(1);
+      expect(kinds.filter((k) => k === 'VIDEO').length).toBeGreaterThanOrEqual(1);
+      expect(kinds.filter((k) => k === 'INTERACTIVE_WIDGET').length).toBeGreaterThanOrEqual(1);
+    }
+  });
+
   it('9 — kelas 1-2: every question + its options carry a picture companion + narration', () => {
     const young = SD_LESSONS_VIEW.filter((l) => (l.gradeLevel ?? 6) <= 2);
     expect(young.length).toBe(20);

@@ -75,3 +75,28 @@ describe('EmbeddedVideoBlock — State 2 (after activation)', () => {
     expect(document.querySelector('iframe')).not.toBeNull();
   });
 });
+
+/** Feature 011 / T093 (FR-018) — nothing plays with sound until the user asks. */
+describe('EmbeddedVideoBlock — no autoplay-with-sound on page load', () => {
+  it('mounts with no iframe, no <video>, no <audio> — zero playback surface', () => {
+    const { container } = wrap(<EmbeddedVideoBlock {...baseProps} />);
+    expect(container.querySelector('iframe')).toBeNull();
+    expect(container.querySelector('video')).toBeNull();
+    expect(container.querySelector('audio')).toBeNull();
+  });
+
+  it('the poster <img> carries no autoplay/muted media attributes', () => {
+    wrap(<EmbeddedVideoBlock {...baseProps} />);
+    const poster = screen.getByRole('img', { hidden: true });
+    expect(poster.hasAttribute('autoplay')).toBe(false);
+    expect(poster.tagName.toLowerCase()).toBe('img');
+  });
+
+  it('the autoplay=1 embed param only appears AFTER an explicit user click', () => {
+    wrap(<EmbeddedVideoBlock {...baseProps} />);
+    expect(document.body.innerHTML).not.toMatch(/autoplay=1/);
+    fireEvent.click(screen.getByRole('button', { name: /putar mengenal pecahan/i }));
+    // user-initiated: autoplay is now allowed and expected
+    expect(document.querySelector('iframe')!.getAttribute('src')).toMatch(/autoplay=1/);
+  });
+});

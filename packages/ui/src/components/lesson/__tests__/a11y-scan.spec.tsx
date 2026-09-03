@@ -5,6 +5,17 @@ import { axe } from 'vitest-axe';
 import { INTERACTIVE_LESSONS, type LessonBlockInput } from '@aksicendekia/content-kit';
 import { I18nProvider } from '../../../providers/i18n-provider';
 import { LessonContentRenderer, type RenderableBlock } from '../LessonContentRenderer';
+import { EmbeddedVideoBlock } from '../blocks/EmbeddedVideoBlock';
+import { PlaceValueBlocks } from '../../illustration/PlaceValueBlocks';
+import { NumberLineStrip } from '../../illustration/NumberLineStrip';
+import { FractionShape } from '../../illustration/FractionShape';
+import { ArrayGrid } from '../../illustration/ArrayGrid';
+import { ShapeFigure } from '../../illustration/ShapeFigure';
+import { BarChartMini } from '../../illustration/BarChartMini';
+import { ClockFace } from '../../illustration/ClockFace';
+import { MoneyStack } from '../../illustration/MoneyStack';
+import { PatternRow } from '../../illustration/PatternRow';
+import { MeasureRuler } from '../../illustration/MeasureRuler';
 
 /**
  * Feature 010 / T085 (SC-005). Scans all 12 seeded lessons through the exact
@@ -52,9 +63,9 @@ function toRenderableBlocks(blocks: LessonBlockInput[]): RenderableBlock[] {
   });
 }
 
-describe('a11y scan — all 12 seeded interactive lessons (SC-005)', () => {
-  it('covers exactly 12 lessons', () => {
-    expect(INTERACTIVE_LESSONS).toHaveLength(12);
+describe('a11y scan — all seeded interactive lessons (SC-005)', () => {
+  it('covers 69 lessons (3 TK + 60 SD + 3 SMP + 3 SMA)', () => {
+    expect(INTERACTIVE_LESSONS).toHaveLength(69);
   });
 
   it.each(INTERACTIVE_LESSONS.map((l) => [l.id, l] as const))(
@@ -71,4 +82,42 @@ describe('a11y scan — all 12 seeded interactive lessons (SC-005)', () => {
       expect(await axe(container)).toHaveNoViolations();
     },
   );
+});
+
+/**
+ * Feature 011 / T091 (SC-005). The 10 viewBox-responsive illustration primitives
+ * and the EmbeddedVideoBlock facade — scanned directly, not just through a lesson.
+ */
+const illustrationCases: Array<[string, React.ReactElement]> = [
+  ['PlaceValueBlocks', <PlaceValueBlocks title="Nilai tempat 45" tens={4} ones={5} />],
+  ['NumberLineStrip', <NumberLineStrip title="Garis bilangan 0-10" min={0} max={10} highlightValues={[7]} />],
+  ['FractionShape', <FractionShape title="Tiga per empat" numerator={3} denominator={4} />],
+  ['ArrayGrid', <ArrayGrid title="3 baris 4 kolom" rows={3} cols={4} />],
+  ['ShapeFigure', <ShapeFigure title="Segitiga" shape="segitiga" />],
+  ['BarChartMini', <BarChartMini title="Buah favorit" data={[{ label: 'Apel', value: 5 }, { label: 'Jeruk', value: 3 }]} />],
+  ['ClockFace', <ClockFace title="Pukul 3:30" hour={3} minute={30} />],
+  ['MoneyStack', <MoneyStack title="Uang kertas" denominations={[{ value: 2000, count: 3 }]} />],
+  ['PatternRow', <PatternRow title="Pola bentuk" items={['circle', 'square', 'circle']} highlightIndex={2} />],
+  ['MeasureRuler', <MeasureRuler title="Panjang pensil" lengthUnits={4} unitLabel="cm" />],
+];
+
+describe('a11y scan — illustration primitives + EmbeddedVideoBlock (T091)', () => {
+  it.each(illustrationCases)('%s has zero axe violations', async (_name, element) => {
+    const { container } = wrap(element);
+    expect(await axe(container)).toHaveNoViolations();
+  });
+
+  it('EmbeddedVideoBlock (State 1) has zero axe violations', async () => {
+    const { container } = wrap(
+      <EmbeddedVideoBlock
+        title="Video Pecahan"
+        externalId="dQw4w9WgXcQ"
+        publisherName="Contoh Edukasi"
+        posterImageUrl="/assets/lessons/sd/kelas-4/x-poster.svg"
+        transcriptText="Transkrip video dalam Bahasa Indonesia."
+        durationSeconds={240}
+      />,
+    );
+    expect(await axe(container)).toHaveNoViolations();
+  });
 });

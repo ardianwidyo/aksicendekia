@@ -10,7 +10,8 @@
     "build:tokens": "pnpm --filter @aksicendekia/design-tokens build",
     "lint": "pnpm --filter \"*\" lint",
     "test": "pnpm --filter \"*\" test",
-    "verify:video-embeds": "tsx scripts/verify-video-embeds.ts"
+    "verify:video-embeds": "tsx scripts/verify-video-embeds.ts",
+    "generate:sd-assets": "tsx scripts/generate-sd-assets.ts"
   },
   "devDependencies": {
     "@aksicendekia/content-kit": "workspace:*",

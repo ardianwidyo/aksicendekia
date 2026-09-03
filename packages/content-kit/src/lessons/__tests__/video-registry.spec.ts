@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { getVideoEmbed, buildVideoRegistry, VIDEO_REGISTRY } from '../video-registry';
-import type { VideoEmbedRef } from '../../schema/video-embed.schema';
+import { videoEmbedRefSchema, type VideoEmbedRef } from '../../schema/video-embed.schema';
+import { SD_LESSONS } from '../sd/index';
 
 /**
  * T015 — written before video-registry.ts exists — must fail first (Constitution III).
@@ -45,9 +46,21 @@ describe('getVideoEmbed', () => {
     expect(getVideoEmbed('does-not-exist', registry)).toBeUndefined();
   });
 
-  it('defaults to the real VIDEO_REGISTRY when no registry argument is given', () => {
-    // Empty until US3 (T083) populates it from the real lesson catalog.
+  it('defaults to the real VIDEO_REGISTRY, populated from the 60 SD lessons (T083)', () => {
+    const ids = Object.keys(VIDEO_REGISTRY);
+    expect(ids).toHaveLength(60);
     expect(getVideoEmbed('anything')).toBeUndefined();
-    expect(VIDEO_REGISTRY).toEqual({});
+    // every entry resolves and passes the ref schema
+    for (const id of ids) {
+      const ref = getVideoEmbed(id)!;
+      expect(ref.id).toBe(id);
+      expect(videoEmbedRefSchema.safeParse(ref).success, `${id} invalid`).toBe(true);
+    }
+  });
+
+  it('has exactly one registry row per SD lesson id (yt-<lessonId>)', () => {
+    for (const lesson of SD_LESSONS) {
+      expect(VIDEO_REGISTRY[`yt-${lesson.id}`], `${lesson.id} has no video`).toBeDefined();
+    }
   });
 });

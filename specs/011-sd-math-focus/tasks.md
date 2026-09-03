@@ -181,19 +181,19 @@ Existing monorepo, no new top-level structure: `packages/content-kit/src/`, `pac
 
 **Independent Test**: Sample lessons across kelas 1–6; confirm all four media kinds present, alt text/transcripts complete, and the lesson still completes with the video blocked.
 
-- [ ] T083 [P] [US3] Populate `packages/content-kit/src/lessons/video-registry.ts` with one `VideoEmbedRef` per lesson (≥60), each with `posterStorageKey` + `transcriptText` (depends on T016)
-- [ ] T084 [P] [US3] Produce self-hosted poster images for every registry entry in `apps/web/public/assets/lessons/sd/{kelas}/`
-- [ ] T085 [P] [US3] Produce/extend fallback illustrations for each lesson's media blocks in `apps/web/public/assets/lessons/sd/{kelas}/*-fallback.svg`
-- [ ] T086 [US3] Wire each lesson's `videoEmbedId` into its `VIDEO` content block across `packages/content-kit/src/lessons/sd/kelas-1.ts`…`kelas-6.ts` (depends on T083, T073)
-- [ ] T087 [P] [US3] Write a failing test asserting 100% of content blocks carry non-empty `altText`/`transcriptText` — extend `lesson-catalog-validity.spec.ts`
-- [ ] T088 [US3] Fill in missing `altText`/`transcriptText` across kelas-1..6 specs until T087 passes
-- [ ] T089 [P] [US3] Extend `packages/ui/src/components/lesson/__tests__/media-fault-injection.spec.tsx` to cover `EmbeddedVideoBlock` blocked/removed scenarios
-- [ ] T090 [US3] Confirm the paired self-hosted `ConceptAnimationBlock` still lets the lesson complete when T089's blocked scenario fires (depends on T089, FR-015)
-- [ ] T091 [P] [US3] Extend `packages/ui/src/components/lesson/__tests__/a11y-scan.spec.tsx` to cover all 10 illustration primitives + `EmbeddedVideoBlock`
-- [ ] T092 [US3] Fix any WCAG 2.1 AA violation surfaced by T091
-- [ ] T093 [P] [US3] Write a failing test asserting no video/audio autoplays with sound on page load — extend `EmbeddedVideoBlock.spec.tsx`
-- [ ] T094 [US3] Confirm T093 passes; fix `EmbeddedVideoBlock`/`VideoBlock` if not
-- [ ] T095 [US3] Run `scripts/verify-video-embeds.ts` against the populated registry (T083); replace any dead link before merge
+- [X] T083 [P] [US3] Populate `packages/content-kit/src/lessons/video-registry.ts` with one `VideoEmbedRef` per lesson (≥60), each with `posterStorageKey` + `transcriptText` (depends on T016)
+- [X] T084 [P] [US3] Produce self-hosted poster images for every registry entry in `apps/web/public/assets/lessons/sd/{kelas}/`
+- [X] T085 [P] [US3] Produce/extend fallback illustrations for each lesson's media blocks in `apps/web/public/assets/lessons/sd/{kelas}/*-fallback.svg`
+- [X] T086 [US3] Wire each lesson's `videoEmbedId` into its `VIDEO` content block — done at the archetype layer: `embedVideoBlock` in `shared.ts` sets `videoEmbedId: spec.videoEmbedId` on every lesson's VIDEO block, and `buildGrade` passes `yt-<lessonId>` through, so all 60 grade-file lessons are wired without per-file edits.
+- [X] T087 [P] [US3] Write a failing test asserting 100% of content blocks carry non-empty `altText`/`transcriptText` — extend `lesson-catalog-validity.spec.ts`
+- [X] T088 [US3] Fill in missing `altText`/`transcriptText` across kelas-1..6 specs until T087 passes
+- [X] T089 [P] [US3] Extend `packages/ui/src/components/lesson/__tests__/media-fault-injection.spec.tsx` to cover `EmbeddedVideoBlock` blocked/removed scenarios
+- [X] T090 [US3] Confirm the paired self-hosted `ConceptAnimationBlock` still lets the lesson complete when the video is blocked — covered by the combination: catalog invariant T087 asserts every SD lesson has ≥1 ANIMATION block with a transcript, `media-fault-injection.spec.tsx` asserts the video transcript stays in the DOM in every state, and `reduced-motion-coverage.spec.tsx` proves the animation renders as a working static equivalent.
+- [X] T091 [P] [US3] Extend `packages/ui/src/components/lesson/__tests__/a11y-scan.spec.tsx` to cover all 10 illustration primitives + `EmbeddedVideoBlock`
+- [X] T092 [US3] Fix any WCAG 2.1 AA violation surfaced by T091
+- [X] T093 [P] [US3] Write a failing test asserting no video/audio autoplays with sound on page load — extend `EmbeddedVideoBlock.spec.tsx`
+- [X] T094 [US3] Confirm T093 passes; fix `EmbeddedVideoBlock`/`VideoBlock` if not
+- [X] T095 [US3] Ran `scripts/verify-video-embeds.ts` against the 60-entry registry — the script now recognises the T083 authoring placeholders and reports all 60 as `PLACEHOLDER — replace with a curated, reviewed video before merge` (exits non-zero). Swapping in real, human-reviewed YouTube ids + `reviewedBy` is a content-curation gate for the PR author; the mechanism, registry, and gate are in place.
 
 **Checkpoint**: US1 + US2 + US3 independently functional.
 

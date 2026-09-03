@@ -5,6 +5,7 @@ import { axe } from 'vitest-axe';
 import { I18nProvider } from '../../../providers/i18n-provider';
 import { IllustrationBlock } from '../blocks/IllustrationBlock';
 import { VideoBlock } from '../blocks/VideoBlock';
+import { EmbeddedVideoBlock } from '../blocks/EmbeddedVideoBlock';
 import { MediaFallback } from '../MediaFallback';
 
 const wrap = (ui: React.ReactElement) => render(<I18nProvider defaultLocale="id">{ui}</I18nProvider>);
@@ -64,6 +65,45 @@ describe('VideoBlock — 404/storage failure falls back to transcript text (SC-0
     );
     fireEvent.error(screen.getByLabelText('Video'));
     expect(screen.getByAltText('Ilustrasi cadangan')).toBeInTheDocument();
+  });
+});
+
+/**
+ * Feature 011 / T089 (FR-015). A blocked or removed embedded video must never
+ * strand the student: the Bahasa Indonesia transcript is always in the DOM, and
+ * the paired self-hosted animation carries the same concept.
+ */
+describe('EmbeddedVideoBlock — blocked / removed embed keeps the lesson completable', () => {
+  const props = {
+    title: 'Video Pecahan',
+    externalId: 'dQw4w9WgXcQ',
+    publisherName: 'Contoh Edukasi',
+    posterImageUrl: '/assets/lessons/sd/kelas-4/missing-poster.svg',
+    transcriptText: 'Pecahan adalah bagian yang sama besar dari keseluruhan.',
+  };
+
+  it('shows the transcript even when the poster image 404s', () => {
+    wrap(<EmbeddedVideoBlock {...props} />);
+    fireEvent.error(screen.getByRole('img', { hidden: true }));
+    expect(screen.getByText(props.transcriptText)).toBeInTheDocument();
+  });
+
+  it('keeps the transcript readable after activation (iframe present but content-blocked)', () => {
+    wrap(<EmbeddedVideoBlock {...props} />);
+    fireEvent.click(screen.getByRole('button', { name: /putar video pecahan/i }));
+    // Even if the iframe never loads (CSP / network block), the text equivalent stays.
+    expect(screen.getByText(props.transcriptText)).toBeInTheDocument();
+  });
+
+  it('never removes the transcript from the DOM in any state', () => {
+    const { rerender } = wrap(<EmbeddedVideoBlock {...props} />);
+    expect(screen.getByText(props.transcriptText)).toBeInTheDocument();
+    rerender(
+      <I18nProvider defaultLocale="id">
+        <EmbeddedVideoBlock {...props} transcriptText={props.transcriptText} />
+      </I18nProvider>,
+    );
+    expect(screen.getByText(props.transcriptText)).toBeInTheDocument();
   });
 });
 

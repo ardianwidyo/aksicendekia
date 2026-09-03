@@ -21,7 +21,26 @@ interface CheckResult {
   reason?: string;
 }
 
+/**
+ * T083/T095 authoring placeholders: `externalId` derived from the lesson id and
+ * padded with `_`. These are NOT real YouTube ids — media production replaces
+ * each with a curated, human-reviewed video before merge (SC-012).
+ */
+function isPlaceholderId(externalId: string): boolean {
+  // Not a well-formed YouTube id, or clearly derived from a lesson id
+  // (`sd-…`, `…-k4-…`, padded with `_`).
+  return (
+    !/^[A-Za-z0-9_-]{11}$/.test(externalId) ||
+    externalId.includes('_') ||
+    externalId.startsWith('sd-') ||
+    /-k[1-6]-/.test(externalId)
+  );
+}
+
 async function checkOne(ref: VideoEmbedRef): Promise<CheckResult> {
+  if (isPlaceholderId(ref.externalId)) {
+    return { ref, ok: false, reason: 'PLACEHOLDER id — replace with a curated, reviewed video before merge' };
+  }
   const url = `${OEMBED_ENDPOINT}?url=${encodeURIComponent(
     `https://www.youtube.com/watch?v=${ref.externalId}`,
   )}&format=json`;

@@ -1,4 +1,5 @@
 import type { VideoEmbedRef } from '../schema/video-embed.schema.js';
+import { SD_VIDEO_REFS } from './sd/index.js';
 
 /**
  * Feature 011 — the registry of embedded third-party (YouTube) videos
@@ -6,10 +7,11 @@ import type { VideoEmbedRef } from '../schema/video-embed.schema.js';
  * `LessonBlockInput.videoEmbedId` resolves to its metadata without ever
  * carrying a bare URL through the authoring layer.
  *
- * Populated from kelas-1..6 lesson specs as they're authored (Phase 5 / US3,
- * T083) via `buildVideoRegistry` — each kelas module supplies its own list of
- * `VideoEmbedRef`s, mirroring how `lessons/catalog.ts` aggregates lessons.
- * Empty here in Foundational: no lesson content exists yet at this phase.
+ * T083 (US3): populated from the 60 kelas-1..6 lesson specs — each grade file
+ * supplies its own list of `VideoEmbedRef`s (via `buildGrade`), aggregated in
+ * `sd/index.ts` as `SD_VIDEO_REFS`, mirroring how `lessons/catalog.ts`
+ * aggregates lessons. Real YouTube ids + curated `reviewedBy` land during media
+ * production; the CI link-rot check is `scripts/verify-video-embeds.ts` (T095).
  */
 
 /** Pure — builds a registry from a flat list, rejecting duplicate ids up front. */
@@ -26,7 +28,7 @@ export function buildVideoRegistry(
   return registry;
 }
 
-export const VIDEO_REGISTRY: Record<string, VideoEmbedRef> = buildVideoRegistry([]);
+export const VIDEO_REGISTRY: Record<string, VideoEmbedRef> = buildVideoRegistry(SD_VIDEO_REFS);
 
 export function getVideoEmbed(
   id: string,
