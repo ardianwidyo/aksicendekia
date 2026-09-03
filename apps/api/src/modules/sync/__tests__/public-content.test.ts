@@ -1,7 +1,14 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { EducationStage, ContentStatus, QuestionType } from "@prisma/client";
+import { resetFocusConfigCache } from "@aksicendekia/content-kit";
 import { createMockPrismaClient } from "../../../__tests__/mock-prisma.js";
 import { buildApp } from "../../../app.js";
+
+// Feature 011: focus-config caches its env-derived value at module scope
+// (by design — it must stay a pure, uncached-per-call read for
+// generateStaticParams). Reset it before every test in this file so no test
+// leaks a `enabled:false` (or a stale `true`) into the next one.
+beforeEach(() => resetFocusConfigCache());
 
 describe("Public Content API (Feature 009 - US1)", () => {
   let mockPrisma: any;
@@ -37,10 +44,13 @@ describe("Public Content API (Feature 009 - US1)", () => {
   });
 
   it("GET /api/v1/public/lessons/:id harus mengembalikan detail pelajaran dengan butir soal dan kunci jawaban", async () => {
+    // Feature 011: subjectCode must be MATH_SD, not an arbitrary non-Math
+    // subject — with focus mode on by default, anything else is correctly
+    // hidden (FR-002), and this test is about the response shape, not focus.
     const subject = await mockPrisma.subject.create({
       data: {
-        code: "IPA_SD",
-        name: "IPA SD",
+        code: "MATH_SD",
+        name: "Matematika SD",
         educationStage: EducationStage.SD,
         phase: "FASE_A",
         status: ContentStatus.PUBLISHED,
@@ -194,5 +204,364 @@ describe("Public Content API (Feature 009 - US1)", () => {
     } finally {
       delete process.env.CONTENT_PREVIEW_INCLUDE_REVIEW;
     }
+  });
+});
+
+describe("Public Content API — focus mode filtering (Feature 011 / FR-002)", () => {
+  let mockPrisma: any;
+  let app: any;
+
+  beforeEach(async () => {
+    mockPrisma = createMockPrismaClient();
+    app = buildApp(mockPrisma);
+    resetFocusConfigCache();
+  });
+
+  afterEach(() => {
+    delete process.env.NEXT_PUBLIC_FOCUS_ENABLED;
+    delete process.env.FOCUS_ENABLED;
+    resetFocusConfigCache();
+  });
+
+  it("GET /api/v1/public/subjects hides an out-of-focus stage/subject even when explicitly requested", async () => {
+    await mockPrisma.subject.create({
+      data: {
+        code: "NUMERASI_TK",
+        name: "Numerasi TK",
+        educationStage: EducationStage.TK,
+        phase: "FOUNDATION",
+        status: ContentStatus.PUBLISHED,
+      },
+    });
+
+    const res = await app.inject({ method: "GET", url: "/api/v1/public/subjects?stage=TK" });
+    expect(res.statusCode).toBe(200);
+    const body = JSON.parse(res.body);
+    expect(body.subjects).toEqual([]);
+  });
+
+  it("GET /api/v1/public/subjects still returns SD Matematika when focus is on (default)", async () => {
+    await mockPrisma.subject.create({
+      data: {
+        code: "MATH_SD",
+        name: "Matematika SD",
+        educationStage: EducationStage.SD,
+        phase: "FASE_A",
+        status: ContentStatus.PUBLISHED,
+      },
+    });
+
+    const res = await app.inject({ method: "GET", url: "/api/v1/public/subjects?stage=SD" });
+    expect(res.statusCode).toBe(200);
+    const body = JSON.parse(res.body);
+    expect(body.subjects.length).toBeGreaterThan(0);
+  });
+
+  it("GET /api/v1/public/units/:unitId/lessons hides lessons under an out-of-focus subject", async () => {
+    const subject = await mockPrisma.subject.create({
+      data: {
+        code: "MATH_SMP",
+        name: "Matematika SMP",
+        educationStage: EducationStage.SMP,
+        phase: "FASE_D",
+        status: ContentStatus.PUBLISHED,
+      },
+    });
+    const unit = await mockPrisma.unit.create({
+      data: { subjectId: subject.id, title: "Aljabar", orderIndex: 1, status: ContentStatus.PUBLISHED },
+    });
+    await mockPrisma.lesson.create({
+      data: {
+        unitId: unit.id,
+        title: "Persamaan Linear",
+        summary: "s",
+        learningObjective: "lo",
+        educationStage: EducationStage.SMP,
+        phase: "FASE_D",
+        difficultyLevel: "BEGINNER",
+        estimatedDurationMinutes: 10,
+        orderIndex: 0,
+        status: ContentStatus.PUBLISHED,
+      },
+    });
+
+    const res = await app.inject({ method: "GET", url: `/api/v1/public/units/${unit.id}/lessons` });
+    expect(res.statusCode).toBe(200);
+    expect(JSON.parse(res.body).lessons).toEqual([]);
+  });
+
+  it("mematikan mode fokus (NEXT_PUBLIC_FOCUS_ENABLED=false) mengembalikan seluruh jenjang", async () => {
+    process.env.NEXT_PUBLIC_FOCUS_ENABLED = "false";
+    await mockPrisma.subject.create({
+      data: {
+        code: "NUMERASI_TK",
+        name: "Numerasi TK",
+        educationStage: EducationStage.TK,
+        phase: "FOUNDATION",
+        status: ContentStatus.PUBLISHED,
+      },
+    });
+
+    const res = await app.inject({ method: "GET", url: "/api/v1/public/subjects?stage=TK" });
+    const body = JSON.parse(res.body);
+    expect(body.subjects.length).toBeGreaterThan(0);
+  });
+
+  it("GET /api/v1/public/lessons/:id hides a lesson whose own educationStage is out of focus", async () => {
+    const lesson = await mockPrisma.lesson.create({
+      data: {
+        unitId: "unit-tk",
+        title: "Mengenal Angka",
+        summary: "s",
+        learningObjective: "lo",
+        educationStage: EducationStage.TK,
+        phase: "FOUNDATION",
+        difficultyLevel: "BEGINNER",
+        estimatedDurationMinutes: 10,
+        orderIndex: 0,
+        status: ContentStatus.PUBLISHED,
+      },
+    });
+
+    const res = await app.inject({ method: "GET", url: `/api/v1/public/lessons/${lesson.id}` });
+    expect(res.statusCode).toBe(404);
+  });
+
+  it("GET /api/v1/public/lessons/:id hydrates payload.videoEmbed for a VIDEO block with videoEmbedId", async () => {
+    await mockPrisma.videoEmbed.create({
+      data: {
+        id: "yt-x",
+        provider: "YOUTUBE",
+        externalId: "dQw4w9WgXcQ",
+        title: "Video Contoh",
+        publisherName: "Contoh Edukasi",
+        posterStorageKey: "assets/lessons/sd/kelas-4/x-poster.svg",
+        transcriptText: "Transkrip.",
+        verifiedAt: new Date("2026-09-02"),
+        reviewedBy: "guru@aksicendekia.id",
+      },
+    });
+
+    const lesson = await mockPrisma.lesson.create({
+      data: {
+        unitId: "unit-video",
+        title: "Pecahan",
+        summary: "s",
+        learningObjective: "lo",
+        educationStage: EducationStage.SD,
+        phase: "FASE_B",
+        difficultyLevel: "BEGINNER",
+        estimatedDurationMinutes: 10,
+        orderIndex: 0,
+        status: ContentStatus.PUBLISHED,
+      },
+    });
+
+    await mockPrisma.lessonContentBlock.create({
+      data: {
+        id: `${lesson.id}-video`,
+        lessonId: lesson.id,
+        orderIndex: 0,
+        blockType: "VIDEO",
+        payload: {},
+        videoEmbedId: "yt-x",
+        status: ContentStatus.PUBLISHED,
+      },
+    });
+
+    const res = await app.inject({ method: "GET", url: `/api/v1/public/lessons/${lesson.id}` });
+    expect(res.statusCode).toBe(200);
+    const body = JSON.parse(res.body);
+    const videoBlock = body.contentBlocks.find((b: { blockType: string }) => b.blockType === "VIDEO");
+    expect(videoBlock.payload.videoEmbed).toMatchObject({
+      externalId: "dQw4w9WgXcQ",
+      title: "Video Contoh",
+      posterUrl: "/assets/lessons/sd/kelas-4/x-poster.svg",
+    });
+    expect(videoBlock.payload.videoEmbed.reviewedBy).toBeUndefined();
+  });
+});
+
+describe("Public Content API — GET /api/v1/public/lessons?gradeLevel= (Feature 011 / T076 / FR-010)", () => {
+  let mockPrisma: any;
+  let app: any;
+
+  beforeEach(async () => {
+    mockPrisma = createMockPrismaClient();
+    app = buildApp(mockPrisma);
+    resetFocusConfigCache();
+
+    for (let grade = 1; grade <= 6; grade++) {
+      for (let i = 0; i < 3; i++) {
+        await mockPrisma.lesson.create({
+          data: {
+            unitId: `unit-MATH_SD-k${grade}`,
+            title: `Kelas ${grade} Pelajaran ${i}`,
+            summary: "s",
+            learningObjective: "lo",
+            educationStage: EducationStage.SD,
+            phase: grade <= 2 ? "FASE_A" : grade <= 4 ? "FASE_B" : "FASE_C",
+            gradeLevel: grade,
+            difficultyLevel: "BEGINNER",
+            estimatedDurationMinutes: 12,
+            orderIndex: 2 - i, // reversed on purpose
+            status: ContentStatus.PUBLISHED,
+            listing: "LISTED",
+          },
+        });
+      }
+    }
+  });
+
+  afterEach(() => resetFocusConfigCache());
+
+  it("returns the lessons for one grade, ordered by orderIndex", async () => {
+    const res = await app.inject({ method: "GET", url: "/api/v1/public/lessons?gradeLevel=3" });
+    expect(res.statusCode).toBe(200);
+    const body = JSON.parse(res.body);
+    expect(body.gradeLevel).toBe(3);
+    expect(body.lessons).toHaveLength(3);
+    expect(body.lessons.every((l: { gradeLevel: number }) => l.gradeLevel === 3)).toBe(true);
+    expect(body.lessons.map((l: { orderIndex: number }) => l.orderIndex)).toEqual([0, 1, 2]);
+  });
+
+  it("400s when gradeLevel is missing", async () => {
+    const res = await app.inject({ method: "GET", url: "/api/v1/public/lessons" });
+    expect(res.statusCode).toBe(400);
+  });
+
+  it("400s when gradeLevel is out of the 1-6 range", async () => {
+    expect((await app.inject({ method: "GET", url: "/api/v1/public/lessons?gradeLevel=0" })).statusCode).toBe(400);
+    expect((await app.inject({ method: "GET", url: "/api/v1/public/lessons?gradeLevel=7" })).statusCode).toBe(400);
+    expect((await app.inject({ method: "GET", url: "/api/v1/public/lessons?gradeLevel=abc" })).statusCode).toBe(400);
+  });
+
+  it("returns an empty list (not an error) for a grade with no lessons", async () => {
+    const fresh = createMockPrismaClient();
+    const freshApp = buildApp(fresh);
+    const res = await freshApp.inject({ method: "GET", url: "/api/v1/public/lessons?gradeLevel=5" });
+    expect(res.statusCode).toBe(200);
+    expect(JSON.parse(res.body).lessons).toEqual([]);
+  });
+});
+
+describe("Public Content API — guest vs registered payload parity (Feature 011 / T117 / FR-027)", () => {
+  let mockPrisma: any;
+  let app: any;
+  let source: any;
+
+  beforeEach(async () => {
+    const kit = await import("@aksicendekia/content-kit");
+    resetFocusConfigCache();
+    mockPrisma = createMockPrismaClient();
+    app = buildApp(mockPrisma);
+
+    source = kit.SD_LESSONS.find((l: any) => l.id === "sd-mtk-k4-04");
+    const ref = kit.getVideoEmbed(`yt-${source.id}`)!;
+
+    await mockPrisma.curriculumAchievement.upsert({
+      where: { id: source.curriculumAchievementId },
+      create: {
+        educationStage: EducationStage.SD,
+        phase: source.phase,
+        subjectCode: "MATH_SD",
+        element: "Bilangan",
+        achievementText: "x".repeat(40),
+        sourceDocument: "SK BSKAP 032/2024",
+        sourceUrl: "https://kurikulummerdeka.com/x",
+        retrievedAt: new Date("2026-09-02"),
+      },
+      update: {},
+    });
+    await mockPrisma.videoEmbed.create({
+      data: {
+        id: ref.id,
+        provider: "YOUTUBE",
+        externalId: ref.externalId,
+        title: ref.title,
+        publisherName: ref.publisherName,
+        posterStorageKey: ref.posterStorageKey,
+        transcriptText: ref.transcriptText,
+        verifiedAt: new Date(ref.verifiedAt),
+      },
+    });
+    const lesson = await mockPrisma.lesson.create({
+      data: {
+        unitId: "unit-MATH_SD-k4",
+        title: source.title,
+        summary: source.summary,
+        learningObjective: source.learningObjective,
+        educationStage: EducationStage.SD,
+        phase: source.phase,
+        gradeLevel: source.gradeLevel,
+        difficultyLevel: source.difficultyLevel,
+        estimatedDurationMinutes: source.estimatedDurationMinutes,
+        orderIndex: source.orderIndex,
+        status: ContentStatus.PUBLISHED,
+        listing: "LISTED",
+      },
+    });
+    lesson.curriculumAchievementId = source.curriculumAchievementId;
+    source._seededId = lesson.id;
+
+    for (let i = 0; i < source.contentBlocks.length; i++) {
+      const b = source.contentBlocks[i];
+      await mockPrisma.lessonContentBlock.create({
+        data: {
+          id: `${lesson.id}-b${i}`,
+          lessonId: lesson.id,
+          orderIndex: i,
+          blockType: b.blockType,
+          payload: b.payload,
+          transcriptText: b.transcriptText ?? null,
+          altText: b.altText ?? null,
+          narrationText: b.narrationText ?? null,
+          videoEmbedId: b.videoEmbedId ?? null,
+          status: ContentStatus.PUBLISHED,
+        },
+      });
+    }
+    for (let i = 0; i < source.questions.length; i++) {
+      const q = source.questions[i];
+      await mockPrisma.questionItem.create({
+        data: {
+          id: q.id,
+          lessonId: lesson.id,
+          questionType: q.questionType as QuestionType,
+          promptText: q.promptText,
+          contentPayload: q.contentPayload,
+          explanation: q.explanation,
+          orderIndex: i,
+          status: ContentStatus.PUBLISHED,
+        },
+      });
+    }
+  });
+
+  afterEach(() => resetFocusConfigCache());
+
+  it("the registered API returns the same content the guest catalog holds", async () => {
+    const res = await app.inject({ method: "GET", url: `/api/v1/public/lessons/${source._seededId}` });
+    expect(res.statusCode).toBe(200);
+    const body = JSON.parse(res.body);
+
+    expect(body.title).toBe(source.title);
+    expect(body.summary).toBe(source.summary);
+    expect(body.learningObjective).toBe(source.learningObjective);
+    expect(body.gradeLevel).toBe(source.gradeLevel);
+    expect(body.phase).toBe(source.phase);
+    expect(body.contentBlocks.map((b: any) => b.blockType)).toEqual(
+      source.contentBlocks.map((b: any) => b.blockType),
+    );
+    expect(body.questionItems).toHaveLength(source.questions.length);
+    expect(new Set(body.questionItems.map((q: any) => q.id))).toEqual(new Set(source.questions.map((q: any) => q.id)));
+
+    const apiVideo = body.contentBlocks.find((b: any) => b.blockType === "VIDEO");
+    expect(apiVideo.payload.videoEmbed).toMatchObject({
+      provider: "YOUTUBE",
+      externalId: expect.any(String),
+      transcriptText: expect.any(String),
+    });
+    expect(apiVideo.payload.videoEmbed).not.toHaveProperty("reviewedBy");
   });
 });

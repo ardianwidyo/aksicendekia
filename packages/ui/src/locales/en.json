@@ -98,11 +98,26 @@
     "media": {
       "fallbackNote": "Media could not load. Here is a short explanation."
     },
+    "embeddedVideo": {
+      "play": "Play {title}",
+      "duration": "Duration {duration}",
+      "publisher": "Source: {publisher}",
+      "transcriptLabel": "Transcript",
+      "comingSoon": "The lesson video is coming soon"
+    },
     "feedback": {
       "correct": "Exactly right!",
       "incorrect": "Not quite, try again.",
       "showHint": "Show hint",
       "showExplanation": "Show explanation"
     }
+  },
+  "focus": {
+    "title": "Available for SD Mathematics only",
+    "dashboardBody": "Focus mode is on, so only SD-stage Mathematics student data is shown. Data for other stages returns once focus mode is turned off.",
+    "missionMapBody": "The mission map only shows SD Mathematics material while focus mode is on.",
+    "leaderboardBody": "The leaderboard only counts SD Mathematics material while focus mode is on.",
+    "achievementsBody": "Achievements are only counted from SD Mathematics material while focus mode is on.",
+    "catalogBody": "The catalog is limited to SD Mathematics while focus mode is on."
   }
 }

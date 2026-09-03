@@ -1,6 +1,35 @@
 import { PrismaClient, EducationStage, CurriculumPhase, ContentStatus, DifficultyLevel, QuestionType } from "@prisma/client";
+import { widgetCatalogSeedRows } from "@aksicendekia/content-kit";
+import { seedInteractiveContent } from "./seed-interactive-content";
 
 const prisma = new PrismaClient();
+
+/** T065 — mirror the code-owned widget catalog into interactive_widget_types (display/filter only). */
+async function seedWidgetCatalog(): Promise<void> {
+  for (const widget of widgetCatalogSeedRows()) {
+    await prisma.interactiveWidgetType.upsert({
+      where: { id: widget.id },
+      update: {
+        displayName: widget.displayName,
+        description: widget.description,
+        paramsSchema: widget.paramsSchema as object,
+        supportStatus: widget.supportStatus,
+        catalogVersion: widget.catalogVersion,
+        a11yNotes: widget.a11yNotes,
+      },
+      create: {
+        id: widget.id,
+        displayName: widget.displayName,
+        description: widget.description,
+        paramsSchema: widget.paramsSchema as object,
+        supportStatus: widget.supportStatus,
+        catalogVersion: widget.catalogVersion,
+        a11yNotes: widget.a11yNotes,
+      },
+    });
+  }
+  console.log("  ✓ widget catalog rows upserted");
+}
 
 async function main() {
   console.log("🌱 Starting seed database for AksiCendekia Feature 003...");
@@ -326,6 +355,15 @@ async function main() {
 
   console.log("✅ Seed SMA Data Completed: 1 Subject, 1 Unit, 3 Lessons, 30 Questions");
   console.log("🎉 Total Seed Completed: 3 Subjects, 3 Units, 9 Lessons, 90 Questions (All PUBLISHED with hints & explanations)!");
+
+  // Feature 010 — interactive lesson content. Runs after the Feature 003 seed above
+  // (which truncates subjects/units/lessons) so the 12 interactive lessons and their
+  // curriculum achievements/widget catalog mirror survive. seedInteractiveContent()
+  // seeds curriculum achievements internally (must precede lessons — gate C3).
+  console.log("🌱 Seeding Feature 010 interactive lesson content...");
+  await seedWidgetCatalog();
+  await seedInteractiveContent();
+  console.log("🎉 Feature 010 seed complete: widget catalog + 12 interactive lessons at REVIEW.");
 }
 
 main()

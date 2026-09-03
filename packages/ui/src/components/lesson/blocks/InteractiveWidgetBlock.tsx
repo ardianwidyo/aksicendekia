@@ -1,8 +1,9 @@
 'use client';
 
-import React from 'react';
+import React, { Suspense } from 'react';
 import { resolveWidget } from '../../interactive/registry';
 import { UnsupportedWidgetFallback } from '../UnsupportedWidgetFallback';
+import { SkeletonState } from '../../states/SkeletonState';
 
 export interface InteractiveWidgetBlockProps {
   widgetType: string;
@@ -13,9 +14,11 @@ export interface InteractiveWidgetBlockProps {
 }
 
 /**
- * Feature 010 / FR-002, FR-009. Resolves a widget from the registry, validates
- * its params against the catalog schema, and renders the component — or a
- * graceful fallback for unknown / deprecated / invalid widgets. Never throws.
+ * Feature 010 / FR-002, FR-009, FR-006a (T087). Resolves a widget from the registry,
+ * validates its params against the catalog schema, and renders the component — or a
+ * graceful fallback for unknown / deprecated / invalid widgets. Never throws. The
+ * widget itself is a React.lazy chunk (see registry.ts); <Suspense> shows a
+ * SkeletonState while that chunk loads instead of blocking the rest of the lesson.
  */
 export const InteractiveWidgetBlock: React.FC<InteractiveWidgetBlockProps> = ({
   widgetType,
@@ -34,5 +37,9 @@ export const InteractiveWidgetBlock: React.FC<InteractiveWidgetBlockProps> = ({
   }
 
   const Widget = entry.component;
-  return <Widget params={parsed.data as never} onInteract={onInteract} />;
+  return (
+    <Suspense fallback={<SkeletonState variant="generic" />}>
+      <Widget params={parsed.data as never} onInteract={onInteract} />
+    </Suspense>
+  );
 };

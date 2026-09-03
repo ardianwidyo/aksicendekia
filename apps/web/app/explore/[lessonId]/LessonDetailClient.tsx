@@ -6,19 +6,35 @@ import { Card, Button, useTheme, LessonContentRenderer, type RenderableBlock } f
 import { BookOpen, Sparkles, Clock, Target, ArrowLeft, Play, Award, ArrowUpRight } from 'lucide-react';
 import Link from 'next/link';
 import { useGuestProgress } from '@/lib/context/guest-progress-context';
+import { isWebStageInFocus, isSubjectInFocus, focusRedirectPath } from '@/lib/focus';
 
-import { getGuestLessonFallback, getInteractiveLesson } from '@/lib/guest-lessons';
-
-/** Map a content-kit / public-API block into the renderer's RenderableBlock. */
-function toRenderableBlocks(raw: any[]): RenderableBlock[] {
+/**
+ * Map a content-kit / public-API block into the renderer's RenderableBlock.
+ *
+ * Two shapes reach here: the public API folds `mediaStorageKey`/`imageUrl` etc.
+ * INTO `block.payload` at seed time (see apps/api/prisma/seed-interactive-content.ts
+ * blockPayload()); the local Guest Mode fallback (content-kit's raw
+ * LessonBlockInput) carries those same fields at the TOP LEVEL of the block,
+ * sibling to `payload`, never inside it. Check both so guest fallback lessons
+ * resolve their media the same way API-backed ones do.
+ */
+export function toRenderableBlocks(raw: any[]): RenderableBlock[] {
   if (!Array.isArray(raw)) return [];
   return raw.map((b, i) => {
     const src = b.payload ?? b;
     const payload: Record<string, unknown> = { ...src };
-    if (src.mediaStorageKey && !payload.imageUrl) payload.imageUrl = `/${src.mediaStorageKey}`;
-    if (src.fallbackStorageKey) payload.fallbackImageUrl = `/${src.fallbackStorageKey}`;
+    const mediaKey = src.mediaStorageKey ?? b.mediaStorageKey;
+    const fallbackKey = src.fallbackStorageKey ?? b.fallbackStorageKey;
+    const captionKey = src.captionStorageKey ?? b.captionStorageKey;
+    if (mediaKey && !payload.imageUrl) payload.imageUrl = `/${mediaKey}`;
+    if (fallbackKey && !payload.fallbackImageUrl) payload.fallbackImageUrl = `/${fallbackKey}`;
+    if (captionKey && !payload.captionUrl) payload.captionUrl = `/${captionKey}`;
     if (b.altText && !payload.altText) payload.altText = b.altText;
     if (b.transcriptText && !payload.transcriptText) payload.transcriptText = b.transcriptText;
+    // Feature 011 — parametric illustration primitive (top-level on the raw
+    // content-kit block, or already folded into payload by the API/seed).
+    const primitive = src.illustrationPrimitive ?? b.illustrationPrimitive;
+    if (primitive && !payload.illustrationPrimitive) payload.illustrationPrimitive = primitive;
     return {
       id: b.id ?? `b${i}`,
       blockType: b.blockType,
@@ -45,14 +61,19 @@ export default function LessonDetailClient() {
         const res = await fetch(`http://localhost:4000/api/v1/public/lessons/${lessonId}`);
         if (res.ok) {
           setLesson(await res.json());
-        } else {
-          setLesson(getInteractiveLesson(lessonId) ?? getGuestLessonFallback(lessonId, gradeLevel));
+          setLoading(false);
+          return;
         }
       } catch {
-        setLesson(getInteractiveLesson(lessonId) ?? getGuestLessonFallback(lessonId, gradeLevel));
-      } finally {
-        setLoading(false);
+        // fall through to the local content-kit fallback below
       }
+
+      // T088 (SC-004/SC-006): the local lesson catalog (content-kit's 12 lessons +
+      // legacy guest fixtures) is only imported here, on demand, so the initial
+      // page bundle doesn't carry it when the public API answers successfully.
+      const { getInteractiveLesson, getGuestLessonFallback } = await import('@/lib/guest-lessons');
+      setLesson(getInteractiveLesson(lessonId) ?? getGuestLessonFallback(lessonId, gradeLevel));
+      setLoading(false);
     }
 
     if (lessonId) {
@@ -60,13 +81,28 @@ export default function LessonDetailClient() {
     }
   }, [lessonId, gradeLevel]);
 
+  // Feature 011 (FR-005, R3): every lesson id stays in generateStaticParams so
+  // old links never 404, but an out-of-focus lesson bounces to the catalog once
+  // its metadata has loaded rather than rendering off-focus content.
+  const [redirecting, setRedirecting] = useState(false);
+  useEffect(() => {
+    if (!lesson) return;
+    const stageOk = isWebStageInFocus(String(lesson.educationStage ?? ''));
+    const subjectCode = lesson.subjectCode ?? lesson.subject?.code;
+    const subjectOk = subjectCode ? isSubjectInFocus(String(subjectCode)) : true;
+    if (!stageOk || !subjectOk) {
+      setRedirecting(true);
+      router.replace(focusRedirectPath());
+    }
+  }, [lesson, router]);
+
   const isCompleted = state?.curriculumProgress.completedLessonIds.includes(lessonId) || false;
   const bestScore = state?.curriculumProgress.lessonScores[lessonId]?.bestScore;
 
-  if (loading) {
+  if (loading || redirecting) {
     return (
       <div className="text-center py-16 text-on-surface-variant text-sm">
-        Memuat detail pelajaran...
+        {redirecting ? 'Mengalihkan ke katalog Matematika SD…' : 'Memuat detail pelajaran...'}
       </div>
     );
   }

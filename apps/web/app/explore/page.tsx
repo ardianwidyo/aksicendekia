@@ -5,7 +5,8 @@ import { Card, Button, ProgressBar, useTheme, useI18n } from '@aksicendekia/ui';
 import { BookOpen, CheckCircle, ArrowRight, Sparkles, Clock } from 'lucide-react';
 import Link from 'next/link';
 import { useGuestProgress } from '../../lib/context/guest-progress-context';
-import { listExploreLessons } from '../../lib/guest-lessons';
+import { listExploreLessons, listSdGradeCatalog } from '../../lib/guest-lessons';
+import { filterStageOptions } from '../../lib/focus';
 
 interface LessonSummary {
   id: string;
@@ -42,6 +43,31 @@ const STAGES = [
  * always the case for the static-export production build.
  */
 function buildCatalogFromContentKit(stageUpper: string): SubjectSummary[] {
+  // Feature 011 (T080): SD Matematika is grouped into one unit per kelas 1-6.
+  if (stageUpper === 'SD') {
+    const groups = listSdGradeCatalog().filter((g) => g.lessons.length > 0);
+    if (groups.length === 0) return [];
+    return [
+      {
+        id: 'subject-SD',
+        code: 'MATH_SD',
+        name: 'Matematika SD',
+        units: groups.map((g) => ({
+          id: `unit-SD-k${g.gradeLevel}`,
+          title: `Kelas ${g.gradeLevel}`,
+          description: `Materi interaktif Matematika Kelas ${g.gradeLevel} — konsep, animasi, dan latihan.`,
+          lessons: g.lessons.map((l) => ({
+            id: l.id,
+            title: l.title,
+            summary: l.summary,
+            difficultyLevel: l.difficultyLevel,
+            estimatedDurationMinutes: l.estimatedDurationMinutes,
+          })),
+        })),
+      },
+    ];
+  }
+
   const lessons = listExploreLessons(stageUpper);
   if (lessons.length === 0) return [];
   const bySubject = new Map<string, LessonSummary[]>();
@@ -78,6 +104,15 @@ export default function ExplorePage() {
   const { state } = useGuestProgress();
   const [subjects, setSubjects] = useState<SubjectSummary[]>([]);
   const [loading, setLoading] = useState(true);
+  const visibleStages = filterStageOptions(STAGES);
+
+  // Focus mode (FR-002): if the active stage was filtered out, snap to an
+  // in-focus one so the catalog never fetches an off-focus jenjang.
+  useEffect(() => {
+    if (visibleStages.length > 0 && !visibleStages.some((s) => s.id === gradeLevel)) {
+      setGradeLevel(visibleStages[0].id as any);
+    }
+  }, [gradeLevel, visibleStages, setGradeLevel]);
 
   useEffect(() => {
     async function fetchSubjects() {
@@ -118,9 +153,12 @@ export default function ExplorePage() {
           </p>
         </div>
 
-        {/* Level Selector Tabs */}
-        <div className="flex flex-wrap gap-1.5 p-1 bg-surface-container rounded-2xl border border-outline/15">
-          {STAGES.map((s) => {
+        {/* Level Selector Tabs — hidden entirely when focus mode leaves one stage (FR-002) */}
+        <div
+          className="flex flex-wrap gap-1.5 p-1 bg-surface-container rounded-2xl border border-outline/15"
+          hidden={visibleStages.length <= 1}
+        >
+          {visibleStages.map((s) => {
             const active = gradeLevel === s.id;
             return (
               <button
@@ -165,12 +203,25 @@ export default function ExplorePage() {
               </div>
 
               <div className="grid grid-cols-1 gap-4">
-                {subject.units.map((unit) => (
-                  <Card key={unit.id} variant="surface" padding="md" className="space-y-4 border border-outline/15">
-                    <div>
-                      <h3 className="text-base font-bold text-on-surface">{unit.title}</h3>
-                      {unit.description && (
-                        <p className="text-xs text-on-surface-variant mt-0.5">{unit.description}</p>
+                {subject.units.map((unit, unitIndex) => {
+                  const unitDone =
+                    unit.lessons.length > 0 &&
+                    unit.lessons.every((l) => completedLessonIds.includes(l.id));
+                  const nextUnit = subject.units[unitIndex + 1];
+                  return (
+                  <Card key={unit.id} id={unit.id} variant="surface" padding="md" className="space-y-4 border border-outline/15">
+                    <div className="flex items-center justify-between gap-2">
+                      <div>
+                        <h3 className="text-base font-bold text-on-surface">{unit.title}</h3>
+                        {unit.description && (
+                          <p className="text-xs text-on-surface-variant mt-0.5">{unit.description}</p>
+                        )}
+                      </div>
+                      {unitDone && (
+                        <span className="flex items-center gap-1 text-xs font-bold text-emerald-600 dark:text-emerald-400 shrink-0">
+                          <CheckCircle className="w-4 h-4" />
+                          Tuntas
+                        </span>
                       )}
                     </div>
 
@@ -221,8 +272,19 @@ export default function ExplorePage() {
                         );
                       })}
                     </div>
+
+                    {unitDone && nextUnit && (
+                      <a
+                        href={`#${nextUnit.id}`}
+                        className="flex items-center justify-center gap-2 mt-1 min-h-[44px] rounded-xl bg-primary/10 text-primary text-sm font-bold hover:bg-primary/15 transition-colors"
+                      >
+                        Lanjut ke {nextUnit.title}
+                        <ArrowRight className="w-4 h-4" />
+                      </a>
+                    )}
                   </Card>
-                ))}
+                  );
+                })}
               </div>
             </div>
           ))}

@@ -52,14 +52,14 @@ export * from './components/guest/guest-feature-gate';
 export * from './hooks/use-reduced-motion';
 export * from './hooks/use-speech-synthesis';
 export * from './components/a11y/ListenButton';
+// T087 (SC-004/SC-006): the 7 widget components are deliberately NOT re-exported
+// here. Each is a React.lazy() chunk behind registry.ts / InteractiveWidgetBlock;
+// re-exporting the concrete component from this barrel would make it reachable via
+// a synchronous import path too, which defeats webpack's code-splitting for it (a
+// module reachable both statically and dynamically gets bundled into the static
+// chunk). Import a specific widget directly from its file if you need it outside
+// the registry (as the tests under components/interactive/__tests__ do).
 export * from './components/interactive/registry';
-export * from './components/interactive/StepRevealExplainer';
-export * from './components/interactive/ParameterExplorer';
-export * from './components/interactive/NumberLineExplorer';
-export * from './components/interactive/FractionBarBuilder';
-export * from './components/interactive/ImageHotspot';
-export * from './components/interactive/SortIntoGroups';
-export * from './components/interactive/AnimatedWorkedExample';
 export * from './components/lesson/LessonContentRenderer';
 export * from './components/lesson/MediaFallback';
 export * from './components/lesson/UnsupportedWidgetFallback';
@@ -67,4 +67,21 @@ export * from './components/lesson/blocks/RichTextBlock';
 export * from './components/lesson/blocks/IllustrationBlock';
 export * from './components/lesson/blocks/ConceptAnimationBlock';
 export * from './components/lesson/blocks/VideoBlock';
+export * from './components/lesson/blocks/EmbeddedVideoBlock';
 export * from './components/lesson/blocks/InteractiveWidgetBlock';
+export * from './components/question/DragDropGroupingQuestion';
+export * from './components/question/NumberLinePlacementQuestion';
+export * from './components/question/InteractiveFeedback';
+export * from './components/interactive/usePlacementInput';
+export * from './components/layout/ScrollableWide';
+export * from './components/illustration/PlaceValueBlocks';
+export * from './components/illustration/NumberLineStrip';
+export * from './components/illustration/FractionShape';
+export * from './components/illustration/ArrayGrid';
+export * from './components/illustration/ShapeFigure';
+export * from './components/illustration/BarChartMini';
+export * from './components/illustration/ClockFace';
+export * from './components/illustration/MoneyStack';
+export * from './components/illustration/PatternRow';
+export * from './components/illustration/MeasureRuler';
+export * from './components/illustration/IllustrationPrimitiveRenderer';

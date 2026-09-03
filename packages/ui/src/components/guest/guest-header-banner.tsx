@@ -64,7 +64,6 @@ export const GuestHeaderBanner: React.FC<GuestHeaderBannerProps> = ({
           {isIncognito && (
             <div
               className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/25 rounded-full text-xs font-medium"
-              title={t('guest.incognito.warning') || 'Mode Penyamaran'}
             >
               <AlertCircle className="w-3.5 h-3.5" />
               <span>Mode Penyamaran</span>
@@ -95,6 +94,21 @@ export const GuestHeaderBanner: React.FC<GuestHeaderBannerProps> = ({
           )}
         </div>
       </div>
+
+      {/* Feature 011 / FR-030 — the "progress not saved" notice stays visible at
+          every viewport (including 320px portrait), not only on large screens. */}
+      {isIncognito && (
+        <div
+          role="status"
+          className="max-w-7xl mx-auto mt-2 flex items-start gap-2 rounded-lg bg-amber-500/10 border border-amber-500/25 px-3 py-2 text-xs font-medium text-amber-700 dark:text-amber-300"
+        >
+          <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" aria-hidden />
+          <span>
+            Kemajuan tidak tersimpan.{' '}
+            {t('guest.incognito.warning') || 'Kamu memakai mode penyamaran; buat akun untuk menyimpan permanen.'}
+          </span>
+        </div>
+      )}
     </header>
   );
 };

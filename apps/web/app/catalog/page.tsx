@@ -97,11 +97,15 @@ export default function CatalogPage() {
     )},
   ];
 
+  // Feature 011 (T081): the Matematika SD catalog is grouped by kelas 1-6 — the
+  // component showcase mirrors that grouping so the DataTable demo stays honest.
   const tableData = [
-    { code: 'AC-SD-001', title: 'Penjumlahan Bilangan Cendekia', subject: 'Matematika', grade: 'SD (Fase A)', status: 'Published' },
-    { code: 'AC-SD-002', title: 'Petualangan Karakter Pancasila', subject: 'PPKn', grade: 'SD (Fase B)', status: 'Draft' },
-    { code: 'AC-SMP-101', title: 'Eksperimen Gaya dan Gerak', subject: 'IPA', grade: 'SMP (Fase D)', status: 'Published' },
-    { code: 'AC-SMA-201', title: 'Persamaan Kuadrat Lanjutan', subject: 'Matematika', grade: 'SMA (Fase E)', status: 'Draft' },
+    { code: 'sd-mtk-k1-01', title: 'Puluhan dan Satuan sampai 20', subject: 'Matematika', grade: 'SD · Kelas 1', status: 'Review' },
+    { code: 'sd-mtk-k2-04', title: 'Perkalian sebagai Penjumlahan Berulang', subject: 'Matematika', grade: 'SD · Kelas 2', status: 'Review' },
+    { code: 'sd-matematika-01', title: 'Nilai Tempat sampai Ratusan', subject: 'Matematika', grade: 'SD · Kelas 3', status: 'Review' },
+    { code: 'sd-mtk-k4-04', title: 'Pecahan sebagai Bagian dari Keseluruhan', subject: 'Matematika', grade: 'SD · Kelas 4', status: 'Review' },
+    { code: 'sd-mtk-k5-03', title: 'Membandingkan Pecahan dan Menyederhanakan', subject: 'Matematika', grade: 'SD · Kelas 5', status: 'Review' },
+    { code: 'sd-mtk-k6-02', title: 'Bilangan Bulat Positif dan Negatif', subject: 'Matematika', grade: 'SD · Kelas 6', status: 'Review' },
   ];
 
   const catalogContent = (

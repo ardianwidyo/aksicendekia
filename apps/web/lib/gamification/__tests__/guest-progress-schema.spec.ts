@@ -59,3 +59,57 @@ describe('GuestProgressStateSchema (Feature 009 - US2)', () => {
     expect(() => GuestProgressStateSchema.parse(invalidState)).toThrow();
   });
 });
+
+describe('GuestProgressStateSchema — Feature 011 / T115 (60-lesson SD catalog)', () => {
+  const base = {
+    guestId: 'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d',
+    schemaVersion: 1,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    profile: { displayName: 'Siswa', educationStage: 'SD', gradeLevel: 4, avatarId: 'avatar_kancil' },
+    gamification: {
+      totalXp: 3000,
+      currentLevel: 8,
+      streak: { currentStreak: 10, longestStreak: 12, lastActivityDate: '2026-09-03', activityHistory: [] },
+      unlockedBadgeIds: [],
+    },
+    recentSessions: [],
+    isMigrated: false,
+    migratedToUserId: null,
+  };
+
+  const sixtyIds = Array.from({ length: 60 }, (_, i) => {
+    const grade = Math.floor(i / 10) + 1;
+    const n = String((i % 10) + 1).padStart(2, '0');
+    return `sd-mtk-k${grade}-${n}`;
+  });
+
+  it('persists all 60 SD lesson ids + per-lesson scores without a cap', () => {
+    const state = {
+      ...base,
+      curriculumProgress: {
+        completedLessonIds: sixtyIds,
+        completedModuleIds: [],
+        lessonScores: Object.fromEntries(
+          sixtyIds.map((id) => [id, { bestScore: 90, attempts: 1, lastCompletedAt: new Date().toISOString(), timeSpentSeconds: 200 }]),
+        ),
+      },
+    };
+    const parsed = GuestProgressStateSchema.parse(state);
+    expect(parsed.curriculumProgress.completedLessonIds).toHaveLength(60);
+    expect(Object.keys(parsed.curriculumProgress.lessonScores)).toHaveLength(60);
+  });
+
+  it('carries the 60 ids through a registration migration (isMigrated + migratedToUserId)', () => {
+    const migrated = {
+      ...base,
+      isMigrated: true,
+      migratedToUserId: 'user-123',
+      curriculumProgress: { completedLessonIds: sixtyIds, completedModuleIds: [], lessonScores: {} },
+    };
+    const parsed = GuestProgressStateSchema.parse(migrated);
+    expect(parsed.isMigrated).toBe(true);
+    expect(parsed.migratedToUserId).toBe('user-123');
+    expect(parsed.curriculumProgress.completedLessonIds).toEqual(sixtyIds);
+  });
+});

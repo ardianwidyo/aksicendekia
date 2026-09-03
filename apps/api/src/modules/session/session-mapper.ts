@@ -42,8 +42,22 @@ export function toClientQuestionDTO(question: QuestionItemRecord): ClientQuestio
 
     dto.matchingItemsLeft = leftItems;
     dto.matchingItemsRight = shuffledRight;
+  } else if (question.questionType === 'DRAG_DROP_GROUPING') {
+    dto.dragDropItems = (payload.items || []).map((it: any) => ({
+      id: it.id,
+      label: it.label,
+      illustrationAssetId: it.illustrationAssetId ?? null,
+    }));
+    dto.dragDropGroups = (payload.groups || []).map((g: any) => ({ id: g.id, label: g.label }));
+    dto.requireAllPlaced = payload.requireAllPlaced ?? payload.require_all_placed ?? true;
+  } else if (question.questionType === 'NUMBER_LINE') {
+    dto.numberLineMin = payload.min;
+    dto.numberLineMax = payload.max;
+    dto.numberLineStep = payload.step;
+    dto.numberLineMarkers = payload.markers ?? [];
   }
 
-  // NOTE: STRICTLY OMIT correct_option_id, accepted_answers, matching_mode, matching_pairs, explanation
+  // NOTE: STRICTLY OMIT correct_option_id, accepted_answers, matching_mode, matching_pairs,
+  // correctMapping, targetValue, tolerance, explanation.
   return dto;
 }

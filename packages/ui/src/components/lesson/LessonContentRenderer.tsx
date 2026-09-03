@@ -6,6 +6,7 @@ import { RichTextBlock } from './blocks/RichTextBlock';
 import { IllustrationBlock } from './blocks/IllustrationBlock';
 import { ConceptAnimationBlock } from './blocks/ConceptAnimationBlock';
 import { VideoBlock } from './blocks/VideoBlock';
+import { EmbeddedVideoBlock } from './blocks/EmbeddedVideoBlock';
 import { InteractiveWidgetBlock } from './blocks/InteractiveWidgetBlock';
 
 export type RenderableBlockType =
@@ -53,6 +54,11 @@ export const LessonContentRenderer: React.FC<LessonContentRendererProps> = ({
                 altText={String(p.altText ?? '')}
                 caption={p.caption ? String(p.caption) : undefined}
                 fallbackText={p.fallbackText ? String(p.fallbackText) : undefined}
+                primitive={
+                  p.illustrationPrimitive as
+                    | { name: string; props: Record<string, unknown> }
+                    | undefined
+                }
               />
             );
             break;
@@ -67,8 +73,20 @@ export const LessonContentRenderer: React.FC<LessonContentRendererProps> = ({
               />
             );
             break;
-          case 'VIDEO':
-            body = (
+          case 'VIDEO': {
+            // Feature 011 — a block carries at most one of `videoEmbed`
+            // (third-party, click-to-load) or `videoUrl` (self-hosted).
+            const embed = p.videoEmbed as VideoEmbedPayload | undefined;
+            body = embed ? (
+              <EmbeddedVideoBlock
+                title={embed.title}
+                externalId={embed.externalId}
+                publisherName={embed.publisherName}
+                posterImageUrl={embed.posterUrl}
+                transcriptText={embed.transcriptText}
+                durationSeconds={embed.durationSeconds}
+              />
+            ) : (
               <VideoBlock
                 title={String(p.title ?? '')}
                 videoUrl={String(p.videoUrl ?? '')}
@@ -78,6 +96,7 @@ export const LessonContentRenderer: React.FC<LessonContentRendererProps> = ({
               />
             );
             break;
+          }
           case 'INTERACTIVE_WIDGET': {
             const widget = (p.widget ?? {}) as { widgetType?: string; params?: unknown };
             body = (
@@ -113,3 +132,13 @@ export const LessonContentRenderer: React.FC<LessonContentRendererProps> = ({
 };
 
 type ConceptAnimationBlockSteps = Array<{ atMs: number; caption: string; frame: string }>;
+
+/** Feature 011 — shape of `payload.videoEmbed`, matching contracts/public-api.md. */
+interface VideoEmbedPayload {
+  externalId: string;
+  title: string;
+  publisherName: string;
+  posterUrl: string;
+  transcriptText: string;
+  durationSeconds?: number;
+}

@@ -5,6 +5,17 @@ export interface ClientQuestionOption {
   text: string;
 }
 
+export interface ClientDragDropItem {
+  id: string;
+  label: string;
+  illustrationAssetId?: string | null;
+}
+
+export interface ClientDragDropGroup {
+  id: string;
+  label: string;
+}
+
 export interface ClientQuestionDTO {
   id: string;
   type: QuestionType;
@@ -12,6 +23,16 @@ export interface ClientQuestionDTO {
   options?: ClientQuestionOption[];
   matchingItemsLeft?: string[];
   matchingItemsRight?: string[];
+  // DRAG_DROP_GROUPING (contracts/interactive-questions.contract.md §2) — correctMapping
+  // is STRICTLY OMITTED, same anti-cheat rule as the other question types above.
+  dragDropItems?: ClientDragDropItem[];
+  dragDropGroups?: ClientDragDropGroup[];
+  requireAllPlaced?: boolean;
+  // NUMBER_LINE (§3) — targetValue and tolerance are STRICTLY OMITTED.
+  numberLineMin?: number;
+  numberLineMax?: number;
+  numberLineStep?: number;
+  numberLineMarkers?: number[];
   availableHintsCount: number;
 }
 
@@ -25,6 +46,9 @@ export interface AnswerEvaluationResultDTO {
     acceptedAnswers?: string[];
     matchingPairs?: Record<string, string>;
     matchingMode?: string;
+    correctMapping?: Record<string, string>;
+    targetValue?: number;
+    tolerance?: number;
   };
   sessionProgress: {
     currentIndex: number;

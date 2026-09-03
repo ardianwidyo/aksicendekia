@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button, Card, ProgressBar, Modal } from '@aksicendekia/ui';
 import { apiFetch } from '../../../lib/api-fetch';
+import { FocusScopeNotice } from '../../../components/FocusScopeNotice';
 
 interface DailyChallengeData {
   id: string;
@@ -194,6 +195,7 @@ export default function LeaderboardPage() {
   return (
     <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto space-y-8">
+        <FocusScopeNotice variant="leaderboardBody" className="mb-2" />
         {/* Navigation & Header */}
         <div className="flex items-center justify-between">
           <div>

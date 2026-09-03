@@ -10,6 +10,21 @@ export class AppError extends Error {
   }
 }
 
+export class BadRequestError extends AppError {
+  constructor(message: string = "Permintaan tidak valid", code: string = "BAD_REQUEST") {
+    super(message, 400, code);
+  }
+}
+
+export class UnprocessableEntityError extends AppError {
+  public readonly violations?: unknown;
+
+  constructor(message: string, code: string = "UNPROCESSABLE_ENTITY", violations?: unknown) {
+    super(message, 422, code);
+    this.violations = violations;
+  }
+}
+
 export class UnauthorizedError extends AppError {
   constructor(message: string = "Autentikasi gagal atau token tidak valid", code: string = "UNAUTHORIZED") {
     super(message, 401, code);

@@ -278,4 +278,173 @@ describe("Curriculum Module (Feature 003)", () => {
       expect(detailUnlocked.questionItems[0].promptText).toBe("Soal Rahasia Pelajaran 2");
     });
   });
+
+  describe("5. Feature 010 — Tautan Capaian Pembelajaran (FR-008a, gate C3)", () => {
+    it("membuat pelajaran dengan curriculumAchievementId tertaut", async () => {
+      const achievement = await mockPrisma.curriculumAchievement.create({
+        data: {
+          educationStage: EducationStage.SD,
+          phase: CurriculumPhase.FASE_B,
+          subjectCode: "MATH_SD",
+          element: "Bilangan",
+          achievementText: "Kutipan",
+          sourceDocument: "Dok",
+          sourceUrl: "https://kurikulum.kemdikbud.go.id/x",
+          retrievedAt: new Date(),
+        },
+      });
+      const subject = await service.createSubject({
+        code: "MATH_SD2",
+        name: "Matematika SD",
+        educationStage: EducationStage.SD,
+        phase: CurriculumPhase.FASE_B,
+      });
+      const unit = await service.createUnit({ subjectId: subject.id, title: "Unit 1", orderIndex: 1 });
+
+      const lesson = await service.createLesson({
+        unitId: unit.id,
+        title: "Pelajaran Bertaut CP",
+        summary: "Ringkasan",
+        learningObjective: "Tujuan",
+        educationStage: EducationStage.SD,
+        phase: CurriculumPhase.FASE_B,
+        difficultyLevel: DifficultyLevel.BEGINNER,
+        estimatedDurationMinutes: 20,
+        orderIndex: 1,
+        curriculumAchievementId: achievement.id,
+      });
+
+      const fetched = await service.getLesson(lesson.id);
+      expect((fetched as any).curriculumAchievementId).toBe(achievement.id);
+    });
+
+    it("menautkan curriculumAchievementId lewat updateLesson pada pelajaran DRAFT", async () => {
+      const achievement = await mockPrisma.curriculumAchievement.create({
+        data: {
+          educationStage: EducationStage.SD,
+          phase: CurriculumPhase.FASE_B,
+          subjectCode: "MATH_SD",
+          element: "Aljabar",
+          achievementText: "Kutipan lain",
+          sourceDocument: "Dok",
+          sourceUrl: "https://kurikulum.kemdikbud.go.id/y",
+          retrievedAt: new Date(),
+        },
+      });
+      const subject = await service.createSubject({
+        code: "MATH_SD3",
+        name: "Matematika SD",
+        educationStage: EducationStage.SD,
+        phase: CurriculumPhase.FASE_B,
+      });
+      const unit = await service.createUnit({ subjectId: subject.id, title: "Unit 1", orderIndex: 1 });
+      const lesson = await service.createLesson({
+        unitId: unit.id,
+        title: "Pelajaran Tanpa CP",
+        summary: "Ringkasan",
+        learningObjective: "Tujuan",
+        educationStage: EducationStage.SD,
+        phase: CurriculumPhase.FASE_B,
+        difficultyLevel: DifficultyLevel.BEGINNER,
+        estimatedDurationMinutes: 20,
+        orderIndex: 1,
+      });
+
+      const updated = await service.updateLesson(lesson.id, { curriculumAchievementId: achievement.id });
+      expect((updated as any).curriculumAchievementId).toBe(achievement.id);
+    });
+  });
+});
+
+describe("Curriculum Coverage Report (Feature 011 / T078 / FR-011)", () => {
+  let mockPrisma: any;
+  let service: CurriculumService;
+
+  const ELEMENTS: Record<string, string> = {
+    bilangan: "cp-fase-a-matematika-bilangan",
+    aljabar: "cp-fase-a-matematika-aljabar",
+    pengukuran: "cp-fase-a-matematika-pengukuran",
+    geometri: "cp-fase-a-matematika-geometri",
+    data: "cp-fase-a-matematika-data-peluang",
+  };
+
+  async function seedLesson(gradeLevel: number, cpId: string, i: number, over: Record<string, unknown> = {}) {
+    return mockPrisma.lesson.create({
+      data: {
+        title: `k${gradeLevel} lesson ${i}`,
+        summary: "s",
+        learningObjective: "lo",
+        educationStage: EducationStage.SD,
+        phase: CurriculumPhase.FASE_A,
+        difficultyLevel: DifficultyLevel.BEGINNER,
+        estimatedDurationMinutes: 12,
+        orderIndex: i,
+        status: ContentStatus.REVIEW,
+        listing: "LISTED",
+        gradeLevel,
+        curriculumAchievementId: cpId,
+        ...over,
+      },
+    });
+  }
+
+  /** Fill one grade with 10 LISTED lessons spanning all 5 elements. */
+  async function seedFullGrade(gradeLevel: number) {
+    const cps = Object.values(ELEMENTS);
+    for (let i = 0; i < 10; i++) {
+      await seedLesson(gradeLevel, cps[i % cps.length], i);
+    }
+  }
+
+  beforeEach(() => {
+    mockPrisma = createMockPrismaClient();
+    const repo = new CurriculumRepository(mockPrisma);
+    service = new CurriculumService(repo, new CsvImportService());
+  });
+
+  it("returns a per-grade report for kelas 1-6", async () => {
+    const report = await service.getCurriculumCoverage();
+    expect(report.coverage.map((g) => g.gradeLevel)).toEqual([1, 2, 3, 4, 5, 6]);
+  });
+
+  it("flags meetsMinimum: false with elementsMissing when a grade is empty", async () => {
+    const report = await service.getCurriculumCoverage();
+    const k1 = report.coverage.find((g) => g.gradeLevel === 1)!;
+    expect(k1.lessonCount).toBe(0);
+    expect(k1.meetsMinimum).toBe(false);
+    expect(k1.elementsMissing).toEqual([
+      "Bilangan",
+      "Aljabar",
+      "Pengukuran",
+      "Geometri",
+      "Analisis Data dan Peluang",
+    ]);
+    expect(report.overallMeetsMinimum).toBe(false);
+  });
+
+  it("reports meetsMinimum: true once a grade has >= 10 LISTED lessons covering all 5 elements", async () => {
+    await seedFullGrade(3);
+    const report = await service.getCurriculumCoverage();
+    const k3 = report.coverage.find((g) => g.gradeLevel === 3)!;
+    expect(k3.lessonCount).toBe(10);
+    expect(k3.elementsMissing).toEqual([]);
+    expect(k3.meetsMinimum).toBe(true);
+  });
+
+  it("does not count PUBLISHED-only... i.e. counts REVIEW lessons and ignores non-LISTED", async () => {
+    await seedFullGrade(2);
+    await seedLesson(2, ELEMENTS.bilangan, 99, { listing: "HIDDEN_LEGACY" });
+    const report = await service.getCurriculumCoverage();
+    const k2 = report.coverage.find((g) => g.gradeLevel === 2)!;
+    expect(k2.lessonCount).toBe(10); // the HIDDEN_LEGACY one is excluded
+  });
+
+  it("still flags a grade with 10 lessons but a missing element", async () => {
+    for (let i = 0; i < 10; i++) await seedLesson(4, ELEMENTS.bilangan, i);
+    const report = await service.getCurriculumCoverage();
+    const k4 = report.coverage.find((g) => g.gradeLevel === 4)!;
+    expect(k4.lessonCount).toBe(10);
+    expect(k4.elementsMissing).toContain("Geometri");
+    expect(k4.meetsMinimum).toBe(false);
+  });
 });

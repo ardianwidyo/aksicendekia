@@ -2,13 +2,21 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Card, Button, ProgressBar, TactileOptionButton, TextInput, useTheme } from '@aksicendekia/ui';
+import {
+  Card,
+  Button,
+  ProgressBar,
+  TactileOptionButton,
+  TextInput,
+  useTheme,
+  DragDropGroupingQuestion,
+  NumberLinePlacementQuestion,
+  ListenButton,
+} from '@aksicendekia/ui';
 import { Sparkles, HelpCircle, CheckCircle, XCircle, ArrowRight, RotateCcw, Award } from 'lucide-react';
 import { LocalSessionEngine } from '@/lib/gamification/local-session-engine';
 import { useGuestProgress } from '@/lib/context/guest-progress-context';
 import { GuestSessionAnswerRecord } from '@/lib/gamification/guest-progress.schema';
-
-import { getGuestLessonFallback } from '@/lib/guest-lessons';
 
 export default function GuestSessionClient() {
   const params = useParams();
@@ -37,14 +45,18 @@ export default function GuestSessionClient() {
         if (res.ok) {
           const data = await res.json();
           setLesson(data);
-        } else {
-          setLesson(getGuestLessonFallback(lessonId, gradeLevel));
+          setLoading(false);
+          return;
         }
       } catch {
-        setLesson(getGuestLessonFallback(lessonId, gradeLevel));
-      } finally {
-        setLoading(false);
+        // fall through to the local content-kit fallback below
       }
+
+      // T088 (SC-004/SC-006): deferred so the initial bundle doesn't carry the full
+      // local lesson catalog when the public API answers successfully.
+      const { getGuestLessonFallback } = await import('@/lib/guest-lessons');
+      setLesson(getGuestLessonFallback(lessonId, gradeLevel));
+      setLoading(false);
     }
 
     if (lessonId) {
@@ -136,11 +148,28 @@ export default function GuestSessionClient() {
         {/* Question Prompt */}
         <div className="space-y-2">
           <span className="text-xs font-bold px-2.5 py-1 bg-primary/10 text-primary rounded-full uppercase tracking-wider">
-            {currentQuestion.questionType === 'MULTIPLE_CHOICE' ? 'Pilihan Ganda' : 'Isian Singkat'}
+            {
+              {
+                MULTIPLE_CHOICE: 'Pilihan Ganda',
+                SHORT_ANSWER: 'Isian Singkat',
+                MATCHING_PAIRS: 'Mencocokkan Pasangan',
+                DRAG_DROP_GROUPING: 'Kelompokkan Objek',
+                NUMBER_LINE: 'Garis Bilangan',
+              }[currentQuestion.questionType as string] ?? currentQuestion.questionType
+            }
           </span>
-          <h2 className="text-lg md:text-xl font-heading font-bold text-on-surface leading-relaxed">
-            {currentQuestion.promptText}
-          </h2>
+          <div className="flex items-start gap-2">
+            <h2 className="text-lg md:text-xl font-heading font-bold text-on-surface leading-relaxed flex-1">
+              {currentQuestion.promptText}
+            </h2>
+            {/* Feature 011 / T109 (FR-024) — kelas 1-2 questions carry a narration; expose a listen control. */}
+            {currentQuestion.contentPayload?.narrationText && (
+              <ListenButton
+                text={String(currentQuestion.contentPayload.narrationText)}
+                className="shrink-0"
+              />
+            )}
+          </div>
         </div>
 
         {/* Question Input Area */}
@@ -163,6 +192,7 @@ export default function GuestSessionClient() {
                   <TactileOptionButton
                     key={opt.id}
                     label={opt.text}
+                    illustrationUrl={opt.illustrationAssetId ? `/${opt.illustrationAssetId}` : undefined}
                     status={state}
                     disabled={isAnswerChecked}
                     onClick={() => setSelectedAnswer(opt.id)}
@@ -188,6 +218,30 @@ export default function GuestSessionClient() {
                 }
               />
             </div>
+          )}
+
+          {currentQuestion.questionType === 'DRAG_DROP_GROUPING' && (
+            <DragDropGroupingQuestion
+              items={currentQuestion.contentPayload.items || []}
+              groups={currentQuestion.contentPayload.groups || []}
+              placements={selectedAnswer?.placements || {}}
+              onPlacementsChange={(placements) => setSelectedAnswer({ placements })}
+              disabled={isAnswerChecked}
+              correctMapping={isAnswerChecked ? currentQuestion.contentPayload.correctMapping : undefined}
+            />
+          )}
+
+          {currentQuestion.questionType === 'NUMBER_LINE' && (
+            <NumberLinePlacementQuestion
+              min={currentQuestion.contentPayload.min ?? 0}
+              max={currentQuestion.contentPayload.max ?? 10}
+              step={currentQuestion.contentPayload.step ?? 1}
+              markers={currentQuestion.contentPayload.markers}
+              value={typeof selectedAnswer === 'number' ? selectedAnswer : null}
+              onChange={(value) => setSelectedAnswer(value)}
+              disabled={isAnswerChecked}
+              targetValue={isAnswerChecked ? currentQuestion.contentPayload.targetValue : undefined}
+            />
           )}
         </div>
 
@@ -247,7 +301,13 @@ export default function GuestSessionClient() {
               variant="primary"
               size="lg"
               onClick={handleCheckAnswer}
-              disabled={!selectedAnswer && selectedAnswer !== 0}
+              disabled={
+                currentQuestion.questionType === 'DRAG_DROP_GROUPING'
+                  ? (currentQuestion.contentPayload.items || []).some(
+                      (it: any) => !selectedAnswer?.placements?.[it.id],
+                    )
+                  : !selectedAnswer && selectedAnswer !== 0
+              }
             >
               Periksa Jawaban
             </Button>
