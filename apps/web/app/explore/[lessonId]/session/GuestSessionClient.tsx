@@ -44,18 +44,23 @@ export default function GuestSessionClient() {
         const res = await fetch(`http://localhost:4000/api/v1/public/lessons/${lessonId}`);
         if (res.ok) {
           const data = await res.json();
-          setLesson(data);
-          setLoading(false);
-          return;
+          if (Array.isArray(data?.questionItems) && data.questionItems.length > 0) {
+            setLesson(data);
+            setLoading(false);
+            return;
+          }
         }
       } catch {
-        // fall through to the local content-kit fallback below
+        // fall through to the local content-kit catalog below
       }
 
-      // T088 (SC-004/SC-006): deferred so the initial bundle doesn't carry the full
-      // local lesson catalog when the public API answers successfully.
-      const { getGuestLessonFallback } = await import('@/lib/guest-lessons');
-      setLesson(getGuestLessonFallback(lessonId, gradeLevel));
+      // Feature 011 — the 60 SD Matematika lessons (kelas 1-6) live in
+      // @aksicendekia/content-kit with their full >=10-question banks. Resolve
+      // those FIRST; only fall back to the legacy guest fixtures for the 3 old
+      // sample ids (matches LessonDetailClient). Deferred import so the initial
+      // bundle stays lean when the public API answers.
+      const { getInteractiveLesson, getGuestLessonFallback } = await import('@/lib/guest-lessons');
+      setLesson(getInteractiveLesson(lessonId) ?? getGuestLessonFallback(lessonId, gradeLevel));
       setLoading(false);
     }
 
