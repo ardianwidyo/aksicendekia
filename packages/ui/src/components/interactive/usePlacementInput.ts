@@ -19,6 +19,8 @@ import { useCallback, useState } from 'react';
 export interface UsePlacementInputResult {
   /** The item currently awaiting a target, or null when nothing is selected. */
   selectedId: string | null;
+  /** Clear or force the current selection (e.g. after an out-of-band change like un-placing). */
+  setSelectedId: (id: string | null) => void;
   getItemProps: (itemId: string) => {
     'aria-pressed': boolean;
     onClick: () => void;
@@ -97,5 +99,5 @@ export function usePlacementInput(
     [onPlace, placeAt],
   );
 
-  return { selectedId, getItemProps, getTargetProps };
+  return { selectedId, setSelectedId, getItemProps, getTargetProps };
 }

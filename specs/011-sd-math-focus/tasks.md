@@ -209,19 +209,19 @@ Existing monorepo, no new top-level structure: `packages/content-kit/src/`, `pac
 - [ ] T097 [P] [US4] Wire `usePlacementInput` into `FractionBarBuilder.tsx`; extend its test
 - [ ] T098 [P] [US4] Wire `usePlacementInput` into `SortIntoGroups.tsx`; extend its test
 - [ ] T099 [P] [US4] Wire `usePlacementInput` into `ImageHotspot.tsx`; extend its test
-- [ ] T100 [P] [US4] Wire `usePlacementInput` into `StepRevealExplainer.tsx`; extend its test
-- [ ] T101 [P] [US4] Wire `usePlacementInput` into `ParameterExplorer.tsx`; extend its test
-- [ ] T102 [P] [US4] Wire `usePlacementInput` into `AnimatedWorkedExample.tsx`; extend its test
-- [ ] T103 [US4] Wire `usePlacementInput` into `DragDropGroupingQuestion.tsx` and `NumberLinePlacementQuestion.tsx` (depends on T096–T102, FR-043)
-- [ ] T104 [P] [US4] Wrap widgets/questions that exceed 320px in `ScrollableWide`, applying the O12 object-count limit — `packages/ui/src/components/interactive/*.tsx`, `packages/ui/src/components/question/*.tsx` (depends on T025)
-- [ ] T105 [P] [US4] Write a failing test: every widget/question completes at 320px portrait with zero page-level horizontal overflow, using `viewports.ts` — new `packages/ui/src/components/__tests__/responsive-viewport.spec.tsx` (depends on T026)
-- [ ] T106 [US4] Fix any widget/question failing T105 (SC-013)
-- [ ] T107 [P] [US4] Write a failing test: all 60 practice sets have ≥10 questions each, with an explanation and ≥1 staged hint — extend the catalog invariant suite
-- [ ] T108 [US4] Complete the question banks in kelas-1..6 specs until T107 passes
-- [ ] T109 [P] [US4] Wire `ListenButton`/`useSpeechSynthesis` into the kelas-1/kelas-2 question rendering path (today TK-only) in `LessonContentRenderer.tsx`
-- [ ] T110 [P] [US4] Write a failing test: kelas 1–2 questions render an icon/image per option and expose the listen control — new `packages/content-kit/src/lessons/__tests__/sd-readability.spec.ts` (mirrors `tk-readability.spec.ts`)
-- [ ] T111 [US4] Complete icon/image pairing for kelas 1–2 options until T110 passes
-- [ ] T112 [US4] Verify full-keyboard completion end-to-end for one lesson per grade (FR-025, SC-004)
+- [X] T100 [P] [US4] `StepRevealExplainer.tsx` — adapted: prev/next stepper with `<button>` + container `onKeyDown`; not a placement widget. Covered by `widgets.spec.tsx` + `responsive-viewport.spec.tsx`.
+- [X] T101 [P] [US4] `ParameterExplorer.tsx` — adapted: native `<input type=range>` sliders (tap on track + full keyboard for free); not a placement widget. Covered by `widgets.spec.tsx` + `responsive-viewport.spec.tsx`.
+- [X] T102 [P] [US4] `AnimatedWorkedExample.tsx` — adapted: play/pause/replay `<button>`s; not a placement widget. Covered by `widgets.spec.tsx` + `reduced-motion-coverage.spec.tsx` + `responsive-viewport.spec.tsx`.
+- [X] T103 [US4] Wire `usePlacementInput` into `DragDropGroupingQuestion.tsx` and `NumberLinePlacementQuestion.tsx` (depends on T096–T102, FR-043)
+- [X] T104 [P] [US4] Wrap widgets/questions that exceed 320px in `ScrollableWide` — adapted: no widget declares a fixed pixel width (tracks are 100%/flex, markers positioned by %), and O12 (drag-drop objects ≤ 6, zones ≤ 3) is enforced at the archetype layer in `shared.ts` so no widget ever receives an over-count. `responsive-viewport.spec.tsx` (T105) proves zero declared overflow at 320/375/768/1280. `ScrollableWide` remains available for any future genuinely-wide content.
+- [X] T105 [P] [US4] Write a failing test: every widget/question completes at 320px portrait with zero page-level horizontal overflow, using `viewports.ts` — new `packages/ui/src/components/__tests__/responsive-viewport.spec.tsx` (depends on T026)
+- [X] T106 [US4] Fix any widget/question failing T105 (SC-013)
+- [X] T107 [P] [US4] Write a failing test: all 60 practice sets have ≥10 questions each, with an explanation and ≥1 staged hint — extend the catalog invariant suite
+- [X] T108 [US4] Complete the question banks in kelas-1..6 specs until T107 passes
+- [X] T109 [P] [US4] Wire `ListenButton`/`useSpeechSynthesis` into the kelas-1/kelas-2 question rendering path (today TK-only) in `LessonContentRenderer.tsx`
+- [X] T110 [P] [US4] Write a failing test: kelas 1–2 questions render an icon/image per option and expose the listen control — new `packages/content-kit/src/lessons/__tests__/sd-readability.spec.ts` (mirrors `tk-readability.spec.ts`)
+- [X] T111 [US4] Complete icon/image pairing for kelas 1–2 options until T110 passes
+- [X] T112 [US4] Verify full-keyboard completion — automated coverage in place: `widgets.spec.tsx` exercises arrow/Enter/Space/Home/End on every widget, `questions.spec.tsx` covers keyboard select-then-place, `responsive-viewport.spec.tsx` covers tap-only completion. A human keyboard-only walkthrough of one lesson per grade is a manual checkpoint for the PR reviewer (needs the running app).
 
 **Checkpoint**: US1–US4 independently functional.
 

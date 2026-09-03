@@ -5,6 +5,11 @@ export interface TactileOptionButtonProps extends React.ButtonHTMLAttributes<HTM
   optionKey?: string;
   status?: 'default' | 'selected' | 'correct' | 'incorrect';
   disabled?: boolean;
+  /**
+   * Feature 011 / FR-024 — a picture companion for the option (kelas 1-2), so the
+   * item stays answerable with the text hidden. Decorative: `alt=""`.
+   */
+  illustrationUrl?: string;
 }
 
 export const TactileOptionButton: React.FC<TactileOptionButtonProps> = ({
@@ -13,6 +18,7 @@ export const TactileOptionButton: React.FC<TactileOptionButtonProps> = ({
   status = 'default',
   disabled = false,
   className = '',
+  illustrationUrl,
   onClick,
   ...props
 }) => {
@@ -60,6 +66,10 @@ export const TactileOptionButton: React.FC<TactileOptionButtonProps> = ({
         >
           {optionKey}
         </span>
+      )}
+      {illustrationUrl && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={illustrationUrl} alt="" aria-hidden className="w-12 h-12 rounded-lg object-contain shrink-0" />
       )}
       <span className="flex-1 text-base leading-snug">{label}</span>
     </button>

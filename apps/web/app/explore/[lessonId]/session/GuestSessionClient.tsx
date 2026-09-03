@@ -11,6 +11,7 @@ import {
   useTheme,
   DragDropGroupingQuestion,
   NumberLinePlacementQuestion,
+  ListenButton,
 } from '@aksicendekia/ui';
 import { Sparkles, HelpCircle, CheckCircle, XCircle, ArrowRight, RotateCcw, Award } from 'lucide-react';
 import { LocalSessionEngine } from '@/lib/gamification/local-session-engine';
@@ -157,9 +158,18 @@ export default function GuestSessionClient() {
               }[currentQuestion.questionType as string] ?? currentQuestion.questionType
             }
           </span>
-          <h2 className="text-lg md:text-xl font-heading font-bold text-on-surface leading-relaxed">
-            {currentQuestion.promptText}
-          </h2>
+          <div className="flex items-start gap-2">
+            <h2 className="text-lg md:text-xl font-heading font-bold text-on-surface leading-relaxed flex-1">
+              {currentQuestion.promptText}
+            </h2>
+            {/* Feature 011 / T109 (FR-024) — kelas 1-2 questions carry a narration; expose a listen control. */}
+            {currentQuestion.contentPayload?.narrationText && (
+              <ListenButton
+                text={String(currentQuestion.contentPayload.narrationText)}
+                className="shrink-0"
+              />
+            )}
+          </div>
         </div>
 
         {/* Question Input Area */}
@@ -182,6 +192,7 @@ export default function GuestSessionClient() {
                   <TactileOptionButton
                     key={opt.id}
                     label={opt.text}
+                    illustrationUrl={opt.illustrationAssetId ? `/${opt.illustrationAssetId}` : undefined}
                     status={state}
                     disabled={isAnswerChecked}
                     onClick={() => setSelectedAnswer(opt.id)}

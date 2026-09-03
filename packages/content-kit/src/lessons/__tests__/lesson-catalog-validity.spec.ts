@@ -133,6 +133,19 @@ describe('SD Matematika catalog — the 9 invariants (data-model.md §4)', () =>
     }
   });
 
+  it('US4/T107 — every SD practice item has an explanation and >= 1 staged hint', () => {
+    for (const l of SD_LESSONS_VIEW) {
+      for (const q of l.questions) {
+        expect(q.explanation.trim().length, `${q.id} explanation`).toBeGreaterThan(0);
+        expect(q.hints.length, `${q.id} hint count`).toBeGreaterThanOrEqual(1);
+        q.hints.forEach((h, i) => {
+          expect(h.stepOrder, `${q.id} hint stepOrder`).toBe(i + 1);
+          expect(h.hintText.trim().length, `${q.id} hint text`).toBeGreaterThan(0);
+        });
+      }
+    }
+  });
+
   it('3 — every SD lesson has >= 1 ILLUSTRATION, ANIMATION, INTERACTIVE_WIDGET and VIDEO block', () => {
     for (const l of SD_LESSONS_VIEW) {
       const kinds = new Set(l.contentBlocks.map((b) => b.blockType));

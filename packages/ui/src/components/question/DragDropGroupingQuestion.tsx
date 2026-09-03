@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useI18n } from '../../providers/i18n-provider';
+import { usePlacementInput } from '../interactive/usePlacementInput';
 
 export interface DragDropGroupingItem {
   id: string;
@@ -39,31 +40,32 @@ export const DragDropGroupingQuestion: React.FC<DragDropGroupingQuestionProps> =
   correctMapping,
 }) => {
   const { t } = useI18n();
-  const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [announcement, setAnnouncement] = useState('');
 
   const unplaced = items.filter((it) => !placements[it.id]);
   const isGraded = Boolean(correctMapping);
 
-  const selectItem = (itemId: string): void => {
-    if (disabled) return;
-    setSelectedItemId((cur) => (cur === itemId ? null : itemId));
-  };
-
-  const placeIn = (groupId: string): void => {
-    if (disabled || !selectedItemId) return;
-    const item = items.find((it) => it.id === selectedItemId);
-    const group = groups.find((g) => g.id === groupId);
-    onPlacementsChange({ ...placements, [selectedItemId]: groupId });
-    setAnnouncement(t('interactive.widget.sort.movedTo', { item: item?.label ?? '', group: group?.label ?? '' }));
-    setSelectedItemId(null);
-  };
+  // Feature 011 / T103 (FR-043) — one select-then-place state machine shared by
+  // tap, keyboard, and drag. `unplace` (tap a placed chip to return it) stays a
+  // question-specific affordance on top.
+  const { selectedId, getItemProps, getTargetProps, setSelectedId } = usePlacementInput(
+    (itemId, groupId) => {
+      if (disabled) return;
+      const item = items.find((it) => it.id === itemId);
+      const group = groups.find((g) => g.id === groupId);
+      onPlacementsChange({ ...placements, [itemId]: groupId });
+      setAnnouncement(
+        t('interactive.widget.sort.movedTo', { item: item?.label ?? '', group: group?.label ?? '' }),
+      );
+    },
+  );
+  const selectedItemId = selectedId;
 
   const unplace = (itemId: string): void => {
     if (disabled) return;
     const { [itemId]: _removed, ...rest } = placements;
     onPlacementsChange(rest);
-    setSelectedItemId(null);
+    setSelectedId(null);
   };
 
   return (
@@ -77,9 +79,8 @@ export const DragDropGroupingQuestion: React.FC<DragDropGroupingQuestionProps> =
           <button
             key={it.id}
             type="button"
-            aria-pressed={selectedItemId === it.id}
+            {...getItemProps(it.id)}
             disabled={disabled}
-            onClick={() => selectItem(it.id)}
             className={`min-h-11 rounded-lg border-2 px-3 py-2 text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-60 ${
               selectedItemId === it.id
                 ? 'border-blue-600 bg-blue-600 text-white'
@@ -102,8 +103,8 @@ export const DragDropGroupingQuestion: React.FC<DragDropGroupingQuestionProps> =
             >
               <button
                 type="button"
+                {...getTargetProps(g.id)}
                 disabled={disabled || !selectedItemId}
-                onClick={() => placeIn(g.id)}
                 aria-label={t('interactive.widget.sort.placeIn', { group: g.label })}
                 className="mb-2 block text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:cursor-default"
               >

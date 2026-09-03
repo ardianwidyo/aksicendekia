@@ -79,6 +79,16 @@ export const NumberLinePlacementQuestion: React.FC<NumberLinePlacementQuestionPr
     }
   };
 
+  // Feature 011 / T103 (FR-043) — tap-to-place: tapping the track moves the
+  // marker to the nearest step, so the question completes by touch alone.
+  const placeFromPointer = (clientX: number, el: HTMLElement): void => {
+    if (disabled) return;
+    const rect = el.getBoundingClientRect();
+    if (rect.width <= 0) return;
+    const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+    update(min + ratio * (max - min));
+  };
+
   const percent = ((current - min) / (max - min)) * 100;
   const targetPercent = isGraded ? ((targetValue! - min) / (max - min)) * 100 : null;
 
@@ -94,7 +104,9 @@ export const NumberLinePlacementQuestion: React.FC<NumberLinePlacementQuestionPr
         aria-valuetext={t('interactive.widget.numberLine.value', { value: current })}
         aria-disabled={disabled}
         onKeyDown={onKeyDown}
-        className="relative mt-6 h-12 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-4 rounded"
+        onPointerDown={(e) => placeFromPointer(e.clientX, e.currentTarget)}
+        onClick={(e) => placeFromPointer(e.clientX, e.currentTarget)}
+        className="relative mt-6 h-12 cursor-pointer touch-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-4 rounded"
       >
         <div className="absolute left-0 right-0 top-1/2 h-1 -translate-y-1/2 rounded bg-slate-300" />
         {markers.map((m) => {

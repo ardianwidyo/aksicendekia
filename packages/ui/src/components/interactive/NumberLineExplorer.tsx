@@ -71,6 +71,16 @@ export const NumberLineExplorer: React.FC<InteractiveWidgetProps<NumberLineExplo
 
   const percent = ((value - min) / (max - min)) * 100;
 
+  // Feature 011 / T096 (FR-042, FR-043) — tap-to-place: tapping anywhere on the
+  // track moves the marker to the nearest step, so the widget is completable by
+  // touch alone at 320px, not only by arrow keys.
+  const placeFromPointer = (clientX: number, currentTarget: HTMLElement): void => {
+    const rect = currentTarget.getBoundingClientRect();
+    if (rect.width <= 0) return;
+    const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+    update(min + ratio * (max - min));
+  };
+
   return (
     <div className="rounded-xl border-2 border-slate-200 bg-white p-4">
       <div
@@ -82,7 +92,9 @@ export const NumberLineExplorer: React.FC<InteractiveWidgetProps<NumberLineExplo
         aria-valuenow={value}
         aria-valuetext={t('interactive.widget.numberLine.value', { value })}
         onKeyDown={onKeyDown}
-        className="relative mt-6 h-12 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-4 rounded"
+        onPointerDown={(e) => placeFromPointer(e.clientX, e.currentTarget)}
+        onClick={(e) => placeFromPointer(e.clientX, e.currentTarget)}
+        className="relative mt-6 h-12 cursor-pointer touch-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-4 rounded"
       >
         <div className="absolute left-0 right-0 top-1/2 h-1 -translate-y-1/2 rounded bg-slate-300" />
         {markers.map((m) => {
