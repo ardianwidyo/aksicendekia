@@ -2,6 +2,7 @@ import {
   INTERACTIVE_LESSONS,
   getLessonById,
   listForCatalog,
+  listForGrade,
   allLessonIds as contentKitAllLessonIds,
   getLegacyLessonRef,
   type InteractiveLesson,
@@ -296,6 +297,25 @@ export function getInteractiveLesson(lessonId: string): InteractiveLessonView | 
 export function listExploreLessons(stage?: string): InteractiveLessonView[] {
   const normalized = stage ? (stage.toUpperCase() as 'TK' | 'SD' | 'SMP' | 'SMA') : undefined;
   return listForCatalog(normalized).map(toInteractiveLessonView);
+}
+
+export interface SdGradeGroup {
+  gradeLevel: 1 | 2 | 3 | 4 | 5 | 6;
+  lessons: InteractiveLessonView[];
+}
+
+/**
+ * Feature 011 (T080/T081) — the SD Matematika catalog grouped by kelas 1-6, each
+ * grade's lessons ordered by `orderIndex` (FR-010). Powers the per-grade
+ * grouping + "next grade" navigation in explore/ and catalog/.
+ */
+export function listSdGradeCatalog(): SdGradeGroup[] {
+  return ([1, 2, 3, 4, 5, 6] as const).map((gradeLevel) => ({
+    gradeLevel,
+    lessons: listForGrade(gradeLevel)
+      .filter((l) => l.listing === 'LISTED')
+      .map(toInteractiveLessonView),
+  }));
 }
 
 /** All routable lesson ids (12 interactive + 3 legacy) for generateStaticParams. */

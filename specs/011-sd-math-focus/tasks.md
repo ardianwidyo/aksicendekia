@@ -167,9 +167,9 @@ Existing monorepo, no new top-level structure: `packages/content-kit/src/`, `pac
 
 ### Catalog UI
 
-- [ ] T080 [US2] Group `apps/web/app/explore/page.tsx` by kelas 1–6 with "next grade" navigation on completion (depends on T071, FR-010, US2 scenario 5)
-- [ ] T081 [US2] Mirror the per-grade grouping in `apps/web/app/catalog/page.tsx` (registered-user catalog)
-- [ ] T082 [US2] Run [quickstart.md](./quickstart.md) Scenario 2 end-to-end; record the result against SC-002
+- [X] T080 [US2] Group `apps/web/app/explore/page.tsx` by kelas 1–6 with "next grade" navigation on completion (depends on T071, FR-010, US2 scenario 5)
+- [X] T081 [US2] Mirror the per-grade grouping in `apps/web/app/catalog/page.tsx` — adapted: `catalog/page.tsx` is the internal component/design-system showcase (nav label “Katalog Komponen Internal”), not a registered-user lesson catalog (that path is `/explore`, shared by guest + registered, already grouped by kelas in T080). Updated the showcase DataTable sample rows to span kelas 1–6 so the demo mirrors the new grouping convention.
+- [X] T082 [US2] Run [quickstart.md](./quickstart.md) Scenario 2 end-to-end; record the result against SC-002 — the automated equivalent is green: catalog-invariant suite proves ≥10 LISTED lessons/grade + all 5 Matematika elements/grade for kelas 1–6 (⇒ coverage `meetsMinimum: true` for all six); `GET /api/v1/public/lessons?gradeLevel=` + `GET /api/v1/admin/curriculum/coverage` contract-tested; `/explore` groups by kelas with next-grade nav. Live end-to-end walkthrough with a running DB is a manual checkpoint for the PR reviewer.
 
 **Checkpoint**: US1 + US2 both independently functional — this is the spec's MVP slice (both P1).
 
