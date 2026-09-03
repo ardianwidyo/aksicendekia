@@ -1,4 +1,5 @@
 import { Subject, Unit, Lesson, QuestionItem, ContentStatus, EducationStage, QuestionType, MatchingMode, Prisma } from "@prisma/client";
+import { getAchievementById } from "@aksicendekia/content-kit";
 import { CurriculumRepository } from "./curriculum.repository.js";
 import { CsvImportService, CsvImportReport } from "./csv-import.service.js";
 import { BadRequestError, NotFoundError, ConflictError } from "../../common/errors/app-error.js";
@@ -13,11 +14,57 @@ import {
   UpdateQuestionItemInput,
 } from "./curriculum.schema.js";
 
+/** Feature 011 — the 5 Matematika SD curriculum elements every grade must cover (FR-011). */
+const SD_MATEMATIKA_ELEMENTS = [
+  "Bilangan",
+  "Aljabar",
+  "Pengukuran",
+  "Geometri",
+  "Analisis Data dan Peluang",
+] as const;
+const SD_MIN_LESSONS_PER_GRADE = 10;
+
+export interface GradeCoverage {
+  gradeLevel: number;
+  lessonCount: number;
+  elementsCovered: string[];
+  elementsMissing: string[];
+  meetsMinimum: boolean;
+}
+export interface CurriculumCoverageReport {
+  coverage: GradeCoverage[];
+  overallMeetsMinimum: boolean;
+}
+
 export class CurriculumService {
   constructor(
     private repo: CurriculumRepository,
     private csvImportService: CsvImportService
   ) {}
+
+  // ================= FEATURE 011 — SD MATEMATIKA COVERAGE (FR-011) =================
+  async getCurriculumCoverage(): Promise<CurriculumCoverageReport> {
+    const rows = await this.repo.listSdLessonsForCoverage();
+    const coverage: GradeCoverage[] = [1, 2, 3, 4, 5, 6].map((gradeLevel) => {
+      const listed = rows.filter((r) => r.gradeLevel === gradeLevel && r.listing === "LISTED");
+      const elementsCovered = [
+        ...new Set(
+          listed
+            .map((r) => (r.curriculumAchievementId ? getAchievementById(r.curriculumAchievementId)?.element : undefined))
+            .filter((e): e is string => Boolean(e))
+        ),
+      ].sort();
+      const elementsMissing = SD_MATEMATIKA_ELEMENTS.filter((e) => !elementsCovered.includes(e));
+      return {
+        gradeLevel,
+        lessonCount: listed.length,
+        elementsCovered,
+        elementsMissing,
+        meetsMinimum: listed.length >= SD_MIN_LESSONS_PER_GRADE && elementsMissing.length === 0,
+      };
+    });
+    return { coverage, overallMeetsMinimum: coverage.every((g) => g.meetsMinimum) };
+  }
 
   // ================= SUBJECTS =================
   async getSubject(id: string): Promise<Subject> {

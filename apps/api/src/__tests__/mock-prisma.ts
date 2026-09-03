@@ -427,6 +427,8 @@ export function createMockPrismaClient(): PrismaClient {
         if (where?.unitId) res = res.filter((l) => l.unitId === where.unitId);
         if (where?.status !== undefined) res = res.filter((l) => statusMatches(l.status, where.status));
         if (where?.listing !== undefined) res = res.filter((l) => listingMatches(l.listing, where.listing));
+        if (where?.educationStage !== undefined) res = res.filter((l) => l.educationStage === where.educationStage);
+        if (where?.gradeLevel !== undefined) res = res.filter((l) => l.gradeLevel === where.gradeLevel);
 
         return res.map((l) => ({
           ...l,
@@ -452,6 +454,7 @@ export function createMockPrismaClient(): PrismaClient {
           supersededByLessonId: data.supersededByLessonId ?? null,
           curriculumAchievementId: data.curriculumAchievement?.connect?.id ?? data.curriculumAchievementId ?? null,
           reviewerNote: data.reviewerNote ?? null,
+          gradeLevel: data.gradeLevel ?? null,
           createdAt: new Date(),
           updatedAt: new Date(),
         };

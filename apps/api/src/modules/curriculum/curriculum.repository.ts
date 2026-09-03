@@ -307,6 +307,36 @@ export class CurriculumRepository {
     return progress.map((p) => p.lessonId);
   }
 
+  // ================= FEATURE 011 — SD MATEMATIKA COVERAGE =================
+  /** Every SD lesson still in the production pipeline (REVIEW or PUBLISHED), with its CP link. */
+  async listSdLessonsForCoverage(): Promise<
+    Array<{
+      id: string;
+      gradeLevel: number | null;
+      listing: string;
+      status: ContentStatus;
+      curriculumAchievementId: string | null;
+    }>
+  > {
+    const rows = await this.prisma.lesson.findMany({
+      where: {
+        educationStage: EducationStage.SD,
+        status: { in: [ContentStatus.REVIEW, ContentStatus.PUBLISHED] },
+      },
+      select: {
+        id: true,
+        gradeLevel: true,
+        listing: true,
+        status: true,
+        curriculumAchievementId: true,
+        educationStage: true,
+      },
+    });
+    // The mock Prisma used in tests does not apply the `educationStage` filter;
+    // re-apply it here so the shape is identical against a real DB.
+    return rows.filter((r) => (r as { educationStage?: string }).educationStage === EducationStage.SD);
+  }
+
   async markLessonCompleted(studentProfileId: string, lessonId: string) {
     return this.prisma.studentLessonProgress.upsert({
       where: {

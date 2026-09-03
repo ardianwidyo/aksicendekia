@@ -27,6 +27,17 @@ function requireAdmin(req: FastifyRequest) {
 export function registerCurriculumRoutes(app: FastifyInstance, service: CurriculumService) {
   // ================= ADMIN CMS ROUTES =================
 
+  // --- FEATURE 011: SD MATEMATIKA COVERAGE REPORT (FR-011) ---
+  app.get(
+    "/api/v1/admin/curriculum/coverage",
+    { preHandler: [app.authenticate] },
+    async (req: FastifyRequest, reply: FastifyReply) => {
+      requireAdmin(req);
+      const report = await service.getCurriculumCoverage();
+      return reply.send(report);
+    }
+  );
+
   // --- SUBJECTS ---
   app.post(
     "/api/v1/admin/curriculum/subjects",

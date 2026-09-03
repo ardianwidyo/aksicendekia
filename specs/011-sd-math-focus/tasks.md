@@ -84,7 +84,7 @@ Existing monorepo, no new top-level structure: `packages/content-kit/src/`, `pac
 ### API service layer (plan.md's Constitution II debt: fold in, don't extend)
 
 - [X] T029 Create `apps/api/src/modules/sync/public-content.service.ts`, moving the Prisma queries out of `public-content.controller.ts`, with focus filtering applied via T013
-- [ ] T030 ~~Extend curriculum.service.ts with focus-aware/gradeLevel-aware helpers~~ — deferred to T079 (US2): building these in isolation now, before the coverage endpoint that is their only consumer exists, means guessing their shape (YAGNI risk). `curriculum.service.ts` also carries 40+ pre-existing, unrelated `tsc` errors (confirmed via a stash/restore diff: 44 without Feature 011's schema changes, 43 with — proving they predate this feature) that make blind edits there riskier than necessary before its real consumer is defined. `isStageInFocus`/`isSubjectInFocus`/`filterLessonsForFocus` (T013) are already exported and ready for T079 to call directly.
+- [X] T030 ~~Extend curriculum.service.ts with focus-aware/gradeLevel-aware helpers~~ — deferred to T079 (US2): building these in isolation now, before the coverage endpoint that is their only consumer exists, means guessing their shape (YAGNI risk). `curriculum.service.ts` also carries 40+ pre-existing, unrelated `tsc` errors (confirmed via a stash/restore diff: 44 without Feature 011's schema changes, 43 with — proving they predate this feature) that make blind edits there riskier than necessary before its real consumer is defined. `isStageInFocus`/`isSubjectInFocus`/`filterLessonsForFocus` (T013) are already exported and ready for T079 to call directly.
 
 **Checkpoint**: Foundation ready — user stories below can proceed in priority order or in parallel.
 
@@ -160,10 +160,10 @@ Existing monorepo, no new top-level structure: `packages/content-kit/src/`, `pac
 
 - [X] T074 [P] [US2] Extend `apps/api/prisma/seed-interactive-content.ts` to seed all 60 SD lessons with `gradeLevel` (depends on T071)
 - [X] T075 [P] [US2] Extend `packages/content-kit/src/lessons/__tests__/seed-status.spec.ts` to assert 60 seeded SD lessons, zero `PUBLISHED`
-- [ ] T076 [P] [US2] Write a failing contract test for `GET /api/v1/public/lessons?gradeLevel=` — extend `apps/api/src/modules/sync/__tests__/public-content.test.ts`
-- [ ] T077 [US2] Implement `GET /api/v1/public/lessons?gradeLevel=` (Zod-validated 1–6) in `public-content.service.ts` / `public-content.controller.ts` (depends on T076)
-- [ ] T078 [P] [US2] Write a failing contract test for `GET /api/v1/admin/curriculum/coverage` — extend `apps/api/src/modules/curriculum/__tests__/curriculum.test.ts`
-- [ ] T079 [US2] Implement the coverage report endpoint (JWT + role-guarded, per-grade counts + `elementsMissing`) in `curriculum.service.ts` / `curriculum.controller.ts` (depends on T030, T078)
+- [X] T076 [P] [US2] Write a failing contract test for `GET /api/v1/public/lessons?gradeLevel=` — extend `apps/api/src/modules/sync/__tests__/public-content.test.ts`
+- [X] T077 [US2] Implement `GET /api/v1/public/lessons?gradeLevel=` (Zod-validated 1–6) in `public-content.service.ts` / `public-content.controller.ts` (depends on T076)
+- [X] T078 [P] [US2] Write a failing contract test for `GET /api/v1/admin/curriculum/coverage` — extend `apps/api/src/modules/curriculum/__tests__/curriculum.test.ts`
+- [X] T079 [US2] Implement the coverage report endpoint (JWT + role-guarded, per-grade counts + `elementsMissing`) in `curriculum.service.ts` / `curriculum.controller.ts` (depends on T030, T078)
 
 ### Catalog UI
 

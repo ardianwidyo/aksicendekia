@@ -1,12 +1,16 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { PrismaClient, EducationStage } from "@prisma/client";
-import { NotFoundError } from "../../common/errors/app-error.js";
+import { z } from "zod";
+import { NotFoundError, BadRequestError } from "../../common/errors/app-error.js";
 import {
   getPublicSubjects,
   getPublicUnitLessons,
+  getPublicLessonsByGrade,
   getPublicLessonDetail,
   getPublicExercise,
 } from "./public-content.service.js";
+
+const gradeLevelSchema = z.coerce.number().int().min(1).max(6);
 
 export function registerPublicContentRoutes(app: FastifyInstance, prisma: PrismaClient) {
   // Public Subjects
@@ -16,6 +20,19 @@ export function registerPublicContentRoutes(app: FastifyInstance, prisma: Prisma
       const stage = req.query.stage || EducationStage.SD;
       const subjects = await getPublicSubjects(prisma, stage);
       return reply.send({ subjects });
+    }
+  );
+
+  // Public Lessons by SD grade — Feature 011 (FR-010). `?gradeLevel=1..6`, Zod-validated.
+  app.get(
+    "/api/v1/public/lessons",
+    async (req: FastifyRequest<{ Querystring: { gradeLevel?: string } }>, reply: FastifyReply) => {
+      const parsed = gradeLevelSchema.safeParse(req.query.gradeLevel);
+      if (!parsed.success) {
+        throw new BadRequestError("Parameter gradeLevel wajib berupa bilangan 1-6");
+      }
+      const lessons = await getPublicLessonsByGrade(prisma, parsed.data);
+      return reply.send({ gradeLevel: parsed.data, lessons });
     }
   );
 

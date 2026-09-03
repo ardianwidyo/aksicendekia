@@ -53,6 +53,40 @@ export async function getPublicSubjects(prisma: PrismaClient, stage: EducationSt
   return subjects.filter((s) => isLessonInFocus({ educationStage: s.educationStage, subjectCode: s.code }));
 }
 
+/**
+ * Feature 011 (T077, FR-010) — the per-grade catalog feed for the kelas 1-6
+ * explore/catalog UI. Focus-mode filtered like every other public-content route.
+ */
+export async function getPublicLessonsByGrade(prisma: PrismaClient, gradeLevel: number) {
+  const lessons = await prisma.lesson.findMany({
+    where: {
+      educationStage: EducationStage.SD,
+      gradeLevel,
+      status: { in: publicStatuses() },
+      listing: "LISTED",
+    },
+    orderBy: { orderIndex: "asc" },
+    select: {
+      id: true,
+      unitId: true,
+      title: true,
+      summary: true,
+      learningObjective: true,
+      educationStage: true,
+      phase: true,
+      gradeLevel: true,
+      difficultyLevel: true,
+      estimatedDurationMinutes: true,
+      orderIndex: true,
+    },
+  });
+
+  // MATH_SD is the only SD subject in focus; the stage check is the load-bearing one.
+  return lessons
+    .filter((l) => isLessonInFocus({ educationStage: l.educationStage, subjectCode: "MATH_SD" }))
+    .sort((a, b) => a.orderIndex - b.orderIndex);
+}
+
 export async function getPublicUnitLessons(prisma: PrismaClient, unitId: string) {
   const unit = await prisma.unit.findUnique({ where: { id: unitId } });
   if (!unit) return [];

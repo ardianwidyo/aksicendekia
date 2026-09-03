@@ -381,3 +381,66 @@ describe("Public Content API — focus mode filtering (Feature 011 / FR-002)", (
     expect(videoBlock.payload.videoEmbed.reviewedBy).toBeUndefined();
   });
 });
+
+describe("Public Content API — GET /api/v1/public/lessons?gradeLevel= (Feature 011 / T076 / FR-010)", () => {
+  let mockPrisma: any;
+  let app: any;
+
+  beforeEach(async () => {
+    mockPrisma = createMockPrismaClient();
+    app = buildApp(mockPrisma);
+    resetFocusConfigCache();
+
+    for (let grade = 1; grade <= 6; grade++) {
+      for (let i = 0; i < 3; i++) {
+        await mockPrisma.lesson.create({
+          data: {
+            unitId: `unit-MATH_SD-k${grade}`,
+            title: `Kelas ${grade} Pelajaran ${i}`,
+            summary: "s",
+            learningObjective: "lo",
+            educationStage: EducationStage.SD,
+            phase: grade <= 2 ? "FASE_A" : grade <= 4 ? "FASE_B" : "FASE_C",
+            gradeLevel: grade,
+            difficultyLevel: "BEGINNER",
+            estimatedDurationMinutes: 12,
+            orderIndex: 2 - i, // reversed on purpose
+            status: ContentStatus.PUBLISHED,
+            listing: "LISTED",
+          },
+        });
+      }
+    }
+  });
+
+  afterEach(() => resetFocusConfigCache());
+
+  it("returns the lessons for one grade, ordered by orderIndex", async () => {
+    const res = await app.inject({ method: "GET", url: "/api/v1/public/lessons?gradeLevel=3" });
+    expect(res.statusCode).toBe(200);
+    const body = JSON.parse(res.body);
+    expect(body.gradeLevel).toBe(3);
+    expect(body.lessons).toHaveLength(3);
+    expect(body.lessons.every((l: { gradeLevel: number }) => l.gradeLevel === 3)).toBe(true);
+    expect(body.lessons.map((l: { orderIndex: number }) => l.orderIndex)).toEqual([0, 1, 2]);
+  });
+
+  it("400s when gradeLevel is missing", async () => {
+    const res = await app.inject({ method: "GET", url: "/api/v1/public/lessons" });
+    expect(res.statusCode).toBe(400);
+  });
+
+  it("400s when gradeLevel is out of the 1-6 range", async () => {
+    expect((await app.inject({ method: "GET", url: "/api/v1/public/lessons?gradeLevel=0" })).statusCode).toBe(400);
+    expect((await app.inject({ method: "GET", url: "/api/v1/public/lessons?gradeLevel=7" })).statusCode).toBe(400);
+    expect((await app.inject({ method: "GET", url: "/api/v1/public/lessons?gradeLevel=abc" })).statusCode).toBe(400);
+  });
+
+  it("returns an empty list (not an error) for a grade with no lessons", async () => {
+    const fresh = createMockPrismaClient();
+    const freshApp = buildApp(fresh);
+    const res = await freshApp.inject({ method: "GET", url: "/api/v1/public/lessons?gradeLevel=5" });
+    expect(res.statusCode).toBe(200);
+    expect(JSON.parse(res.body).lessons).toEqual([]);
+  });
+});
