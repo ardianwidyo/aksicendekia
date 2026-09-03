@@ -43,3 +43,26 @@ describe('explore static params vs catalog listing', () => {
     expect(view!.contentBlocks.length).toBeGreaterThan(0);
   });
 });
+
+describe('every /explore/[lessonId] sub-route is statically generated for the whole catalog', () => {
+  it('detail, session, and session/summary all enumerate the same 72 lesson ids + preview', async () => {
+    const detail = (await import('../[lessonId]/page')).generateStaticParams();
+    const session = (await import('../[lessonId]/session/page')).generateStaticParams();
+    const summary = (await import('../[lessonId]/session/summary/page')).generateStaticParams();
+
+    const expected = [...allLessonIds(), 'preview'].sort();
+    for (const [name, params] of [
+      ['detail', detail],
+      ['session', session],
+      ['summary', summary],
+    ] as const) {
+      expect(
+        params.map((p: { lessonId: string }) => p.lessonId).sort(),
+        `${name} route static params`,
+      ).toEqual(expected);
+    }
+
+    // regression guard: the reassigned legacy id must have a session page
+    expect(session.map((p: { lessonId: string }) => p.lessonId)).toContain('sd-matematika-03');
+  });
+});
