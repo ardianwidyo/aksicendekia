@@ -21,5 +21,15 @@ export * from './curriculum/achievements.js';
 export * from './lessons/types.js';
 export * from './lessons/legacy.js';
 export * from './lessons/catalog.js';
+export {
+  SD_LESSONS,
+  SD_VIDEO_REFS,
+  KELAS_1_LESSONS,
+  KELAS_2_LESSONS,
+  KELAS_3_LESSONS,
+  KELAS_4_LESSONS,
+  KELAS_5_LESSONS,
+  KELAS_6_LESSONS,
+} from './lessons/sd/index.js';
 export * from './lessons/video-registry.js';
 export * from './focus/focus-config.js';

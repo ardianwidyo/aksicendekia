@@ -14,15 +14,15 @@ import {
 const LEGACY_IDS = ['lesson_m1', 'lesson_m2', 'lesson_i1'];
 
 describe('explore static params vs catalog listing', () => {
-  it('allLessonIds covers 12 interactive + 3 legacy = 15', () => {
+  it('allLessonIds covers 69 interactive + 3 legacy = 72', () => {
     const ids = allLessonIds();
-    expect(ids).toHaveLength(15);
+    expect(ids).toHaveLength(72);
     for (const legacy of LEGACY_IDS) expect(ids).toContain(legacy);
   });
 
   it('generateStaticParams-shaped output includes every routable id + preview', () => {
     const params = [...allLessonIds(), 'preview'].map((lessonId) => ({ lessonId }));
-    expect(params).toHaveLength(16);
+    expect(params).toHaveLength(73);
     expect(params).toContainEqual({ lessonId: 'lesson_m1' });
     expect(params).toContainEqual({ lessonId: 'tk-numerasi-01' });
   });
@@ -32,7 +32,7 @@ describe('explore static params vs catalog listing', () => {
       const listed = listExploreLessons(stage).map((l) => l.id);
       for (const legacy of LEGACY_IDS) expect(listed).not.toContain(legacy);
     }
-    expect(listExploreLessons('SD')).toHaveLength(3);
+    expect(listExploreLessons('SD')).toHaveLength(60);
   });
 
   it('opening a legacy route resolves to its interactive replacement + keeps the legacy id', () => {

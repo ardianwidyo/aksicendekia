@@ -145,21 +145,21 @@ Existing monorepo, no new top-level structure: `packages/content-kit/src/`, `pac
 
 ### Per-grade catalog (data, not code — see contracts/lesson-authoring.md)
 
-- [ ] T064 [P] [US2] Author ≥10 kelas 1 lesson specs (place-value, number-line, measurement, geometry, time, patterns) in `packages/content-kit/src/lessons/sd/kelas-1.ts` (depends on T045, T047, T053, T055, T059, T063, T010)
-- [ ] T065 [P] [US2] Author ≥10 kelas 2 lesson specs in `packages/content-kit/src/lessons/sd/kelas-2.ts`
-- [ ] T066 [P] [US2] Author ≥10 kelas 3 lesson specs, reassigning existing `sd-matematika-01`/`02` (Fase B) into this grade instead of duplicating them, in `packages/content-kit/src/lessons/sd/kelas-3.ts`
-- [ ] T067 [P] [US2] Author ≥10 kelas 4 lesson specs, reassigning existing `sd-matematika-03` (Fase B) into this grade, in `packages/content-kit/src/lessons/sd/kelas-4.ts`
-- [ ] T068 [P] [US2] Author ≥10 kelas 5 lesson specs (Fase C, introducing `fractions`/`operations`/`data-chart` at higher difficulty) in `packages/content-kit/src/lessons/sd/kelas-5.ts`
-- [ ] T069 [P] [US2] Author ≥10 kelas 6 lesson specs (Fase C) in `packages/content-kit/src/lessons/sd/kelas-6.ts`
-- [ ] T070 [US2] Replace `packages/content-kit/src/lessons/sd.ts` with `packages/content-kit/src/lessons/sd/index.ts`, re-exporting kelas-1..6 (depends on T064–T069)
-- [ ] T071 [US2] Add `listForGrade(gradeLevel)` / `lessonsByGrade()` to `packages/content-kit/src/lessons/catalog.ts` and wire in the new `sd/index.ts` (depends on T070)
-- [ ] T072 [P] [US2] Write failing catalog invariant tests — all 9 invariants from data-model.md §4 — extending `packages/content-kit/src/lessons/__tests__/lesson-catalog-validity.spec.ts`
-- [ ] T073 [US2] Iterate kelas-1..6 content until T072 passes: ≥10 lessons/grade, full 5-element CP coverage per grade, unique `orderIndex`, no duplicate titles in one grade, zero `PUBLISHED`
+- [X] T064 [P] [US2] Author ≥10 kelas 1 lesson specs (place-value, number-line, measurement, geometry, time, patterns) in `packages/content-kit/src/lessons/sd/kelas-1.ts` (depends on T045, T047, T053, T055, T059, T063, T010)
+- [X] T065 [P] [US2] Author ≥10 kelas 2 lesson specs in `packages/content-kit/src/lessons/sd/kelas-2.ts`
+- [X] T066 [P] [US2] Author ≥10 kelas 3 lesson specs, reassigning existing `sd-matematika-01`/`02` (Fase B) into this grade instead of duplicating them, in `packages/content-kit/src/lessons/sd/kelas-3.ts`
+- [X] T067 [P] [US2] Author ≥10 kelas 4 lesson specs, reassigning existing `sd-matematika-03` (Fase B) into this grade, in `packages/content-kit/src/lessons/sd/kelas-4.ts`
+- [X] T068 [P] [US2] Author ≥10 kelas 5 lesson specs (Fase C, introducing `fractions`/`operations`/`data-chart` at higher difficulty) in `packages/content-kit/src/lessons/sd/kelas-5.ts`
+- [X] T069 [P] [US2] Author ≥10 kelas 6 lesson specs (Fase C) in `packages/content-kit/src/lessons/sd/kelas-6.ts`
+- [X] T070 [US2] Replace `packages/content-kit/src/lessons/sd.ts` with `packages/content-kit/src/lessons/sd/index.ts`, re-exporting kelas-1..6 (depends on T064–T069)
+- [X] T071 [US2] Add `listForGrade(gradeLevel)` / `lessonsByGrade()` to `packages/content-kit/src/lessons/catalog.ts` and wire in the new `sd/index.ts` (depends on T070)
+- [X] T072 [P] [US2] Write failing catalog invariant tests — all 9 invariants from data-model.md §4 — extending `packages/content-kit/src/lessons/__tests__/lesson-catalog-validity.spec.ts`
+- [X] T073 [US2] Iterate kelas-1..6 content until T072 passes: ≥10 lessons/grade, full 5-element CP coverage per grade, unique `orderIndex`, no duplicate titles in one grade, zero `PUBLISHED`
 
 ### Seeding & API surface
 
-- [ ] T074 [P] [US2] Extend `apps/api/prisma/seed-interactive-content.ts` to seed all 60 SD lessons with `gradeLevel` (depends on T071)
-- [ ] T075 [P] [US2] Extend `packages/content-kit/src/lessons/__tests__/seed-status.spec.ts` to assert 60 seeded SD lessons, zero `PUBLISHED`
+- [X] T074 [P] [US2] Extend `apps/api/prisma/seed-interactive-content.ts` to seed all 60 SD lessons with `gradeLevel` (depends on T071)
+- [X] T075 [P] [US2] Extend `packages/content-kit/src/lessons/__tests__/seed-status.spec.ts` to assert 60 seeded SD lessons, zero `PUBLISHED`
 - [ ] T076 [P] [US2] Write a failing contract test for `GET /api/v1/public/lessons?gradeLevel=` — extend `apps/api/src/modules/sync/__tests__/public-content.test.ts`
 - [ ] T077 [US2] Implement `GET /api/v1/public/lessons?gradeLevel=` (Zod-validated 1–6) in `public-content.service.ts` / `public-content.controller.ts` (depends on T076)
 - [ ] T078 [P] [US2] Write a failing contract test for `GET /api/v1/admin/curriculum/coverage` — extend `apps/api/src/modules/curriculum/__tests__/curriculum.test.ts`

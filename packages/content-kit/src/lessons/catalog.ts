@@ -1,18 +1,28 @@
 import type { EducationStage } from '../curriculum/achievements.js';
-import type { InteractiveLesson } from './types.js';
+import type { InteractiveLesson, SdGradeLevel } from './types.js';
 import { TK_LESSONS } from './tk.js';
-import { SD_LESSONS } from './sd.js';
+import { SD_LESSONS, listForGrade, lessonsByGrade } from './sd/index.js';
+
+export { listForGrade, lessonsByGrade };
 import { SMP_LESSONS } from './smp.js';
 import { SMA_LESSONS } from './sma.js';
 import { LEGACY_LESSON_REFS } from './legacy.js';
 
-/** The 12 interactive lessons produced by Feature 010 (all at REVIEW). */
+/**
+ * The interactive lesson catalog: 3 TK + 60 SD Matematika (Feature 011, kelas
+ * 1-6) + 3 SMP + 3 SMA. Everything stays at REVIEW (FR-030a).
+ */
 export const INTERACTIVE_LESSONS: readonly InteractiveLesson[] = [
   ...TK_LESSONS,
   ...SD_LESSONS,
   ...SMP_LESSONS,
   ...SMA_LESSONS,
 ];
+
+/** Feature 011 (T071) — per-grade catalog view for the kelas 1-6 explore/catalog UI. */
+export function listForGradeLevel(gradeLevel: SdGradeLevel): InteractiveLesson[] {
+  return listForGrade(gradeLevel);
+}
 
 const BY_ID = new Map(INTERACTIVE_LESSONS.map((l) => [l.id, l]));
 

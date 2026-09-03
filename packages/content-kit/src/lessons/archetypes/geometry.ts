@@ -65,14 +65,15 @@ export function makeGeometryLesson(spec: GeometryLessonSpec): InteractiveLesson 
 
   const questions: LessonQuestionInput[] = [];
 
-  // O4 — placement: number of sides of a shape on a small line.
+  // O4 — placement: number of sides/edges of a shape on a small line.
+  const nlMax = Math.max(10, ...shapes.map((s) => s.sides + 2));
   questions.push(
     numberLineQuestion({
       id: `${spec.id}-q1`,
       grade,
       promptText: `Ada berapa sisi pada ${s0.name}? Letakkan jawabanmu pada garis.`,
       min: 0,
-      max: 10,
+      max: nlMax,
       step: 1,
       targetValue: s0.sides,
       explanation: `${s0.name} memiliki ${idNum(s0.sides)} sisi.`,
