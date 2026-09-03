@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="AksiCendekia">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2170e4" />
+      <stop offset="1" stop-color="#0058be" />
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#bg)" />
+  <g transform="translate(256 262)">
+    <ellipse cx="0" cy="6" rx="132" ry="140" fill="#f8f9ff" />
+    <path d="M-118-70a118 96 0 0 1 236 0v14a118 108 0 0 1-236 0z" fill="#0058be" />
+    <circle cx="-58" cy="-44" r="52" fill="#f8f9ff" />
+    <circle cx="58" cy="-44" r="52" fill="#f8f9ff" />
+    <circle cx="-58" cy="-40" r="22" fill="#0b1c30" />
+    <circle cx="58" cy="-40" r="22" fill="#0b1c30" />
+    <circle cx="-50" cy="-48" r="7" fill="#f8f9ff" />
+    <circle cx="66" cy="-48" r="7" fill="#f8f9ff" />
+    <polygon points="0,-14 -22,18 22,18" fill="#fea619" />
+    <path d="M-70 70q70 54 140 0" stroke="#0058be" stroke-width="14" fill="none" stroke-linecap="round" />
+    <path d="M-150-96l40 34M150-96l-40 34" stroke="#fea619" stroke-width="16" stroke-linecap="round" />
+  </g>
+</svg>
