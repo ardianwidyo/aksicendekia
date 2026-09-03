@@ -20,6 +20,11 @@ function clampToStep(raw: number, min: number, max: number, step: number): numbe
   return Math.max(min, Math.min(max, Number(stepped.toFixed(6))));
 }
 
+/** Indonesian grouping (472.039) so large place-value numbers stay readable on a phone. */
+function formatNumber(value: number): string {
+  return value.toLocaleString('id-ID');
+}
+
 /**
  * `role="slider"` keyboard-first placement (contracts/widget-catalog.contract.md,
  * contracts/interactive-questions.contract.md §3). Mirrors the arrow/Home/End/
@@ -90,11 +95,21 @@ export const NumberLinePlacementQuestion: React.FC<NumberLinePlacementQuestionPr
     update(min + ratio * (max - min));
   };
 
-  const percent = ((current - min) / (max - min)) * 100;
+  const percent = Math.max(0, Math.min(100, ((current - min) / (max - min)) * 100));
   const targetPercent = isGraded ? ((targetValue! - min) / (max - min)) * 100 : null;
 
+  const handleTone = !hasPlaced
+    ? 'border-slate-400 bg-white opacity-40'
+    : isGraded
+      ? Math.abs(current - (targetValue ?? current)) <= (max - min) / 200 + 1e-9
+        ? 'border-emerald-700 bg-emerald-500'
+        : 'border-rose-700 bg-rose-500'
+      : 'border-blue-700 bg-blue-500';
+
   return (
-    <div className="rounded-xl border-2 border-slate-200 bg-white p-4">
+    <div className="rounded-xl border-2 border-slate-200 bg-white p-3 sm:p-4">
+      {/* Track row — handle and ticks only; labels live in their own row below so
+          they never collide with the draggable handle on a narrow screen. */}
       <div
         role="slider"
         tabIndex={disabled ? -1 : 0}
@@ -107,45 +122,70 @@ export const NumberLinePlacementQuestion: React.FC<NumberLinePlacementQuestionPr
         onKeyDown={onKeyDown}
         onPointerDown={(e) => placeFromPointer(e.clientX, e.currentTarget)}
         onClick={(e) => placeFromPointer(e.clientX, e.currentTarget)}
-        className="relative mt-6 h-12 cursor-pointer touch-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-4 rounded"
+        className="relative h-10 cursor-pointer touch-none rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
       >
-        <div className="absolute left-0 right-0 top-1/2 h-1 -translate-y-1/2 rounded bg-slate-300" />
+        <div className="absolute left-0 right-0 top-1/2 h-1.5 -translate-y-1/2 rounded-full bg-slate-200" />
+        <div
+          className="absolute left-0 top-1/2 h-1.5 -translate-y-1/2 rounded-full bg-blue-300"
+          style={{ width: `${percent}%` }}
+          aria-hidden
+        />
         {markers.map((m) => {
           const p = ((m - min) / (max - min)) * 100;
           return (
             <span
               key={m}
-              className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 text-xs text-slate-500"
+              className="absolute top-1/2 h-3 w-px -translate-x-1/2 -translate-y-1/2 bg-slate-400"
               style={{ left: `${p}%` }}
               aria-hidden
-            >
-              |<span className="block">{m}</span>
-            </span>
+            />
           );
         })}
         {isGraded && targetPercent !== null && (
           <span
-            className="absolute top-1/2 h-8 w-1 -translate-y-1/2 -translate-x-1/2 rounded bg-emerald-500"
+            className="absolute top-1/2 h-7 w-1 -translate-x-1/2 -translate-y-1/2 rounded bg-emerald-500"
             style={{ left: `${targetPercent}%` }}
             aria-hidden
           />
         )}
         <span
-          className={`absolute top-1/2 h-6 w-6 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 transition-opacity ${
-            !hasPlaced
-              ? 'border-slate-400 bg-white opacity-40'
-              : isGraded
-                ? Math.abs(current - (targetValue ?? current)) <= (max - min) / 200 + 1e-9
-                  ? 'border-emerald-700 bg-emerald-500'
-                  : 'border-rose-700 bg-rose-500'
-                : 'border-blue-700 bg-blue-500'
-          }`}
+          className={`absolute top-1/2 h-7 w-7 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 shadow-sm transition-opacity ${handleTone}`}
           style={{ left: `${percent}%` }}
           aria-hidden
         />
       </div>
-      <p className="mt-4 text-center text-lg font-bold text-blue-700">
-        {hasPlaced ? current : <span className="text-slate-400">Ketuk garis untuk meletakkan jawabanmu</span>}
+
+      {/* Marker labels — first sticks to the left edge, last to the right edge, so
+          nothing gets clipped by the card on mobile. */}
+      {markers.length > 0 && (
+        <div className="relative mt-1.5 h-4">
+          {markers.map((m, i) => {
+            const p = ((m - min) / (max - min)) * 100;
+            const isFirst = i === 0;
+            const isLast = i === markers.length - 1;
+            const shift = isFirst ? 'translateX(0)' : isLast ? 'translateX(-100%)' : 'translateX(-50%)';
+            return (
+              <span
+                key={m}
+                className="absolute top-0 text-[10px] leading-none tabular-nums text-slate-500 sm:text-xs"
+                style={{ left: `${p}%`, transform: shift }}
+                aria-hidden
+              >
+                {formatNumber(m)}
+              </span>
+            );
+          })}
+        </div>
+      )}
+
+      <p className="mt-3 text-center text-lg font-bold text-blue-700">
+        {hasPlaced ? (
+          formatNumber(current)
+        ) : (
+          <span className="text-sm font-medium text-slate-400">
+            Ketuk garis untuk meletakkan jawabanmu
+          </span>
+        )}
       </p>
     </div>
   );

@@ -196,7 +196,7 @@ describe('NumberLinePlacementQuestion — slider semantics', () => {
         targetValue={5}
       />,
     );
-    expect(screen.getByText('5', { selector: 'span.block' })).toBeInTheDocument();
+    expect(screen.getByText('5', { selector: 'span.tabular-nums' })).toBeInTheDocument();
     expect(container.querySelector('.border-emerald-700')).not.toBeNull();
   });
 
