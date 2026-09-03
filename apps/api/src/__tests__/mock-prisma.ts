@@ -667,7 +667,7 @@ export function createMockPrismaClient(): PrismaClient {
       },
       create: async ({ data }: { data: any }) => {
         const item = {
-          id: randomUUID(),
+          id: data.id || randomUUID(),
           lessonId: data.lesson?.connect?.id || data.lessonId,
           questionType: data.questionType,
           promptText: data.promptText,

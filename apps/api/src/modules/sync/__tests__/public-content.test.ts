@@ -444,3 +444,124 @@ describe("Public Content API — GET /api/v1/public/lessons?gradeLevel= (Feature
     expect(JSON.parse(res.body).lessons).toEqual([]);
   });
 });
+
+describe("Public Content API — guest vs registered payload parity (Feature 011 / T117 / FR-027)", () => {
+  let mockPrisma: any;
+  let app: any;
+  let source: any;
+
+  beforeEach(async () => {
+    const kit = await import("@aksicendekia/content-kit");
+    resetFocusConfigCache();
+    mockPrisma = createMockPrismaClient();
+    app = buildApp(mockPrisma);
+
+    source = kit.SD_LESSONS.find((l: any) => l.id === "sd-mtk-k4-04");
+    const ref = kit.getVideoEmbed(`yt-${source.id}`);
+
+    await mockPrisma.curriculumAchievement.upsert({
+      where: { id: source.curriculumAchievementId },
+      create: {
+        educationStage: EducationStage.SD,
+        phase: source.phase,
+        subjectCode: "MATH_SD",
+        element: "Bilangan",
+        achievementText: "x".repeat(40),
+        sourceDocument: "SK BSKAP 032/2024",
+        sourceUrl: "https://kurikulummerdeka.com/x",
+        retrievedAt: new Date("2026-09-02"),
+      },
+      update: {},
+    });
+    await mockPrisma.videoEmbed.create({
+      data: {
+        id: ref.id,
+        provider: "YOUTUBE",
+        externalId: ref.externalId,
+        title: ref.title,
+        publisherName: ref.publisherName,
+        posterStorageKey: ref.posterStorageKey,
+        transcriptText: ref.transcriptText,
+        verifiedAt: new Date(ref.verifiedAt),
+      },
+    });
+    const lesson = await mockPrisma.lesson.create({
+      data: {
+        unitId: "unit-MATH_SD-k4",
+        title: source.title,
+        summary: source.summary,
+        learningObjective: source.learningObjective,
+        educationStage: EducationStage.SD,
+        phase: source.phase,
+        gradeLevel: source.gradeLevel,
+        difficultyLevel: source.difficultyLevel,
+        estimatedDurationMinutes: source.estimatedDurationMinutes,
+        orderIndex: source.orderIndex,
+        status: ContentStatus.PUBLISHED,
+        listing: "LISTED",
+      },
+    });
+    lesson.curriculumAchievementId = source.curriculumAchievementId;
+    source._seededId = lesson.id;
+
+    for (let i = 0; i < source.contentBlocks.length; i++) {
+      const b = source.contentBlocks[i];
+      await mockPrisma.lessonContentBlock.create({
+        data: {
+          id: `${lesson.id}-b${i}`,
+          lessonId: lesson.id,
+          orderIndex: i,
+          blockType: b.blockType,
+          payload: b.payload,
+          transcriptText: b.transcriptText ?? null,
+          altText: b.altText ?? null,
+          narrationText: b.narrationText ?? null,
+          videoEmbedId: b.videoEmbedId ?? null,
+          status: ContentStatus.PUBLISHED,
+        },
+      });
+    }
+    for (let i = 0; i < source.questions.length; i++) {
+      const q = source.questions[i];
+      await mockPrisma.questionItem.create({
+        data: {
+          id: q.id,
+          lessonId: lesson.id,
+          questionType: q.questionType as QuestionType,
+          promptText: q.promptText,
+          contentPayload: q.contentPayload,
+          explanation: q.explanation,
+          orderIndex: i,
+          status: ContentStatus.PUBLISHED,
+        },
+      });
+    }
+  });
+
+  afterEach(() => resetFocusConfigCache());
+
+  it("the registered API returns the same content the guest catalog holds", async () => {
+    const res = await app.inject({ method: "GET", url: `/api/v1/public/lessons/${source._seededId}` });
+    expect(res.statusCode).toBe(200);
+    const body = JSON.parse(res.body);
+
+    expect(body.title).toBe(source.title);
+    expect(body.summary).toBe(source.summary);
+    expect(body.learningObjective).toBe(source.learningObjective);
+    expect(body.gradeLevel).toBe(source.gradeLevel);
+    expect(body.phase).toBe(source.phase);
+    expect(body.contentBlocks.map((b: any) => b.blockType)).toEqual(
+      source.contentBlocks.map((b: any) => b.blockType),
+    );
+    expect(body.questionItems).toHaveLength(source.questions.length);
+    expect(new Set(body.questionItems.map((q: any) => q.id))).toEqual(new Set(source.questions.map((q: any) => q.id)));
+
+    const apiVideo = body.contentBlocks.find((b: any) => b.blockType === "VIDEO");
+    expect(apiVideo.payload.videoEmbed).toMatchObject({
+      provider: "YOUTUBE",
+      externalId: expect.any(String),
+      transcriptText: expect.any(String),
+    });
+    expect(apiVideo.payload.videoEmbed).not.toHaveProperty("reviewedBy");
+  });
+});

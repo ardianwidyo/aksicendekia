@@ -216,6 +216,7 @@ export async function getPublicLessonDetail(prisma: PrismaClient, id: string) {
     learningObjective: lesson.learningObjective,
     educationStage: lesson.educationStage,
     phase: lesson.phase,
+    gradeLevel: (lesson as { gradeLevel?: number | null }).gradeLevel ?? null,
     difficultyLevel: lesson.difficultyLevel,
     estimatedDurationMinutes: lesson.estimatedDurationMinutes,
     orderIndex: lesson.orderIndex,

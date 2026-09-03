@@ -3,6 +3,7 @@ import {
   getLessonById,
   listForCatalog,
   listForGrade,
+  getVideoEmbed,
   allLessonIds as contentKitAllLessonIds,
   getLegacyLessonRef,
   type InteractiveLesson,
@@ -247,11 +248,36 @@ export interface InteractiveLessonView {
   summary: string;
   learningObjective: string;
   educationStage: string;
+  /** Feature 011 — set for SD lessons (kelas 1-6); matches the registered API. */
+  gradeLevel?: number;
+  phase?: string;
   difficultyLevel: string;
   estimatedDurationMinutes: number;
   contentBlocks: LessonBlockInput[];
   questionItems: QuestionItem[];
   supersededByLessonId?: string;
+}
+
+/** Feature 011 — the public-safe embedded-video shape, identical to the API's `toPublicVideoEmbed`. */
+function hydrateVideoBlock(block: LessonBlockInput): LessonBlockInput {
+  if (block.blockType !== 'VIDEO' || !block.videoEmbedId) return block;
+  const ref = getVideoEmbed(block.videoEmbedId);
+  if (!ref) return block;
+  return {
+    ...block,
+    payload: {
+      ...block.payload,
+      videoEmbed: {
+        provider: ref.provider,
+        externalId: ref.externalId,
+        title: ref.title,
+        publisherName: ref.publisherName,
+        durationSeconds: ref.durationSeconds ?? null,
+        posterUrl: `/${ref.posterStorageKey}`,
+        transcriptText: ref.transcriptText,
+      },
+    },
+  };
 }
 
 function toQuestionItem(q: InteractiveLesson['questions'][number]): QuestionItem {
@@ -272,9 +298,11 @@ export function toInteractiveLessonView(lesson: InteractiveLesson): InteractiveL
     summary: lesson.summary,
     learningObjective: lesson.learningObjective,
     educationStage: lesson.educationStage,
+    gradeLevel: lesson.gradeLevel,
+    phase: lesson.phase,
     difficultyLevel: lesson.difficultyLevel,
     estimatedDurationMinutes: lesson.estimatedDurationMinutes,
-    contentBlocks: lesson.contentBlocks,
+    contentBlocks: lesson.contentBlocks.map(hydrateVideoBlock),
     questionItems: lesson.questions.map(toQuestionItem),
     supersededByLessonId: lesson.supersededByLessonId,
   };

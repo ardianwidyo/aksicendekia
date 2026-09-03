@@ -233,15 +233,15 @@ Existing monorepo, no new top-level structure: `packages/content-kit/src/`, `pac
 
 **Independent Test**: Complete part of a lesson as a guest, reload, register, confirm progress carried over; compare the guest vs. registered payload for the same lesson.
 
-- [ ] T113 [P] [US5] Write a failing test: `apps/web/lib/guest-lessons.ts` surfaces the SD grade catalog with the same shape as the registered API — `apps/web/lib/__tests__/guest-lessons.spec.ts`
-- [ ] T114 [US5] Extend `guest-lessons.ts` to expose `gradeLevel` and `videoEmbed` from content-kit (depends on T008, T016, T113)
-- [ ] T115 [P] [US5] Write a failing test: guest progress for the new SD lessons persists in `localStorage` and migrates on registration — extend `guest-progress-context.tsx` tests
-- [ ] T116 [US5] Adjust `apps/web/lib/context/guest-progress-context.tsx` and `apps/api/src/modules/sync/guest-sync.service.ts` for the expanded 60-lesson id set (depends on T115)
-- [ ] T117 [P] [US5] Write a failing test comparing the guest vs. registered response payload for the same lesson id — extend `public-content.test.ts`
-- [ ] T118 [US5] Fix any divergence surfaced by T117 (FR-027)
-- [ ] T119 [P] [US5] Write a failing test: no third-party network request fires on the guest lesson path until the video play button is pressed — new network-spy test under `apps/web/app/explore/[lessonId]/__tests__/`
-- [ ] T120 [US5] Fix any premature request surfaced by T119 (SC-011)
-- [ ] T121 [US5] Verify a disabled/full `localStorage` still allows completing one lesson in-session with a visible "kemajuan tidak tersimpan" notice (FR-030)
+- [X] T113 [P] [US5] Write a failing test: `apps/web/lib/guest-lessons.ts` surfaces the SD grade catalog with the same shape as the registered API — `apps/web/lib/__tests__/guest-lessons.spec.ts`
+- [X] T114 [US5] Extend `guest-lessons.ts` to expose `gradeLevel` and `videoEmbed` from content-kit (depends on T008, T016, T113)
+- [X] T115 [P] [US5] Write a failing test: guest progress for the new SD lessons persists in `localStorage` and migrates on registration — extend `guest-progress-context.tsx` tests
+- [X] T116 [US5] Adjust guest progress + guest-sync for the 60-lesson id set — verified: both schemas are already id-set-agnostic (`GuestProgressStateSchema.completedLessonIds` uncapped web-side; `GuestSyncRequestSchema.completedLessonIds` `.max(500)`, `sessionHistory` `.max(30)` API-side). No structural change needed; T115 tests prove 60 ids + per-lesson scores persist and carry through a migration.
+- [X] T117 [P] [US5] Write a failing test comparing the guest vs. registered response payload for the same lesson id — extend `public-content.test.ts`
+- [X] T118 [US5] Fix any divergence surfaced by T117 (FR-027)
+- [X] T119 [P] [US5] Write a failing test: no third-party network request fires on the guest lesson path until the video play button is pressed — new network-spy test under `apps/web/app/explore/[lessonId]/__tests__/`
+- [X] T120 [US5] Fix any premature request surfaced by T119 (SC-011)
+- [X] T121 [US5] Verify a disabled/full `localStorage` still allows completing one lesson in-session with a visible "kemajuan tidak tersimpan" notice (FR-030)
 
 **Checkpoint**: US1–US5 independently functional.
 
