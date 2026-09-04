@@ -7,6 +7,7 @@ import {
   assembleLesson,
   at,
   digitAt,
+  DEFAULT_QUESTION_COUNT,
   distinctNumericOptions,
   dragGroupQuestion,
   embedVideoBlock,
@@ -15,6 +16,7 @@ import {
   isYoungGrade,
   mcQuestion,
   numberLineQuestion,
+  passOf,
   pickNonZeroPlace,
   placeValueOf,
   shortAnswerQuestion,
@@ -57,7 +59,7 @@ export function makePlaceValueLesson(spec: PlaceValueLessonSpec): InteractiveLes
   const numbers = spec.params.numbers;
   if (numbers.length < 4) throw new Error(`${spec.id}: place-value butuh >= 4 angka.`);
   const askPlaces = spec.params.askPlaces ?? [2, 1, 3];
-  const count = spec.questionCount ?? 12;
+  const count = spec.questionCount ?? DEFAULT_QUESTION_COUNT;
   const young = isYoungGrade(grade);
 
   const anchor = at(numbers, 0);
@@ -183,12 +185,15 @@ export function makePlaceValueLesson(spec: PlaceValueLessonSpec): InteractiveLes
   );
 
   for (let i = 0; i < count - 2; i += 1) {
+    // Each pass over `numbers` rotates which place we ask about and which form
+    // we use, so a repeated seed number never yields a verbatim repeat.
+    const p = passOf(i, numbers.length);
     const n = at(numbers, i % numbers.length);
-    const place = pickNonZeroPlace(n, at(askPlaces, i % askPlaces.length));
+    const place = pickNonZeroPlace(n, at(askPlaces, (i + p) % askPlaces.length));
     const d = digitAt(n, place);
     const value = placeValueOf(n, place);
     const qid = `${spec.id}-q${i + 3}`;
-    const shape = young ? i % 2 : i % 3;
+    const shape = young ? (i + p) % 2 : (i + p) % 3;
 
     if (shape === 0) {
       const opts = distinctNumericOptions(value, [d, d * 10, value * 10, value + 10 ** place]).map(
@@ -198,7 +203,9 @@ export function makePlaceValueLesson(spec: PlaceValueLessonSpec): InteractiveLes
         mcQuestion({
           id: qid,
           grade,
-          promptText: `Berapa nilai angka ${d} pada bilangan ${idNum(n)}?`,
+          // Name the place so the question stays unambiguous when a digit
+          // repeats in the number (e.g. angka 9 pada 9.999).
+          promptText: `Berapa nilai angka ${d} di tempat ${PLACE_NAMES[place]} pada bilangan ${idNum(n)}?`,
           options: young
             ? opts.map((o) => ({ ...o, illustrationAssetId: optionAsset(grade, `${qid}-${o.id}`) }))
             : opts,
@@ -208,7 +215,7 @@ export function makePlaceValueLesson(spec: PlaceValueLessonSpec): InteractiveLes
             `Hitung posisi angka ${d} dari kanan.`,
             `Urutan tempat: ${PLACE_NAMES.slice(0, String(n).length).join(', ')}.`,
           ],
-          narrationText: young ? `Berapa nilai angka ${d} pada ${idNum(n)}?` : undefined,
+          narrationText: young ? `Berapa nilai angka ${d} di tempat ${PLACE_NAMES[place]} pada ${idNum(n)}?` : undefined,
         }),
       );
     } else if (shape === 1) {
@@ -229,7 +236,7 @@ export function makePlaceValueLesson(spec: PlaceValueLessonSpec): InteractiveLes
           narrationText: young ? `Pilih bilangan dengan ${PLACE_NAMES[place]} bernilai ${value}.` : undefined,
         }),
       );
-    } else {
+    } else if (p % 2 === 0) {
       const lf = longForm(n);
       questions.push(
         shortAnswerQuestion({
@@ -239,6 +246,20 @@ export function makePlaceValueLesson(spec: PlaceValueLessonSpec): InteractiveLes
           acceptedAnswers: [lf, lf.replace(/ /g, ''), lf.replace(/ \+ /g, '+')],
           explanation: `${idNum(n)} = ${lf}.`,
           hints: [`Uraikan tiap angka menurut tempatnya.`, `Tempat yang berisi 0 tidak ditulis.`],
+        }),
+      );
+    } else {
+      questions.push(
+        shortAnswerQuestion({
+          id: qid,
+          grade,
+          promptText: `Berapa nilai angka ${d} pada bilangan ${idNum(n)}? Tulis angkanya saja.`,
+          acceptedAnswers: [String(value), idNum(value)],
+          explanation: `Angka ${d} berada di tempat ${PLACE_NAMES[place]}, jadi nilainya ${idNum(value)}.`,
+          hints: [
+            `Hitung posisi angka ${d} dari kanan.`,
+            `Nilai = angka x nilai tempatnya.`,
+          ],
         }),
       );
     }

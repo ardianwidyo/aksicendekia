@@ -1,6 +1,7 @@
 import type { InteractiveLesson, LessonQuestionInput } from '../types.js';
 import {
   ArchetypeSpecBase,
+  DEFAULT_QUESTION_COUNT,
   assembleLesson,
   at,
   buildStandardBlocks,
@@ -10,6 +11,7 @@ import {
   isYoungGrade,
   mcQuestion,
   numberLineQuestion,
+  passOf,
   shortAnswerQuestion,
   toOptions,
 } from './shared.js';
@@ -37,7 +39,7 @@ export function makeMeasurementLesson(spec: MeasurementLessonSpec): InteractiveL
   const { quantity, base, sub, factor, objects } = spec.params;
   if (objects.length < 4) throw new Error(`${spec.id}: measurement butuh >= 4 objek.`);
   if (factor < 2) throw new Error(`${spec.id}: factor konversi harus >= 2.`);
-  const count = spec.questionCount ?? 12;
+  const count = spec.questionCount ?? DEFAULT_QUESTION_COUNT;
   const young = isYoungGrade(grade);
   const o0 = at(objects, 0);
   const maxSub = Math.max(...objects.map((o) => o.sub));
@@ -115,9 +117,16 @@ export function makeMeasurementLesson(spec: MeasurementLessonSpec): InteractiveL
   );
 
   for (let i = 0; i < count - 2; i += 1) {
+    const p = passOf(i, objects.length);
     const o = at(objects, i % objects.length);
+    // partner rotates each pass and never equals the primary object.
+    let bi = (i + 1 + p) % objects.length;
+    if (bi === i % objects.length) bi = (bi + 1) % objects.length;
+    const b = at(objects, bi);
     const qid = `${spec.id}-q${i + 3}`;
-    const shape = young ? i % 2 : i % 3;
+    // young forms (0-3) are all multiple-choice; shape 4 (short answer) and
+    // shape 5 (reverse conversion) only appear for kelas 3+.
+    const shape = young ? (i + p) % 4 : (i + p) % 6;
 
     if (shape === 0) {
       const inBase = o.sub / factor;
@@ -139,7 +148,6 @@ export function makeMeasurementLesson(spec: MeasurementLessonSpec): InteractiveL
         }),
       );
     } else if (shape === 1) {
-      const b = at(objects, (i + 1) % objects.length);
       const bigger = o.sub >= b.sub ? o.name : b.name;
       const opts = [
         { id: 'a', text: bigger },
@@ -163,7 +171,48 @@ export function makeMeasurementLesson(spec: MeasurementLessonSpec): InteractiveL
           narrationText: young ? `Pilih yang lebih panjang.` : undefined,
         }),
       );
-    } else {
+    } else if (shape === 2) {
+      const d = Math.abs(o.sub - b.sub);
+      const opts = distinctNumericOptions(d, [o.sub + b.sub, d + factor, o.sub, b.sub]).map(
+        (text, j) => ({ id: OPTLET(j), text }),
+      );
+      questions.push(
+        mcQuestion({
+          id: qid,
+          grade,
+          promptText: `Berapa selisih ${quantity} ${o.name} (${idNum(o.sub)} ${sub}) dan ${b.name} (${idNum(b.sub)} ${sub})?`,
+          options: young
+            ? opts.map((op) => ({ ...op, illustrationAssetId: `assets/lessons/sd/kelas-${grade}/ms/${qid}-${op.id}.svg` }))
+            : opts,
+          correctOptionId: 'a',
+          explanation: `${idNum(Math.max(o.sub, b.sub))} ${sub} - ${idNum(Math.min(o.sub, b.sub))} ${sub} = ${idNum(d)} ${sub}.`,
+          hints: [`Kurangkan ukuran yang kecil dari yang besar.`],
+          narrationText: young ? `Berapa selisih panjang keduanya?` : undefined,
+        }),
+      );
+    } else if (shape === 3) {
+      const totalSub = o.sub + b.sub;
+      const opts = distinctNumericOptions(totalSub, [
+        Math.abs(o.sub - b.sub),
+        totalSub + factor,
+        o.sub,
+        b.sub,
+      ]).map((text, j) => ({ id: OPTLET(j), text }));
+      questions.push(
+        mcQuestion({
+          id: qid,
+          grade,
+          promptText: `${o.name} ${idNum(o.sub)} ${sub} dan ${b.name} ${idNum(b.sub)} ${sub}. Berapa jumlah ${quantity}nya dalam ${sub}?`,
+          options: young
+            ? opts.map((op) => ({ ...op, illustrationAssetId: `assets/lessons/sd/kelas-${grade}/ms/${qid}-${op.id}.svg` }))
+            : opts,
+          correctOptionId: 'a',
+          explanation: `${idNum(o.sub)} ${sub} + ${idNum(b.sub)} ${sub} = ${idNum(totalSub)} ${sub}.`,
+          hints: [`Jumlahkan kedua ukuran karena satuannya sama.`],
+          narrationText: young ? `Berapa jumlah panjang keduanya?` : undefined,
+        }),
+      );
+    } else if (shape === 4) {
       questions.push(
         shortAnswerQuestion({
           id: qid,
@@ -176,6 +225,24 @@ export function makeMeasurementLesson(spec: MeasurementLessonSpec): InteractiveL
           ],
           explanation: `${idNum(o.sub)} : ${idNum(factor)} = ${o.sub / factor} ${base}.`,
           hints: [`${idNum(factor)} ${sub} = 1 ${base}.`],
+        }),
+      );
+    } else {
+      // reverse conversion: whole base units back to sub units.
+      const nBase = Math.max(1, Math.round(o.sub / factor));
+      const inSub = nBase * factor;
+      const opts = distinctNumericOptions(inSub, [nBase, inSub + factor, inSub - factor, nBase + factor]).map(
+        (text, j) => ({ id: OPTLET(j), text }),
+      );
+      questions.push(
+        mcQuestion({
+          id: qid,
+          grade,
+          promptText: `${idNum(nBase)} ${base} sama dengan berapa ${sub}?`,
+          options: opts,
+          correctOptionId: 'a',
+          explanation: `1 ${base} = ${idNum(factor)} ${sub}, jadi ${idNum(nBase)} ${base} = ${idNum(nBase)} x ${idNum(factor)} = ${idNum(inSub)} ${sub}.`,
+          hints: [`Kalikan dengan ${idNum(factor)} untuk berpindah dari ${base} ke ${sub}.`],
         }),
       );
     }

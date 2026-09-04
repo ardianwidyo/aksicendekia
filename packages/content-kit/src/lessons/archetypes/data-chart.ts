@@ -1,6 +1,7 @@
 import type { InteractiveLesson, LessonQuestionInput } from '../types.js';
 import {
   ArchetypeSpecBase,
+  DEFAULT_QUESTION_COUNT,
   assembleLesson,
   at,
   buildStandardBlocks,
@@ -10,6 +11,7 @@ import {
   isYoungGrade,
   mcQuestion,
   numberLineQuestion,
+  passOf,
   shortAnswerQuestion,
   toOptions,
 } from './shared.js';
@@ -31,7 +33,7 @@ export function makeDataChartLesson(spec: DataChartLessonSpec): InteractiveLesso
   const { gradeLevel: grade } = spec;
   const cats = spec.params.categories;
   if (cats.length < 4) throw new Error(`${spec.id}: data-chart butuh >= 4 kategori.`);
-  const count = spec.questionCount ?? 12;
+  const count = spec.questionCount ?? DEFAULT_QUESTION_COUNT;
   const young = isYoungGrade(grade);
   const total = cats.reduce((s, c) => s + c.count, 0);
   const most = cats.reduce((a, b) => (b.count > a.count ? b : a));
@@ -112,37 +114,46 @@ export function makeDataChartLesson(spec: DataChartLessonSpec): InteractiveLesso
     }),
   );
 
-  for (let i = 0; i < count - 2; i += 1) {
-    const c = at(cats, i % cats.length);
-    const other = at(cats, (i + 1) % cats.length);
-    const qid = `${spec.id}-q${i + 3}`;
-    const shape = young ? i % 2 : i % 3;
+  // A 4-category dataset only affords so many distinct readings; rotate through
+  // a spread of question forms (count / difference / sum / comparison, plus the
+  // occasional whole-chart question) so 30 items stay varied.
+  const youngForms = ['count', 'diff', 'sum', 'which', 'count', 'diff', 'sum', 'which', 'most', 'least'] as const;
+  const olderForms = [
+    'count', 'diff', 'sum', 'which', 'total',
+    'count', 'diff', 'sum', 'which', 'categories',
+    'count', 'diff', 'most', 'least',
+  ] as const;
+  const forms = young ? youngForms : olderForms;
+  const dcAsset = (q: string, id: string): string => `assets/lessons/sd/kelas-${grade}/dc/${q}-${id}.svg`;
 
-    if (shape === 0) {
-      const opts = [
-        { id: 'a', text: most.name },
-        { id: 'b', text: least.name },
-        { id: 'c', text: at(cats, Math.floor(cats.length / 2)).name },
-      ];
-      // ensure distinct labels
-      const seen = new Set<string>();
-      const uniqueOpts = opts.filter((o) => (seen.has(o.text) ? false : (seen.add(o.text), true)));
-      while (uniqueOpts.length < 2) uniqueOpts.push({ id: OPTLET(uniqueOpts.length), text: `${least.name} kembali` });
+  for (let i = 0; i < count - 2; i += 1) {
+    const p = passOf(i, forms.length);
+    // stride 3 is coprime with 4 categories, so the primary walks all of them.
+    const cIdx = (i * 3) % cats.length;
+    let oIdx = (i * 3 + 1 + p) % cats.length;
+    if (oIdx === cIdx) oIdx = (oIdx + 1) % cats.length;
+    const c = at(cats, cIdx);
+    const other = at(cats, oIdx);
+    const qid = `${spec.id}-q${i + 3}`;
+    const form = at(forms, i % forms.length);
+
+    if (form === 'count') {
+      const opts = distinctNumericOptions(c.count, [c.count + 1, c.count - 1, c.count + 2, other.count]).map(
+        (text, j) => ({ id: OPTLET(j), text }),
+      );
       questions.push(
         mcQuestion({
           id: qid,
           grade,
-          promptText: `Kategori dengan jumlah terbanyak adalah...`,
-          options: young
-            ? uniqueOpts.map((o) => ({ ...o, illustrationAssetId: `assets/lessons/sd/kelas-${grade}/dc/${qid}-${o.id}.svg` }))
-            : uniqueOpts,
+          promptText: `Pada diagram, berapa banyak ${c.name}?`,
+          options: young ? opts.map((o) => ({ ...o, illustrationAssetId: dcAsset(qid, o.id) })) : opts,
           correctOptionId: 'a',
-          explanation: `${most.name} memiliki ${idNum(most.count)}, paling banyak di antara semua kategori.`,
-          hints: [`Cari batang tertinggi / gambar terbanyak.`],
-          narrationText: young ? `Kategori mana yang paling banyak?` : undefined,
+          explanation: `Batang ${c.name} menunjukkan ${idNum(c.count)}.`,
+          hints: [`Baca tinggi batang ${c.name} pada sumbu tegak.`],
+          narrationText: young ? `Berapa banyak ${c.name}?` : undefined,
         }),
       );
-    } else if (shape === 1) {
+    } else if (form === 'diff') {
       const diff = Math.abs(c.count - other.count);
       const opts = distinctNumericOptions(diff, [c.count + other.count, diff + 1, diff - 1, c.count]).map(
         (text, j) => ({ id: OPTLET(j), text }),
@@ -152,13 +163,86 @@ export function makeDataChartLesson(spec: DataChartLessonSpec): InteractiveLesso
           id: qid,
           grade,
           promptText: `Berapa selisih banyak ${c.name} (${idNum(c.count)}) dan ${other.name} (${idNum(other.count)})?`,
-          options: young
-            ? opts.map((o) => ({ ...o, illustrationAssetId: `assets/lessons/sd/kelas-${grade}/dc/${qid}-${o.id}.svg` }))
-            : opts,
+          options: young ? opts.map((o) => ({ ...o, illustrationAssetId: dcAsset(qid, o.id) })) : opts,
           correctOptionId: 'a',
           explanation: `|${idNum(c.count)} - ${idNum(other.count)}| = ${idNum(diff)}.`,
           hints: [`Kurangkan yang kecil dari yang besar.`],
           narrationText: young ? `Berapa selisihnya?` : undefined,
+        }),
+      );
+    } else if (form === 'sum') {
+      const sum = c.count + other.count;
+      const opts = distinctNumericOptions(sum, [Math.abs(c.count - other.count), sum + 1, sum - 2, c.count]).map(
+        (text, j) => ({ id: OPTLET(j), text }),
+      );
+      questions.push(
+        mcQuestion({
+          id: qid,
+          grade,
+          promptText: `Berapa jumlah banyak ${c.name} (${idNum(c.count)}) dan ${other.name} (${idNum(other.count)})?`,
+          options: young ? opts.map((o) => ({ ...o, illustrationAssetId: dcAsset(qid, o.id) })) : opts,
+          correctOptionId: 'a',
+          explanation: `${idNum(c.count)} + ${idNum(other.count)} = ${idNum(sum)}.`,
+          hints: [`Jumlahkan tinggi kedua batang.`],
+          narrationText: young ? `Berapa jumlah keduanya?` : undefined,
+        }),
+      );
+    } else if (form === 'which') {
+      const hi = c.count >= other.count ? c : other;
+      const lo = hi === c ? other : c;
+      const opts = [
+        { id: 'a', text: hi.name },
+        { id: 'b', text: lo.name },
+        { id: 'c', text: 'Sama banyak' },
+      ];
+      questions.push(
+        mcQuestion({
+          id: qid,
+          grade,
+          promptText: `Mana yang lebih banyak, ${c.name} atau ${other.name}?`,
+          options: young ? opts.map((o) => ({ ...o, illustrationAssetId: dcAsset(qid, o.id) })) : opts,
+          correctOptionId: c.count === other.count ? 'c' : 'a',
+          explanation:
+            c.count === other.count
+              ? `${c.name} dan ${other.name} sama banyak (${idNum(c.count)}).`
+              : `${hi.name} (${idNum(hi.count)}) lebih banyak dari ${lo.name} (${idNum(lo.count)}).`,
+          hints: [`Bandingkan tinggi kedua batang.`],
+          narrationText: young ? `Kategori mana yang lebih banyak?` : undefined,
+        }),
+      );
+    } else if (form === 'most' || form === 'least') {
+      const target = form === 'most' ? most : least;
+      const opts = [
+        { id: 'a', text: target.name },
+        { id: 'b', text: (form === 'most' ? least : most).name },
+        { id: 'c', text: at(cats, (cIdx + 1) % cats.length).name },
+      ];
+      const seen = new Set<string>();
+      const uniqueOpts = opts.filter((o) => (seen.has(o.text) ? false : (seen.add(o.text), true)));
+      while (uniqueOpts.length < 2) {
+        uniqueOpts.push({ id: OPTLET(uniqueOpts.length), text: `Bukan ${target.name} (${uniqueOpts.length})` });
+      }
+      questions.push(
+        mcQuestion({
+          id: qid,
+          grade,
+          promptText: `Kategori dengan jumlah ${form === 'most' ? 'terbanyak' : 'paling sedikit'} adalah...`,
+          options: young ? uniqueOpts.map((o) => ({ ...o, illustrationAssetId: dcAsset(qid, o.id) })) : uniqueOpts,
+          correctOptionId: 'a',
+          explanation: `${target.name} memiliki ${idNum(target.count)}, ${form === 'most' ? 'paling banyak' : 'paling sedikit'} di antara semua kategori.`,
+          hints: [`Cari batang ${form === 'most' ? 'tertinggi' : 'terpendek'}.`],
+          narrationText: young ? `Kategori mana yang ${form === 'most' ? 'paling banyak' : 'paling sedikit'}?` : undefined,
+        }),
+      );
+    } else if (form === 'categories') {
+      questions.push(
+        shortAnswerQuestion({
+          id: qid,
+          grade,
+          promptText: `Ada berapa kategori yang ditampilkan pada diagram?`,
+          acceptedAnswers: [String(cats.length), idNum(cats.length)],
+          explanation: `Diagram memuat ${idNum(cats.length)} kategori: ${cats.map((x) => x.name).join(', ')}.`,
+          hints: [`Hitung banyak batang / baris pada diagram.`],
         }),
       );
     } else {

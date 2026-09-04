@@ -31,7 +31,7 @@ Prinsip pelaksanaan yang diminta pengguna: **kerjakan seefisien mungkin**. Fitur
 ### Session 2026-09-02
 
 - **Q1: Luas penyembunyian menu (FR-003)** → **Sembunyikan jenjang & mata pelajaran non-fokus saja.** Seluruh permukaan siswa (peta misi, papan peringkat, pencapaian) serta dasbor orang tua, dasbor guru, CMS admin, dan langganan **tetap aktif**. Perubahan dibatasi pada penyaringan jenjang dan mata pelajaran di seluruh titik masuk konten.
-- **Q2: Volume materi (FR-008)** → **10 materi interaktif per tingkat kelas.** Kelas 1 sampai 6 masing-masing minimal 10 materi → **minimal 60 materi** dan **minimal 600 butir soal**. Untuk menahan biaya produksi (permintaan "token seminimal mungkin"), materi dihasilkan lewat pola/templat yang dipakai ulang antar kelas, bukan ditulis satu per satu dari nol (FR-037).
+- **Q2: Volume materi (FR-008)** → **10 materi interaktif per tingkat kelas.** Kelas 1 sampai 6 masing-masing minimal 10 materi → **minimal 60 materi** dan **minimal 1.800 butir soal** (≥30 butir per materi). Untuk menahan biaya produksi (permintaan "token seminimal mungkin"), materi dan butir soalnya dihasilkan lewat pola/templat yang dipakai ulang antar kelas — tiap arketipe menurunkan variasi soal secara deterministik dari parameter materi — bukan ditulis satu per satu dari nol (FR-037).
 - Q: Rentang ukuran layar mana yang WAJIB didukung penuh oleh antarmuka? (FR-040) → A: 320px–1280px+ — dari ponsel kecil sampai desktop, seluruhnya kelas satu.
 - Q: Apakah setiap pelajaran, termasuk manipulatif lebar seperti garis bilangan dan batang pecahan, WAJIB dapat dipakai penuh dalam orientasi potret di ponsel? (FR-042) → A: Ya, potret wajib — seluruh pelajaran dan widget dapat dipakai penuh pada 320px potret; lanskap adalah bonus, tidak pernah menjadi syarat.
 - Q: Saat anak mengerjakan soal seret-dan-letakkan atau garis bilangan di ponsel, apakah ia WAJIB dapat menyelesaikannya cukup dengan ketukan? (FR-043) → A: Ya, ketuk-untuk-menempatkan wajib — ketuk objek lalu ketuk tujuannya; menyeret tetap berfungsi tetapi tidak pernah menjadi satu-satunya cara.
@@ -112,7 +112,7 @@ Sebagai siswa SD, saya ingin mencoba sendiri konsepnya lewat komponen yang bisa 
 **Acceptance Scenarios**:
 
 1. **Given** sebuah komponen manipulatif dalam materi, **When** siswa mengubahnya, **Then** tampilan visual diperbarui seketika tanpa memuat ulang halaman.
-2. **Given** sebuah materi, **When** siswa menyelesaikan segmen konsep, **Then** ia dapat lanjut ke latihan berisi sekurang-kurangnya 10 butir soal.
+2. **Given** sebuah materi, **When** siswa menyelesaikan segmen konsep, **Then** ia dapat lanjut ke latihan berisi sekurang-kurangnya 30 butir soal.
 3. **Given** siswa menjawab sebuah butir soal, **When** jawabannya dikirim, **Then** ia menerima umpan balik benar/salah beserta pembahasan langkah demi langkah, dan petunjuk bertahap tersedia sebelum menjawab.
 4. **Given** latihan dalam satu materi, **When** diperiksa jenis soalnya, **Then** sekurang-kurangnya sebagian soal berjenis visual/interaktif (mis. seret-dan-letakkan, penempatan pada garis bilangan), bukan seluruhnya pilihan ganda berbasis teks.
 5. **Given** siswa kelas 1–2 yang belum lancar membaca, **When** ia membuka materi kelasnya, **Then** setiap soal dan pilihan jawaban dapat dipahami dari gambar/ikon, dan tersedia kendali "dengarkan" untuk membacakan teksnya.
@@ -212,7 +212,7 @@ Sebagai guru atau orang tua, saya ingin tahu setiap materi memetakan ke capaian 
 #### D. Interaktivitas & Latihan
 
 - **FR-020**: Komponen manipulatif MUST memperbarui tampilan seketika saat dimanipulasi, tanpa memuat ulang halaman.
-- **FR-021**: Setiap materi MUST memuat sekurang-kurangnya 10 butir soal latihan.
+- **FR-021**: Setiap materi MUST memuat sekurang-kurangnya 30 butir soal latihan. Butir soal dihasilkan oleh arketipe secara deterministik dari parameter materi (rotasi bentuk soal + pasangan/parameter antar-lintasan) sehingga satu materi menghasilkan set latihan penuh tanpa menulis 30 brief per materi.
 - **FR-022**: Setiap butir soal MUST memiliki pembahasan langkah demi langkah dan petunjuk bertahap yang dapat diakses sebelum menjawab.
 - **FR-023**: Setiap materi MUST memuat sekurang-kurangnya satu butir soal berjenis visual/interaktif, bukan seluruhnya pilihan ganda berbasis teks.
 - **FR-024**: Materi untuk siswa yang belum lancar membaca (kelas 1–2) MUST dapat dipahami dari gambar/ikon dan MUST menyediakan kendali "dengarkan" untuk membacakan teks tanpa mengirim data ke layanan pihak ketiga.
@@ -268,7 +268,7 @@ Sebagai guru atau orang tua, saya ingin tahu setiap materi memetakan ke capaian 
 ### Measurable Outcomes
 
 - **SC-001**: Dengan mode fokus aktif, penelusuran seluruh navigasi sebagai tamu dan sebagai siswa tidak menemukan satu pun tautan menuju jenjang non-SD atau mata pelajaran non-Matematika.
-- **SC-002**: Setiap kelas 1 sampai 6 memiliki sekurang-kurangnya 10 materi terbit (total minimal 60 materi dan 600 butir soal), terverifikasi melalui laporan cakupan per kelas.
+- **SC-002**: Setiap kelas 1 sampai 6 memiliki sekurang-kurangnya 10 materi terbit (total minimal 60 materi dan 1.800 butir soal, ≥30 butir per materi), terverifikasi melalui laporan cakupan per kelas.
 - **SC-003**: 100% materi yang terbit memuat sekurang-kurangnya satu ilustrasi, satu animasi self-hosted, satu elemen interaktif, dan satu video tersemat; dan 100% di antaranya tetap dapat diselesaikan ketika sematan video diblokir.
 - **SC-004**: 100% elemen visual memiliki padanan teks, dan 100% materi dapat diselesaikan dari awal sampai ringkasan hanya dengan keyboard.
 - **SC-005**: 100% materi yang terbit dapat dibuka dan diselesaikan penuh oleh pengunjung tanpa login, dengan isi identik dengan yang dilihat pengguna terdaftar.

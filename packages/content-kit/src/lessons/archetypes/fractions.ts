@@ -1,6 +1,7 @@
 import type { InteractiveLesson, LessonQuestionInput } from '../types.js';
 import {
   ArchetypeSpecBase,
+  DEFAULT_QUESTION_COUNT,
   assembleLesson,
   at,
   buildStandardBlocks,
@@ -8,6 +9,7 @@ import {
   isYoungGrade,
   mcQuestion,
   numberLineQuestion,
+  passOf,
   shortAnswerQuestion,
   toOptions,
 } from './shared.js';
@@ -41,7 +43,7 @@ export function makeFractionsLesson(spec: FractionsLessonSpec): InteractiveLesso
   const { denominators, compares } = spec.params;
   if (denominators.length < 3) throw new Error(`${spec.id}: fractions butuh >= 3 penyebut.`);
   if (compares.length < 3) throw new Error(`${spec.id}: fractions butuh >= 3 pasangan perbandingan.`);
-  const count = spec.questionCount ?? 12;
+  const count = spec.questionCount ?? DEFAULT_QUESTION_COUNT;
   const d0 = at(denominators, 0);
 
   const blocks = buildStandardBlocks({
@@ -113,8 +115,24 @@ export function makeFractionsLesson(spec: FractionsLessonSpec): InteractiveLesso
   for (let i = 0; i < count - 2; i += 1) {
     const qid = `${spec.id}-q${i + 3}`;
     const shape = i % 3;
+    // How many shape-triples we have produced — rotates the partner fraction and
+    // the scaling factor so a repeated seed row never yields a verbatim repeat.
+    const p = passOf(i, 3);
     if (shape === 0) {
-      const [n1, d1, n2, d2] = at(compares, i % compares.length);
+      const clen = compares.length;
+      const primaryIdx = i % clen;
+      const [n1, d1] = at(compares, primaryIdx);
+      // offset 1..clen-1 => a different row; keep advancing if that row happens
+      // to spell the same fraction (options a and b must stay distinct).
+      let partnerIdx = (primaryIdx + 1 + (p % (clen - 1))) % clen;
+      for (let g = 0; g < clen; g += 1) {
+        const cand = at(compares, partnerIdx);
+        if (!(cand[0] === n1 && cand[1] === d1)) break;
+        partnerIdx = (partnerIdx + 1) % clen;
+      }
+      const partner = at(compares, partnerIdx);
+      const n2 = partner[0];
+      const d2 = partner[1];
       const c = cmp(n1, d1, n2, d2);
       const bigger = c > 0 ? `${n1}/${d1}` : c < 0 ? `${n2}/${d2}` : 'sama besar';
       const opts = [
@@ -139,7 +157,8 @@ export function makeFractionsLesson(spec: FractionsLessonSpec): InteractiveLesso
       );
     } else if (shape === 1) {
       const d = at(denominators, i % denominators.length);
-      const part = 2;
+      // shaded parts cycle 1..d-1 across passes so the fraction asked changes.
+      const part = 1 + ((p + i) % Math.max(1, d - 1));
       const [sn, sd] = simplify(part, d);
       questions.push(
         shortAnswerQuestion({
@@ -153,7 +172,9 @@ export function makeFractionsLesson(spec: FractionsLessonSpec): InteractiveLesso
       );
     } else {
       const d = at(denominators, i % denominators.length);
-      const [en, ed] = [2, 2 * d];
+      // the scaling factor grows with the pass: 1/d = k/(k*d).
+      const k = 2 + (p % 3);
+      const [en, ed] = [k, k * d];
       const opts = [
         { id: 'a', text: `${en}/${ed}` },
         { id: 'b', text: `${en + 1}/${ed}` },
@@ -166,7 +187,7 @@ export function makeFractionsLesson(spec: FractionsLessonSpec): InteractiveLesso
           promptText: `Pecahan yang senilai dengan 1/${d} adalah...`,
           options: opts,
           correctOptionId: 'a',
-          explanation: `Kalikan pembilang dan penyebut 1/${d} dengan 2: ${en}/${ed}.`,
+          explanation: `Kalikan pembilang dan penyebut 1/${d} dengan ${k}: ${en}/${ed}.`,
           hints: [`Pecahan senilai diperoleh dengan mengalikan pembilang & penyebut dengan angka sama.`],
         }),
       );

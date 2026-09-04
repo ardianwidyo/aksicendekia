@@ -14,7 +14,15 @@ import path from 'node:path';
  * this makes the test slow (a full `next build`) but self-contained.
  */
 const WEB_ROOT = path.resolve(__dirname, '..');
-const BUDGET_BYTES = 60 * 1024; // 60 KB gzip
+/**
+ * Re-baselined 60 KB -> 120 KB when the SD Matematika practice set grew from 12
+ * to 30 questions per lesson (FR-021). The lesson routes are single static-export
+ * client components that look a lesson up by id at runtime, so the whole
+ * content-kit catalog rides in the route chunk; 2.5x the questions is ~2.5x the
+ * embedded question/hint/explanation text. A future split of the question bank
+ * into a lazily fetched asset would let this drop back down.
+ */
+const BUDGET_BYTES = 120 * 1024; // 120 KB gzip
 
 function loadManifest(): Record<string, string[]> {
   const manifestPath = path.join(WEB_ROOT, '.next', 'app-build-manifest.json');

@@ -100,7 +100,7 @@ Masukan berbentuk data untuk pabrik pelajaran (R5). Satu varian per arketipe; se
 Uji ini ditulis **sebelum** konten dibuat (Konstitusi III) sehingga 60 pelajaran divalidasi mesin:
 
 1. Setiap `gradeLevel` 1–6 memiliki ≥10 pelajaran `LISTED` (FR-008).
-2. Setiap pelajaran SD memiliki ≥10 butir soal (FR-021) dan ≥1 soal interaktif (FR-023).
+2. Setiap pelajaran SD memiliki ≥30 butir soal (FR-021) dan ≥1 soal interaktif (FR-023).
 3. Setiap pelajaran SD memiliki ≥1 blok `ILLUSTRATION`, ≥1 `ANIMATION`, ≥1 `INTERACTIVE_WIDGET`, ≥1 `VIDEO` (FR-013).
 4. Setiap `curriculumAchievementId` merujuk baris yang ada; setiap kelas mencakup seluruh 5 elemen kurikulumnya (FR-011).
 5. `orderIndex` unik dan rapat dalam tiap kelas (FR-010).

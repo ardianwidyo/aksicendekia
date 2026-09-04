@@ -2,6 +2,7 @@ import type { InteractiveLesson, LessonQuestionInput, SdGradeLevel } from '../ty
 import {
   ASSET_ROOT,
   ArchetypeSpecBase,
+  DEFAULT_QUESTION_COUNT,
   assembleLesson,
   at,
   buildStandardBlocks,
@@ -11,6 +12,7 @@ import {
   isYoungGrade,
   mcQuestion,
   numberLineQuestion,
+  passOf,
   shortAnswerQuestion,
   toOptions,
 } from './shared.js';
@@ -41,7 +43,7 @@ export function makeNumberLineLesson(spec: NumberLineLessonSpec): InteractiveLes
   const { min, max, step, jumps } = spec.params;
   if (max <= min) throw new Error(`${spec.id}: number-line max harus > min.`);
   if (jumps.length < 4) throw new Error(`${spec.id}: number-line butuh >= 4 pasangan lompatan.`);
-  const count = spec.questionCount ?? 12;
+  const count = spec.questionCount ?? DEFAULT_QUESTION_COUNT;
   const young = isYoungGrade(grade);
   const markers: number[] = [];
   for (let m = min; m <= max && markers.length < 10; m += (max - min) / 5) markers.push(Math.round(m));
@@ -132,10 +134,19 @@ export function makeNumberLineLesson(spec: NumberLineLessonSpec): InteractiveLes
   );
 
   for (let i = 0; i < count - 4; i += 1) {
-    const [start, jump] = at(jumps, i % jumps.length);
+    // Combine a seed start with a jump borrowed from a pass-rotated partner so
+    // repeated passes ask genuinely different sums; fall back to the seed's own
+    // jump whenever the mixed landing would fall off the line.
+    const p = passOf(i, jumps.length);
+    const seedPair = at(jumps, i % jumps.length);
+    const [, altJump] = at(jumps, (i + 1 + p) % jumps.length);
+    const mixedTarget = seedPair[0] + altJump;
+    const useAlt = mixedTarget >= min && mixedTarget <= max;
+    const start = seedPair[0];
+    const jump = useAlt ? altJump : seedPair[1];
     const target = start + jump;
     const qid = `${spec.id}-q${i + 5}`;
-    if (!young && i % 2 === 0) {
+    if (!young && (i + p) % 2 === 0) {
       questions.push(
         shortAnswerQuestion({
           id: qid,

@@ -89,7 +89,7 @@ makePlaceValueLesson(spec: PlaceValueSpec): InteractiveLesson
 
 Berkas per kelas (`sd/kelas-4.ts`) hanya berisi **spesifikasi data** — judul, rentang angka, konteks cerita, id CP, id video, urutan — dan memanggil pabriknya. Pabrik yang menyusun blok konten, soal, distraktor, petunjuk bertahap, dan pembahasan. Ilustrasi mengikuti pola sama: komponen SVG generik (`PlaceValueBlocks`, `NumberLineStrip`, …) yang menerima data, bukan 60 berkas SVG tangan.
 
-**Rationale**: Memindahkan pertumbuhan dari kode ke data. Menambah pelajaran ke-61 berarti menambah satu objek spec, bukan satu berkas. Kebenaran matematis diuji sekali per pabrik lalu berlaku untuk seluruh instansinya — satu-satunya cara memvalidasi 600 butir soal secara mesin. Juga menjaga tiap berkas kelas jauh di bawah 800 baris (Konstitusi/coding-style).
+**Rationale**: Memindahkan pertumbuhan dari kode ke data. Menambah pelajaran ke-61 berarti menambah satu objek spec, bukan satu berkas. Kebenaran matematis diuji sekali per pabrik lalu berlaku untuk seluruh instansinya — satu-satunya cara memvalidasi ~1.800 butir soal secara mesin. Juga menjaga tiap berkas kelas jauh di bawah 800 baris (Konstitusi/coding-style).
 
 **Alternatives considered**:
 - *60 berkas pelajaran literal* — ditolak: tidak terverifikasi, drift kualitas antar kelas, melanggar FR-037.

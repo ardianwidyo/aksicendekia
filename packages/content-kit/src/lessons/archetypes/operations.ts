@@ -1,6 +1,7 @@
 import type { InteractiveLesson, LessonQuestionInput } from '../types.js';
 import {
   ArchetypeSpecBase,
+  DEFAULT_QUESTION_COUNT,
   assembleLesson,
   at,
   buildStandardBlocks,
@@ -11,6 +12,7 @@ import {
   mcQuestion,
   numberLineQuestion,
   lineParamsFor,
+  passOf,
   shortAnswerQuestion,
   toOptions,
 } from './shared.js';
@@ -34,7 +36,7 @@ export function makeOperationsLesson(spec: OperationsLessonSpec): InteractiveLes
   const { factPairs } = spec.params;
   if (factPairs.length < 4) throw new Error(`${spec.id}: operations butuh >= 4 pasangan.`);
   const op = spec.params.operation ?? 'MIX';
-  const count = spec.questionCount ?? 12;
+  const count = spec.questionCount ?? DEFAULT_QUESTION_COUNT;
   const young = isYoungGrade(grade);
   const [a0, b0] = at(factPairs, 0);
 
@@ -115,12 +117,53 @@ export function makeOperationsLesson(spec: OperationsLessonSpec): InteractiveLes
   );
 
   for (let i = 0; i < count - 2; i += 1) {
-    const [a, b] = at(factPairs, i % factPairs.length);
+    // Take the first factor from the seed pair and the second from a
+    // pass-rotated partner, so later passes are new facts, not repeats.
+    // `a x b` and `(a x b) : b` stay exact for any seed factors.
+    const p = passOf(i, factPairs.length);
+    const a = at(factPairs, i % factPairs.length)[0];
+    const b = at(factPairs, (i + 1 + p) % factPairs.length)[1];
     const product = a * b;
     const qid = `${spec.id}-q${i + 3}`;
-    const wantDiv = op === 'DIV' || (op === 'MIX' && i % 2 === 1);
+    const wantDiv = op === 'DIV' || (op === 'MIX' && (i + p) % 2 === 1);
+    // Kelas 1-2 only meet multiplication as grouping — rotate three concrete
+    // framings (times / repeated addition / equal sharing) so the small fact
+    // list still yields varied questions.
+    const youngForm = young ? (i + p) % 3 : -1;
 
-    if (wantDiv) {
+    if (young && youngForm === 1) {
+      const opts = distinctNumericOptions(product, [product + a, Math.max(0, product - b), a + b, product + 1]).map(
+        (text, j) => ({ id: OPTLET(j), text, illustrationAssetId: `assets/lessons/sd/kelas-${grade}/op/${qid}-${OPTLET(j)}.svg` }),
+      );
+      questions.push(
+        mcQuestion({
+          id: qid,
+          grade,
+          promptText: `${Array.from({ length: b }, () => idNum(a)).join(' + ')} = ...`,
+          options: opts,
+          correctOptionId: 'a',
+          explanation: `${idNum(a)} ditambahkan ${idNum(b)} kali sama dengan ${idNum(a)} x ${idNum(b)} = ${idNum(product)}.`,
+          hints: [`Hitung majunya ${idNum(a)}-${idNum(a)}an sebanyak ${idNum(b)} kali.`],
+          narrationText: `Berapa hasil menjumlah ${idNum(a)} sebanyak ${idNum(b)} kali?`,
+        }),
+      );
+    } else if (young && youngForm === 2) {
+      const opts = distinctNumericOptions(a, [a + 1, Math.max(0, a - 1), b, product]).map(
+        (text, j) => ({ id: OPTLET(j), text, illustrationAssetId: `assets/lessons/sd/kelas-${grade}/op/${qid}-${OPTLET(j)}.svg` }),
+      );
+      questions.push(
+        mcQuestion({
+          id: qid,
+          grade,
+          promptText: `${idNum(product)} benda dibagi rata ke ${idNum(b)} wadah. Berapa isi tiap wadah?`,
+          options: opts,
+          correctOptionId: 'a',
+          explanation: `${idNum(product)} dibagi ${idNum(b)} sama besar menghasilkan ${idNum(a)} tiap wadah.`,
+          hints: [`Bagikan satu per satu ke tiap wadah sampai habis.`],
+          narrationText: `Berapa isi tiap wadah?`,
+        }),
+      );
+    } else if (wantDiv) {
       const opts = distinctNumericOptions(a, [a + 1, a - 1, b, product]).map((text, j) => ({
         id: OPTLET(j),
         text,
@@ -139,7 +182,7 @@ export function makeOperationsLesson(spec: OperationsLessonSpec): InteractiveLes
           narrationText: young ? `${idNum(product)} dibagi ${idNum(b)} berapa?` : undefined,
         }),
       );
-    } else if (!young && i % 3 === 0) {
+    } else if (!young && (i + p) % 3 === 0) {
       questions.push(
         shortAnswerQuestion({
           id: qid,

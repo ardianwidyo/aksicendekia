@@ -19,6 +19,24 @@ import type { AnimationId } from '../../schema/widget-params.schema.js';
 
 export const ASSET_ROOT = 'assets/lessons/sd';
 
+/**
+ * Feature 011 — default number of generated practice items per lesson. A brief
+ * may still override via `questionCount` (>= 10), but every shipped SD lesson
+ * gets at least this many (FR-021). Bumped 12 -> 30 so a learner gets a full
+ * practice set without the class-file author hand-writing 30 briefs.
+ */
+export const DEFAULT_QUESTION_COUNT = 30;
+
+/**
+ * Which full pass over a seed list we are on for practice item `i` (0 for the
+ * first `len` items, 1 for the next `len`, ...). Archetypes rotate the partner
+ * seed and the question form by this number so items past the first pass stay
+ * genuinely different instead of repeating verbatim. Deterministic, no RNG.
+ */
+export function passOf(i: number, len: number): number {
+  return len > 0 ? Math.floor(i / len) : 0;
+}
+
 /** Grade<->phase consistency (data-model.md 1): 1,2 -> A; 3,4 -> B; 5,6 -> C. */
 export function phaseForGrade(grade: SdGradeLevel): CurriculumPhase {
   if (grade <= 2) return 'FASE_A';
@@ -422,7 +440,7 @@ export function assembleLesson(
       throw new Error(`O2: pelajaran "${spec.id}" tidak punya blok ${required}.`);
     }
   }
-  const minQ = spec.questionCount ?? 12;
+  const minQ = spec.questionCount ?? DEFAULT_QUESTION_COUNT;
   if (minQ < 10) throw new Error(`O3: questionCount "${spec.id}" (${minQ}) < 10.`);
   if (questions.length < 10) {
     throw new Error(`O3: pelajaran "${spec.id}" hanya menghasilkan ${questions.length} soal (< 10).`);

@@ -126,9 +126,9 @@ describe('SD Matematika catalog — the 9 invariants (data-model.md §4)', () =>
     }
   });
 
-  it('2 — every SD lesson has >= 10 questions and >= 1 interactive question', () => {
+  it('2 — every SD lesson has >= 30 questions and >= 1 interactive question', () => {
     for (const l of SD_LESSONS_VIEW) {
-      expect(l.questions.length, `${l.id} question count`).toBeGreaterThanOrEqual(10);
+      expect(l.questions.length, `${l.id} question count`).toBeGreaterThanOrEqual(30);
       expect(interactiveQuestionCount(l), `${l.id} interactive`).toBeGreaterThanOrEqual(1);
     }
   });

@@ -55,12 +55,16 @@ describe('makePlaceValueLesson — O1–O12 + math correctness', () => {
       if (q.questionType !== 'MULTIPLE_CHOICE') continue;
       const opts = q.contentPayload.options as Array<{ id: string; text: string }>;
       const key = opts.find((o) => o.id === q.contentPayload.correctOptionId)!;
-      // The prompt names the digit and the number; re-derive the expected value.
-      const m = q.promptText.match(/angka (\d) pada bilangan ([\d.]+)/);
+      // The prompt names the digit, the place, and the number; re-derive the
+      // expected value from the named place (a digit can repeat in the number).
+      const m = q.promptText.match(/angka (\d) di tempat ([\w ]+?) pada bilangan ([\d.]+)/);
       if (m) {
         const digit = Number(m[1]!);
-        const n = Number(m[2]!.replace(/\./g, ''));
-        const place = [0, 1, 2, 3, 4, 5].find((p) => digitAt(n, p) === digit)!;
+        const placeName = m[2]!.trim();
+        const n = Number(m[3]!.replace(/\./g, ''));
+        const place = PLACE_NAMES.indexOf(placeName as (typeof PLACE_NAMES)[number]);
+        expect(place, `unknown place name "${placeName}"`).toBeGreaterThanOrEqual(0);
+        expect(digitAt(n, place)).toBe(digit);
         expect(Number(key.text.replace(/\./g, ''))).toBe(placeValueOf(n, place));
       }
     }

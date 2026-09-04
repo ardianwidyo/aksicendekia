@@ -1,6 +1,7 @@
 import type { InteractiveLesson, LessonQuestionInput } from '../types.js';
 import {
   ArchetypeSpecBase,
+  DEFAULT_QUESTION_COUNT,
   assembleLesson,
   assetKey,
   at,
@@ -11,6 +12,7 @@ import {
   isYoungGrade,
   mcQuestion,
   numberLineQuestion,
+  passOf,
   shortAnswerQuestion,
   toOptions,
 } from './shared.js';
@@ -37,7 +39,7 @@ export function makeTimeLesson(spec: TimeLessonSpec): InteractiveLesson {
   const { times } = spec.params;
   if (times.length < 4) throw new Error(`${spec.id}: time butuh >= 4 waktu.`);
   const durations = spec.params.durations ?? [];
-  const count = spec.questionCount ?? 12;
+  const count = spec.questionCount ?? DEFAULT_QUESTION_COUNT;
   const young = isYoungGrade(grade);
   const t0 = at(times, 0);
 
@@ -111,13 +113,27 @@ export function makeTimeLesson(spec: TimeLessonSpec): InteractiveLesson {
     }),
   );
 
-  for (let i = 0; i < count - 2; i += 1) {
-    const t = at(times, i % times.length);
-    const qid = `${spec.id}-q${i + 3}`;
-    const wantDuration = !young && durations.length > 0 && i % 3 === 2;
+  const tmAsset = (q: string, id: string): string => `assets/lessons/sd/kelas-${grade}/tm/${q}-${id}.svg`;
+  const partOfDay = (h: number): string => (h < 11 ? 'Pagi' : h < 15 ? 'Siang' : h < 18 ? 'Sore' : 'Malam');
+  const youngForms = ['read', 'earlier', 'partOfDay', 'toNextHour', 'read', 'earlier', 'partOfDay'] as const;
+  const olderForms = [
+    'read', 'earlier', 'toNextHour', 'duration', 'partOfDay',
+    'minutesPast', 'later30', 'earlier', 'read', 'toNextHour', 'partOfDay', 'duration',
+  ] as const;
+  const forms = young ? youngForms : olderForms;
 
-    if (wantDuration) {
-      const [sh, sm, dur] = at(durations, i % durations.length);
+  for (let i = 0; i < count - 2; i += 1) {
+    const p = passOf(i, forms.length);
+    const t = at(times, i % times.length);
+    let li = (i + 1 + p) % times.length;
+    if (li === i % times.length) li = (li + 1) % times.length;
+    const later = at(times, li);
+    const qid = `${spec.id}-q${i + 3}`;
+    let form: string = at(forms, i % forms.length);
+    if (form === 'duration' && durations.length === 0) form = 'read';
+
+    if (form === 'duration') {
+      const [sh, sm, dur] = at(durations, (i + p) % durations.length);
       const endTotal = sh * 60 + sm + dur;
       const eh = Math.floor(endTotal / 60) % 24;
       const em = endTotal % 60;
@@ -131,28 +147,75 @@ export function makeTimeLesson(spec: TimeLessonSpec): InteractiveLesson {
           hints: [`Tambahkan menit dulu; bila lewat 60, tambah 1 jam.`],
         }),
       );
-    } else if (i % 2 === 0) {
+    } else if (form === 'later30') {
+      const endTotal = t.h * 60 + t.m + 30;
+      const eh = Math.floor(endTotal / 60) % 24;
+      const em = endTotal % 60;
+      questions.push(
+        shortAnswerQuestion({
+          id: qid,
+          grade,
+          promptText: `Pukul ${hhmm(t.h, t.m)}, 30 menit kemudian pukul berapa? (format 00.00)`,
+          acceptedAnswers: [hhmm(eh, em), `${eh}.${String(em).padStart(2, '0')}`, `${eh}:${String(em).padStart(2, '0')}`],
+          explanation: `${hhmm(t.h, t.m)} + 30 menit = ${hhmm(eh, em)}.`,
+          hints: [`Tambahkan 30 ke menitnya; bila 60 atau lebih, tambah 1 jam.`],
+        }),
+      );
+    } else if (form === 'toNextHour') {
+      const rem = t.m === 0 ? 60 : 60 - t.m;
+      const opts = distinctNumericOptions(rem, [t.m, rem + 5, rem - 5, 30]).map((text, j) => ({
+        id: OPTLET(j),
+        text,
+      }));
+      questions.push(
+        mcQuestion({
+          id: qid,
+          grade,
+          promptText: `Sekarang pukul ${hhmm(t.h, t.m)}. Berapa menit lagi menuju jam berikutnya?`,
+          options: young ? opts.map((o) => ({ ...o, illustrationAssetId: tmAsset(qid, o.id) })) : opts,
+          correctOptionId: 'a',
+          explanation: `Dari ${idNum(t.m)} menit menuju 60 menit perlu ${idNum(rem)} menit lagi.`,
+          hints: [`Hitung selisih menitnya dengan 60.`],
+          narrationText: young ? `Berapa menit lagi ke jam berikutnya?` : undefined,
+        }),
+      );
+    } else if (form === 'minutesPast') {
+      const opts = distinctNumericOptions(t.m, [t.m + 5, Math.max(0, t.m - 5), 60 - t.m, t.m + 10]).map(
+        (text, j) => ({ id: OPTLET(j), text }),
+      );
+      questions.push(
+        mcQuestion({
+          id: qid,
+          grade,
+          promptText: `Pukul ${hhmm(t.h, t.m)} berarti berapa menit lewat dari jam ${idNum(t.h % 12 || 12)}?`,
+          options: young ? opts.map((o) => ({ ...o, illustrationAssetId: tmAsset(qid, o.id) })) : opts,
+          correctOptionId: 'a',
+          explanation: `Jarum panjang di ${idNum(t.m)} berarti ${idNum(t.m)} menit lewat.`,
+          hints: [`Baca angka yang ditunjuk jarum panjang, tiap angka 5 menit.`],
+          narrationText: young ? `Berapa menit lewat dari jamnya?` : undefined,
+        }),
+      );
+    } else if (form === 'partOfDay') {
+      const label = partOfDay(t.h);
+      const wrongs = ['Pagi', 'Siang', 'Sore', 'Malam'].filter((l) => l !== label).slice(0, 2);
       const opts = [
-        { id: 'a', text: hhmm(t.h, t.m) },
-        { id: 'b', text: hhmm(t.h, (t.m + 15) % 60) },
-        { id: 'c', text: hhmm((t.h + 1) % 24, t.m) },
+        { id: 'a', text: label },
+        { id: 'b', text: at(wrongs, 0) },
+        { id: 'c', text: at(wrongs, 1) },
       ];
       questions.push(
         mcQuestion({
           id: qid,
           grade,
-          promptText: `Jarum pendek di ${idNum(t.h % 12 || 12)} dan jarum panjang menunjuk ${idNum(t.m)} menit. Pukul berapa?`,
-          options: young
-            ? opts.map((o) => ({ ...o, illustrationAssetId: `assets/lessons/sd/kelas-${grade}/tm/${qid}-${o.id}.svg` }))
-            : opts,
+          promptText: `Pukul ${hhmm(t.h, t.m)} termasuk waktu...`,
+          options: young ? opts.map((o) => ({ ...o, illustrationAssetId: tmAsset(qid, o.id) })) : opts,
           correctOptionId: 'a',
-          explanation: `Jam ${idNum(t.h % 12 || 12)} lewat ${idNum(t.m)} menit ditulis ${hhmm(t.h, t.m)}.`,
-          hints: [`Baca jam dari jarum pendek, menit dari jarum panjang.`],
-          narrationText: young ? `Pukul berapa yang ditunjukkan jam?` : undefined,
+          explanation: `Pukul ${hhmm(t.h, t.m)} berada pada ${label.toLowerCase()} hari.`,
+          hints: [`Pagi < 11.00, siang 11.00–14.59, sore 15.00–17.59, selebihnya malam.`],
+          narrationText: young ? `Pagi, siang, sore, atau malam?` : undefined,
         }),
       );
-    } else {
-      const later = at(times, (i + 1) % times.length);
+    } else if (form === 'earlier') {
       const tMin = t.h * 60 + t.m;
       const lMin = later.h * 60 + later.m;
       const earlier = tMin <= lMin ? t : later;
@@ -169,13 +232,29 @@ export function makeTimeLesson(spec: TimeLessonSpec): InteractiveLesson {
           id: qid,
           grade,
           promptText: `Manakah waktu yang lebih awal: ${hhmm(t.h, t.m)} atau ${hhmm(later.h, later.m)}?`,
-          options: young
-            ? uniq.map((o) => ({ ...o, illustrationAssetId: `assets/lessons/sd/kelas-${grade}/tm/${qid}-${o.id}.svg` }))
-            : uniq,
+          options: young ? uniq.map((o) => ({ ...o, illustrationAssetId: tmAsset(qid, o.id) })) : uniq,
           correctOptionId: 'a',
           explanation: `${hhmm(earlier.h, earlier.m)} terjadi lebih dulu dalam sehari.`,
           hints: [`Ubah ke menit sejak pukul 00.00 lalu bandingkan.`],
           narrationText: young ? `Pilih waktu yang lebih dulu.` : undefined,
+        }),
+      );
+    } else {
+      const opts = [
+        { id: 'a', text: hhmm(t.h, t.m) },
+        { id: 'b', text: hhmm(t.h, (t.m + 15) % 60) },
+        { id: 'c', text: hhmm((t.h + 1) % 24, t.m) },
+      ];
+      questions.push(
+        mcQuestion({
+          id: qid,
+          grade,
+          promptText: `Jarum pendek di ${idNum(t.h % 12 || 12)} dan jarum panjang menunjuk ${idNum(t.m)} menit. Pukul berapa?`,
+          options: young ? opts.map((o) => ({ ...o, illustrationAssetId: tmAsset(qid, o.id) })) : opts,
+          correctOptionId: 'a',
+          explanation: `Jam ${idNum(t.h % 12 || 12)} lewat ${idNum(t.m)} menit ditulis ${hhmm(t.h, t.m)}.`,
+          hints: [`Baca jam dari jarum pendek, menit dari jarum panjang.`],
+          narrationText: young ? `Pukul berapa yang ditunjukkan jam?` : undefined,
         }),
       );
     }

@@ -1,6 +1,7 @@
 import type { InteractiveLesson, LessonQuestionInput } from '../types.js';
 import {
   ArchetypeSpecBase,
+  DEFAULT_QUESTION_COUNT,
   assembleLesson,
   at,
   buildStandardBlocks,
@@ -10,6 +11,7 @@ import {
   isYoungGrade,
   mcQuestion,
   numberLineQuestion,
+  passOf,
   shortAnswerQuestion,
   toOptions,
 } from './shared.js';
@@ -36,7 +38,7 @@ export function makeMoneyLesson(spec: MoneyLessonSpec): InteractiveLesson {
   const { prices, paidWith } = spec.params;
   if (prices.length < 4) throw new Error(`${spec.id}: money butuh >= 4 barang.`);
   if (paidWith <= 0) throw new Error(`${spec.id}: paidWith harus > 0.`);
-  const count = spec.questionCount ?? 12;
+  const count = spec.questionCount ?? DEFAULT_QUESTION_COUNT;
   const young = isYoungGrade(grade);
   const p0 = at(prices, 0);
   const maxPrice = Math.max(...prices.map((p) => p.price));
@@ -112,48 +114,121 @@ export function makeMoneyLesson(spec: MoneyLessonSpec): InteractiveLesson {
     }),
   );
 
-  for (let i = 0; i < count - 2; i += 1) {
-    const p = at(prices, i % prices.length);
-    const qid = `${spec.id}-q${i + 3}`;
-    const shape = young ? i % 2 : i % 3;
-    const change = paidWith - p.price;
+  const mnAsset = (q: string, id: string): string => `assets/lessons/sd/kelas-${grade}/mn/${q}-${id}.svg`;
+  const priciest = prices.reduce((a, b) => (b.price > a.price ? b : a));
+  const cheapest = prices.reduce((a, b) => (b.price < a.price ? b : a));
+  const youngForms = ['change', 'sum', 'enough', 'change', 'sum', 'priciest'] as const;
+  const olderForms = [
+    'change', 'sum', 'changeSA', 'twoItems', 'priciest',
+    'change', 'sum', 'cheapest', 'twoItems', 'changeSA',
+  ] as const;
+  const forms = young ? youngForms : olderForms;
 
-    if (shape === 0 && change >= 0) {
-      const opts = distinctNumericOptions(change, [p.price, paidWith, change + 1000, change - 500]).map(
+  for (let i = 0; i < count - 2; i += 1) {
+    const pass = passOf(i, forms.length);
+    const item = at(prices, i % prices.length);
+    let oi = (i + 1 + pass) % prices.length;
+    if (oi === i % prices.length) oi = (oi + 1) % prices.length;
+    const other = at(prices, oi);
+    const qid = `${spec.id}-q${i + 3}`;
+    const change = paidWith - item.price;
+    let form: string = at(forms, i % forms.length);
+    if (form === 'change' && change < 0) form = 'sum';
+    if (form === 'changeSA' && change < 0) form = 'sum';
+    if (form === 'twoItems' && paidWith - item.price - other.price < 0) form = 'sum';
+
+    if (form === 'change') {
+      const opts = distinctNumericOptions(change, [item.price, paidWith, change + 1000, change - 500]).map(
         (text, j) => ({ id: OPTLET(j), text: `Rp${text}` }),
       );
       questions.push(
         mcQuestion({
           id: qid,
           grade,
-          promptText: `Harga ${p.item} ${rp(p.price)}. Dibayar ${rp(paidWith)}. Berapa kembaliannya?`,
-          options: young
-            ? opts.map((o) => ({ ...o, illustrationAssetId: `assets/lessons/sd/kelas-${grade}/mn/${qid}-${o.id}.svg` }))
-            : opts,
+          promptText: `Harga ${item.item} ${rp(item.price)}. Dibayar ${rp(paidWith)}. Berapa kembaliannya?`,
+          options: young ? opts.map((o) => ({ ...o, illustrationAssetId: mnAsset(qid, o.id) })) : opts,
           correctOptionId: 'a',
-          explanation: `${rp(paidWith)} - ${rp(p.price)} = ${rp(change)}.`,
+          explanation: `${rp(paidWith)} - ${rp(item.price)} = ${rp(change)}.`,
           hints: [`Kembalian = uang dibayar - harga.`],
           narrationText: young ? `Berapa kembaliannya?` : undefined,
         }),
       );
-    } else if (shape === 1) {
-      const other = at(prices, (i + 1) % prices.length);
-      const total = p.price + other.price;
-      const opts = distinctNumericOptions(total, [Math.abs(p.price - other.price), total + 500, total - 1000, p.price]).map(
+    } else if (form === 'sum') {
+      const total = item.price + other.price;
+      const opts = distinctNumericOptions(total, [Math.abs(item.price - other.price), total + 500, total - 1000, item.price]).map(
         (text, j) => ({ id: OPTLET(j), text: `Rp${text}` }),
       );
       questions.push(
         mcQuestion({
           id: qid,
           grade,
-          promptText: `Berapa harga ${p.item} (${rp(p.price)}) dan ${other.item} (${rp(other.price)}) jika dibeli bersama?`,
-          options: young
-            ? opts.map((o) => ({ ...o, illustrationAssetId: `assets/lessons/sd/kelas-${grade}/mn/${qid}-${o.id}.svg` }))
-            : opts,
+          promptText: `Berapa harga ${item.item} (${rp(item.price)}) dan ${other.item} (${rp(other.price)}) jika dibeli bersama?`,
+          options: young ? opts.map((o) => ({ ...o, illustrationAssetId: mnAsset(qid, o.id) })) : opts,
           correctOptionId: 'a',
-          explanation: `${rp(p.price)} + ${rp(other.price)} = ${rp(total)}.`,
+          explanation: `${rp(item.price)} + ${rp(other.price)} = ${rp(total)}.`,
           hints: [`Jumlahkan kedua harga.`],
           narrationText: young ? `Berapa totalnya?` : undefined,
+        }),
+      );
+    } else if (form === 'twoItems') {
+      const rem = paidWith - item.price - other.price;
+      const opts = distinctNumericOptions(rem, [item.price + other.price, rem + 1000, rem - 500, paidWith]).map(
+        (text, j) => ({ id: OPTLET(j), text: `Rp${text}` }),
+      );
+      questions.push(
+        mcQuestion({
+          id: qid,
+          grade,
+          promptText: `Beli ${item.item} (${rp(item.price)}) dan ${other.item} (${rp(other.price)}), dibayar ${rp(paidWith)}. Berapa kembaliannya?`,
+          options: young ? opts.map((o) => ({ ...o, illustrationAssetId: mnAsset(qid, o.id) })) : opts,
+          correctOptionId: 'a',
+          explanation: `${rp(paidWith)} - ${rp(item.price)} - ${rp(other.price)} = ${rp(rem)}.`,
+          hints: [`Jumlahkan dulu kedua harga, lalu kurangkan dari uang dibayar.`],
+          narrationText: young ? `Berapa kembaliannya?` : undefined,
+        }),
+      );
+    } else if (form === 'priciest' || form === 'cheapest') {
+      const target = form === 'priciest' ? priciest : cheapest;
+      const opposite = form === 'priciest' ? cheapest : priciest;
+      const opts = [
+        { id: 'a', text: target.item },
+        { id: 'b', text: opposite.item },
+        { id: 'c', text: at(prices, (i % prices.length + 1) % prices.length).item },
+      ];
+      const seen = new Set<string>();
+      const uniq = opts.filter((o) => (seen.has(o.text) ? false : (seen.add(o.text), true)));
+      while (uniq.length < 2) uniq.push({ id: OPTLET(uniq.length), text: `bukan ${target.item} (${uniq.length})` });
+      questions.push(
+        mcQuestion({
+          id: qid,
+          grade,
+          promptText: `Barang manakah yang ${form === 'priciest' ? 'paling mahal' : 'paling murah'}?`,
+          options: young ? uniq.map((o) => ({ ...o, illustrationAssetId: mnAsset(qid, o.id) })) : uniq,
+          correctOptionId: 'a',
+          explanation: `${target.item} ${rp(target.price)} adalah yang ${form === 'priciest' ? 'termahal' : 'termurah'}.`,
+          hints: [`Bandingkan semua harga.`],
+          narrationText: young ? `Pilih barang yang ${form === 'priciest' ? 'paling mahal' : 'paling murah'}.` : undefined,
+        }),
+      );
+    } else if (form === 'enough') {
+      const pairTotal = item.price + other.price;
+      const canBuy = pairTotal <= paidWith;
+      const opts = [
+        { id: 'a', text: 'Cukup' },
+        { id: 'b', text: 'Tidak cukup' },
+      ];
+      questions.push(
+        mcQuestion({
+          id: qid,
+          grade,
+          promptText: `Kamu punya ${rp(paidWith)}. Cukup untuk membeli ${item.item} (${rp(item.price)}) dan ${other.item} (${rp(other.price)}) sekaligus?`,
+          options: young ? opts.map((o) => ({ ...o, illustrationAssetId: mnAsset(qid, o.id) })) : opts,
+          correctOptionId: canBuy ? 'a' : 'b',
+          explanation: canBuy
+            ? `${rp(item.price)} + ${rp(other.price)} = ${rp(pairTotal)} <= ${rp(paidWith)}, jadi cukup.`
+            : `${rp(item.price)} + ${rp(other.price)} = ${rp(pairTotal)} > ${rp(paidWith)}, jadi tidak cukup.`,
+          hints: [`Jumlahkan dulu kedua harga, lalu bandingkan dengan uangmu.`],
+          narrationText: young ? `Cukup atau tidak?` : undefined,
         }),
       );
     } else {
@@ -161,9 +236,9 @@ export function makeMoneyLesson(spec: MoneyLessonSpec): InteractiveLesson {
         shortAnswerQuestion({
           id: qid,
           grade,
-          promptText: `Harga ${p.item} ${rp(p.price)}, dibayar ${rp(paidWith)}. Tulis kembalian dalam angka (tanpa "Rp").`,
+          promptText: `Harga ${item.item} ${rp(item.price)}, dibayar ${rp(paidWith)}. Tulis kembalian dalam angka (tanpa "Rp").`,
           acceptedAnswers: [String(Math.max(0, change)), idNum(Math.max(0, change))],
-          explanation: `${idNum(paidWith)} - ${idNum(p.price)} = ${idNum(change)}.`,
+          explanation: `${idNum(paidWith)} - ${idNum(item.price)} = ${idNum(change)}.`,
           hints: [`Kurangkan harga dari uang yang dibayarkan.`],
         }),
       );

@@ -1,6 +1,7 @@
 import type { InteractiveLesson, LessonQuestionInput } from '../types.js';
 import {
   ArchetypeSpecBase,
+  DEFAULT_QUESTION_COUNT,
   assembleLesson,
   at,
   buildStandardBlocks,
@@ -10,6 +11,7 @@ import {
   isYoungGrade,
   mcQuestion,
   numberLineQuestion,
+  passOf,
   shortAnswerQuestion,
   toOptions,
 } from './shared.js';
@@ -35,7 +37,7 @@ export function makePatternsLesson(spec: PatternsLessonSpec): InteractiveLesson 
   const { gradeLevel: grade } = spec;
   const seqs = spec.params.sequences;
   if (seqs.length < 4) throw new Error(`${spec.id}: patterns butuh >= 4 barisan.`);
-  const count = spec.questionCount ?? 12;
+  const count = spec.questionCount ?? DEFAULT_QUESTION_COUNT;
   const young = isYoungGrade(grade);
   const s0 = at(seqs, 0);
   const first5 = [1, 2, 3, 4, 5].map((n) => term(s0.start, s0.diff, n)) as [number, number, number, number, number];
@@ -115,13 +117,24 @@ export function makePatternsLesson(spec: PatternsLessonSpec): InteractiveLesson 
   );
 
   for (let i = 0; i < count - 2; i += 1) {
+    const p = passOf(i, seqs.length);
     const s = at(seqs, i % seqs.length);
     const qid = `${spec.id}-q${i + 3}`;
-    const shape = young ? i % 2 : i % 3;
-    const shown = [1, 2, 3, 4].map((n) => term(s.start, s.diff, n)) as [number, number, number, number];
+    const shape = young ? (i + p) % 2 : (i + p) % 3;
+    // Slide the visible 4-term window forward each pass so a repeated sequence
+    // shows different terms. Keep the window near the start for young grades and
+    // decreasing sequences so the numbers stay age-appropriate and non-negative.
+    const w = young || s.diff < 0 ? p % 2 : p;
+    const winStart = 1 + w;
+    const shown = [0, 1, 2, 3].map((k) => term(s.start, s.diff, winStart + k)) as [
+      number,
+      number,
+      number,
+      number,
+    ];
 
     if (shape === 0) {
-      const answer = term(s.start, s.diff, 5);
+      const answer = term(s.start, s.diff, winStart + 4);
       const opts = distinctNumericOptions(answer, [
         answer + s.diff,
         answer - s.diff,
@@ -143,9 +156,11 @@ export function makePatternsLesson(spec: PatternsLessonSpec): InteractiveLesson 
         }),
       );
     } else if (shape === 1) {
-      const missingIndex = 2; // third term hidden
-      const answer = term(s.start, s.diff, missingIndex + 1);
-      const withGap = [0, 1, 2, 3].map((n) => (n === missingIndex ? '__' : idNum(term(s.start, s.diff, n + 1))));
+      const missingIndex = p % 4; // which term in the sliding window is hidden
+      const answer = term(s.start, s.diff, winStart + missingIndex);
+      const withGap = [0, 1, 2, 3].map((k) =>
+        k === missingIndex ? '__' : idNum(term(s.start, s.diff, winStart + k)),
+      );
       const opts = distinctNumericOptions(answer, [answer + s.diff, answer - s.diff, answer + 2]).map(
         (text, j) => ({ id: OPTLET(j), text }),
       );
@@ -164,7 +179,7 @@ export function makePatternsLesson(spec: PatternsLessonSpec): InteractiveLesson 
         }),
       );
     } else {
-      const nth = 8;
+      const nth = s.diff < 0 ? 4 + (p % 4) : 8 + (p % 3) * 2;
       const answer = term(s.start, s.diff, nth);
       questions.push(
         shortAnswerQuestion({

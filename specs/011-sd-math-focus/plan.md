@@ -6,7 +6,7 @@
 
 ## Summary
 
-Persempit permukaan produk ke satu jenjang (SD) dan satu mata pelajaran (Matematika) lewat satu saklar konfigurasi, lalu perdalam isinya menjadi minimal 10 materi interaktif per tingkat kelas 1–6 (≥60 materi, ≥600 butir soal), masing-masing memuat ilustrasi, animasi self-hosted, komponen manipulatif, dan video YouTube tersemat click-to-load.
+Persempit permukaan produk ke satu jenjang (SD) dan satu mata pelajaran (Matematika) lewat satu saklar konfigurasi, lalu perdalam isinya menjadi minimal 10 materi interaktif per tingkat kelas 1–6 (≥60 materi, ≥1.800 butir soal — ≥30 per materi), masing-masing memuat ilustrasi, animasi self-hosted, komponen manipulatif, dan video YouTube tersemat click-to-load.
 
 Seluruh permukaan siswa, tamu, orang tua, dan guru wajib bekerja penuh pada 320px potret sampai desktop 1280px+, dengan setiap soal pemindahan objek dapat diselesaikan cukup dengan ketukan.
 
@@ -37,7 +37,7 @@ Pengendali biaya utama (FR-037, permintaan "token seminimal mungkin"): materi **
 - WCAG 2.1 AA, target sentuh 44x44px pada **seluruh** elemen interaktif (bukan hanya kendali media), alur penuh dengan keyboard.
 - Responsif 320px–1280px+ tanpa gulir horizontal halaman; potret wajib; ketuk-untuk-menempatkan wajib pada tiap soal pemindahan objek. Berlaku pada jalur siswa, tamu, orang tua, dan guru; CMS admin boleh desktop-first tetapi dilarang rusak di 320px.
 
-**Scale/Scope**: 6 tingkat kelas × ≥10 pelajaran = **≥60 pelajaran**, **≥600 butir soal**, **≥240 blok konten media/interaktif**, **≥15 baris capaian pembelajaran** (Fase A/B/C × 5 elemen). Tiga pelajaran SD lama (`sd-matematika-01..03`) diserap, bukan diduplikasi.
+**Scale/Scope**: 6 tingkat kelas × ≥10 pelajaran = **≥60 pelajaran**, **≥1.800 butir soal** (≥30/pelajaran), **≥240 blok konten media/interaktif**, **≥15 baris capaian pembelajaran** (Fase A/B/C × 5 elemen). Tiga pelajaran SD lama (`sd-matematika-01..03`) diserap, bukan diduplikasi.
 
 ## Constitution Check
 
@@ -63,7 +63,7 @@ Desain Phase 1 tidak memunculkan pelanggaran baru. Tiga hal menguat dan satu uta
 
 - **Prinsip VI diperkuat, bukan dilonggarkan.** Kontrak [video-embed.md](./contracts/video-embed.md) menerjemahkan keenam syarat konstitusi menjadi enam kondisi pemblokir publikasi yang berjalan sebagai uji, bukan checklist. Satu celah yang mudah terlewat ditutup eksplisit: pratinjau video WAJIB self-hosted, karena pratinjau bawaan YouTube dilayani dari `i.ytimg.com` dan memakainya akan melanggar larangan hotlink sekaligus syarat nol-permintaan-pra-klik.
 - **Prinsip VII terjaga di jalur tamu.** Registri menyimpan `externalId`, bukan URL jadi, sehingga pemanggil tidak dapat melewati varian nocookie. Deteksi video mati dipindah ke CI (R7) agar peramban anak tidak pernah menjadi pihak yang menghubungi penyedia.
-- **Prinsip III menjadi pengendali kualitas 60 pelajaran.** Uji ditulis per *arketipe*, bukan per pelajaran, sehingga 600 butir soal terverifikasi kebenaran matematisnya dengan biaya sekitar 10 berkas uji. Tanpa lapisan arketipe, volume ini tidak dapat diuji secara jujur.
+- **Prinsip III menjadi pengendali kualitas 60 pelajaran.** Uji ditulis per *arketipe*, bukan per pelajaran, sehingga ~1.800 butir soal terverifikasi kebenaran matematisnya dengan biaya sekitar 10 berkas uji. Tanpa lapisan arketipe, volume ini tidak dapat diuji secara jujur.
 - **Utang Prinsip II ditemukan, tidak diperluas.** `apps/api/src/modules/sync/public-content.controller.ts` memanggil Prisma langsung dari controller — melanggar pemisahan lapisan. Fitur ini tidak menambah pola tersebut: logika fokus dan kueri per-kelas masuk lapisan service, dan kueri yang tersentuh dipindahkan seiring jalan. Refactor menyeluruh controller itu **di luar cakupan** dan dicatat di [contracts/public-api.md](./contracts/public-api.md) agar tidak hilang.
 
 **Hasil gate pasca-desain**: LULUS. Complexity Tracking di bawah tetap berisi empat entri yang sama; tidak ada tambahan.

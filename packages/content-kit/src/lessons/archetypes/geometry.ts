@@ -1,6 +1,7 @@
 import type { InteractiveLesson, LessonQuestionInput } from '../types.js';
 import {
   ArchetypeSpecBase,
+  DEFAULT_QUESTION_COUNT,
   assembleLesson,
   assetKey,
   at,
@@ -11,6 +12,7 @@ import {
   isYoungGrade,
   mcQuestion,
   numberLineQuestion,
+  passOf,
   shortAnswerQuestion,
   toOptions,
 } from './shared.js';
@@ -53,7 +55,7 @@ export function makeGeometryLesson(spec: GeometryLessonSpec): InteractiveLesson 
   const { shapes } = spec.params;
   if (shapes.length < 4) throw new Error(`${spec.id}: geometry butuh >= 4 bangun.`);
   const rects = spec.params.rects ?? [];
-  const count = spec.questionCount ?? 12;
+  const count = spec.questionCount ?? DEFAULT_QUESTION_COUNT;
   const young = isYoungGrade(grade);
   const s0 = at(shapes, 0);
 
@@ -131,13 +133,14 @@ export function makeGeometryLesson(spec: GeometryLessonSpec): InteractiveLesson 
   );
 
   for (let i = 0; i < count - 2; i += 1) {
+    const p = passOf(i, shapes.length);
     const s = at(shapes, i % shapes.length);
     const qid = `${spec.id}-q${i + 3}`;
-    const canRect = !young && rects.length > 0 && i % 3 === 2;
+    const canRect = !young && rects.length > 0 && (i + p) % 3 === 2;
 
     if (canRect) {
-      const [w, h] = at(rects, i % rects.length);
-      const usePerimeter = i % 2 === 0;
+      const [w, h] = at(rects, (i + p) % rects.length);
+      const usePerimeter = (i + p) % 2 === 0;
       const value = usePerimeter ? 2 * (w + h) : w * h;
       questions.push(
         shortAnswerQuestion({
@@ -153,27 +156,36 @@ export function makeGeometryLesson(spec: GeometryLessonSpec): InteractiveLesson 
           hints: [usePerimeter ? `Jumlahkan semua sisi.` : `Kalikan panjang dengan lebar.`],
         }),
       );
-    } else if (i % 2 === 0) {
-      const opts = distinctNumericOptions(s.sides, [s.sides + 1, s.sides - 1, s.vertices, s.sides + 2]).map(
-        (text, j) => ({ id: OPTLET(j), text }),
-      );
+    } else if ((i + p) % 2 === 0) {
+      // Alternate between counting sides and counting vertices so a small shape
+      // list still yields distinct questions across passes.
+      const askVertices = p % 2 === 1;
+      const target = askVertices ? s.vertices : s.sides;
+      const opts = distinctNumericOptions(target, [
+        target + 1,
+        Math.max(0, target - 1),
+        askVertices ? s.sides : s.vertices,
+        target + 2,
+      ]).map((text, j) => ({ id: OPTLET(j), text }));
       questions.push(
         mcQuestion({
           id: qid,
           grade,
-          promptText: `Ada berapa sisi pada ${s.name}?`,
+          promptText: askVertices
+            ? `Ada berapa titik sudut pada ${s.name}?`
+            : `Ada berapa sisi pada ${s.name}?`,
           options: young
             ? opts.map((o) => ({ ...o, illustrationAssetId: `assets/lessons/sd/kelas-${grade}/gm/${qid}-${o.id}.svg` }))
             : opts,
           correctOptionId: 'a',
           explanation: `${s.name} memiliki ${idNum(s.sides)} sisi dan ${idNum(s.vertices)} titik sudut.`,
-          hints: [`Telusuri tepi bangun sambil menghitung.`],
-          narrationText: young ? `Berapa sisi ${s.name}?` : undefined,
+          hints: [askVertices ? `Hitung tiap pojok (titik sudut) bangun.` : `Telusuri tepi bangun sambil menghitung.`],
+          narrationText: young ? (askVertices ? `Berapa titik sudut ${s.name}?` : `Berapa sisi ${s.name}?`) : undefined,
         }),
       );
     } else {
-      const wrong1 = at(shapes, (i + 1) % shapes.length);
-      const wrong2 = at(shapes, (i + 2) % shapes.length);
+      const wrong1 = at(shapes, (i + 1 + p) % shapes.length);
+      const wrong2 = at(shapes, (i + 2 + p) % shapes.length);
       const opts = [
         { id: 'a', text: s.name },
         { id: 'b', text: wrong1.name === s.name ? `${wrong1.name} besar` : wrong1.name },
